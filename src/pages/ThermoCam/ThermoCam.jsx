@@ -39,7 +39,6 @@ export default function MergedCamera() {
     maxTemp: 78.7,
     minTemp: 78.7,
     avgTemp: 78.7,
-    centerTemp: 78.7,
   });
 
   // API endpoints
