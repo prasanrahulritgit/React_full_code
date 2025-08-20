@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
-import logo from "../../assets/RutoMatrix_Nonbackground.png";
-import tes_logo from "../../assets/tessolve.png";
+import logo from "../../../assets/RutoMatrix_Nonbackground.png";
+import tes_logo from "../../../assets/tessolve.png";
+import { Eye, EyeOff, User, Lock, AlertCircle, CheckCircle, ArrowRight } from 'lucide-react';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -65,23 +66,53 @@ const Login = () => {
     }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  // 🔹 Add old DOM logic here
+  useEffect(() => {
+
+    const alerts = document.querySelectorAll('.alert');
+    const togglePassword = document.querySelector("#togglePassword");
+    const passwordInput = document.querySelector(".password-input");
+    const icon = togglePassword ? togglePassword.querySelector("i") : null;
+
+    if (togglePassword && passwordInput && icon) {
+      const handleMouseDown = () => {
+        passwordInput.setAttribute("type", "text");
+        icon.setAttribute("data-lucide", "eye-off");
+      };
+      const handleMouseUp = () => {
+        passwordInput.setAttribute("type", "password");
+        icon.setAttribute("data-lucide", "eye");
+      };
+      const handleMouseLeave = () => {
+        passwordInput.setAttribute("type", "password");
+        icon.setAttribute("data-lucide", "eye");
+      };
+
+      togglePassword.addEventListener("mousedown", handleMouseDown);
+      togglePassword.addEventListener("mouseup", handleMouseUp);
+      togglePassword.addEventListener("mouseleave", handleMouseLeave);
+
+      // cleanup
+      return () => {
+        togglePassword.removeEventListener("mousedown", handleMouseDown);
+        togglePassword.removeEventListener("mouseup", handleMouseUp);
+        togglePassword.removeEventListener("mouseleave", handleMouseLeave);
+      };
+    }
+
+    alerts.forEach(alert => {
+      setTimeout(() => {
+        alert.style.opacity = '0';
+        setTimeout(() => alert.remove(), 300);
+      }, 5000);
+    });
+  }, [error, success]); // rerun when alerts change
 
   return (
     <div className="login-container">
       <div className="logos-container">
-        <img 
-          src={logo}
-          alt="RutoMatrix Logo" 
-          className="logo" 
-        />
-        <img 
-          src={tes_logo}
-          alt="Tessolve Logo" 
-          className="logo" 
-        />
+        <img src={logo} alt="RutoMatrix Logo" className="logo" />
+        <img src={tes_logo} alt="Tessolve Logo" className="logo" />
       </div>
 
       <div className="login-card">
@@ -105,7 +136,7 @@ const Login = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <i data-lucide="user" className="icon"></i>
+            <User className="icon" size={20} />
             <input
               type="text"
               className="form-control"
@@ -118,7 +149,7 @@ const Login = () => {
           </div>
 
           <div className="form-group password-group">
-            <i data-lucide="lock" className="icon"></i>
+            <Lock className="icon" size={18} />
             <input
               type={showPassword ? "text" : "password"}
               className="form-control password-input"
@@ -128,17 +159,20 @@ const Login = () => {
               required
             />
             <label>Password</label>
-            
-            <i 
-              data-lucide={showPassword ? "eye-off" : "eye"} 
+
+            {/* 👁️ Toggle button */}
+            <span
               className="toggle-password"
-              onClick={togglePasswordVisibility}
-            ></i>
+              onClick={() => setShowPassword(!showPassword)}
+              style={{ cursor: "pointer" }}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </span>
           </div>
 
           <button type="submit" className="btn-login">
             Sign In
-            <i data-lucide="arrow-right"></i>
+            <ArrowRight size={18} />
           </button>
         </form>
       </div>

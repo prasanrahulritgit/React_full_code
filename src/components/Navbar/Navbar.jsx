@@ -18,48 +18,95 @@ const Navbar = ({ isDarkTheme, toggleTheme, userData }) => {
     expired: false
   });
 
-  // Navigate back to reservations 
   const handleBackToReservations = () => {
-    window.location.href = "https://3nv6k49z-5000.inc1.devtunnels.ms/reservations";
+    window.location.href = "http://127.0.0.1:5000/reservations";
   };
 
-  // Navigate to reservations after showing alert
   const navigateToReservations = () => {
-    window.location.href = "https://3nv6k49z-5000.inc1.devtunnels.ms/reservations";
+    window.location.href = "http://127.0.0.1:5000/reservations";
   };
 
-  const fetchDeviceData = async (deviceId) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      if (!deviceId) {
-        throw new Error('No device ID provided');
-      }
-
-      const response = await axios.get('https://3nv6k49z-5000.inc1.devtunnels.ms/api/booked-devices');
-      
-      if (response.data && Array.isArray(response.data.booked_devices)) {
-        const device = response.data.booked_devices.find(d => 
-          d.device_id === deviceId
-        );
-        
-        if (device) {
-          return {
-            name: device.device_name,
-            endTime: new Date(device.end_time)
-          };
-        }
-      }
-      throw new Error('Booked device not found');
-    } catch (error) {
-      console.error('Device data fetch error:', error);
-      setError(error.message);
-      return null;
-    } finally {
-      setIsLoading(false);
+const fetchDeviceData = async (deviceId) => {
+  try {
+    setIsLoading(true);
+    setError(null);
+    
+    if (!deviceId) {
+      throw new Error('No device ID provided');
     }
-  };
+
+    // Enhanced debug logging
+    console.log('Making authenticated request to /api/booked-devices');
+    console.log('Current cookies:', document.cookie);
+    console.log('Session storage:', sessionStorage);
+    console.log('Local storage:', localStorage);
+
+    const response = await axios.get('http://127.0.0.1:5000/api/booked-devices', {
+      withCredentials: true,
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      // Ensure axios doesn't try to parse HTML as JSON
+      transformResponse: [(data) => {
+        if (typeof data === 'string' && data.trim().startsWith('<!DOCTYPE html>')) {
+          throw new Error('Received HTML response when expecting JSON');
+        }
+        return data;
+      }]
+    });
+
+    // Debug the actual response before parsing
+    console.log('API response headers:', response.headers);
+    console.log('API response content-type:', response.headers['content-type']);
+    console.log('API response data sample:', String(response.data).slice(0, 100));
+
+    // Force JSON parsing if needed
+    const responseData = typeof response.data === 'string' 
+      ? JSON.parse(response.data) 
+      : response.data;
+
+    if (!responseData?.data?.booked_devices) {
+      throw new Error('API returned invalid data structure');
+    }
+
+    const device = responseData.data.booked_devices.find(d => 
+      d.device?.id === deviceId || 
+      d.id === deviceId.toString() || 
+      d.device_id === deviceId
+    );
+
+    if (!device) {
+      throw new Error(`Device ${deviceId} not found in bookings`);
+    }
+
+    return {
+      name: `Device ${parseInt(device.device?.id || device.id || 'Unknown Device')}`,
+      endTime: new Date(device.time?.end || device.end_time)
+    };
+
+  } catch (error) {
+    console.error('API request failed:', error);
+    
+    // Handle specific error cases
+    if (error.message.includes('Received HTML response')) {
+      console.warn('Authentication required - redirecting to login');
+      window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+      return null;
+    }
+    
+    if (error.response?.status === 401) {
+      window.location.href = '/auth/login';
+      return null;
+    }
+    
+    setError(error.message || 'Failed to load device data');
+    return null;
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const playAlertSound = () => {
     try {
@@ -88,7 +135,6 @@ const Navbar = ({ isDarkTheme, toggleTheme, userData }) => {
       clearInterval(timerRef.current);
     }
 
-    // Reset alert flags and timer state
     alertShownRef.current = {
       thirtyMinutes: false,
       tenMinutes: false,
@@ -108,7 +154,6 @@ const Navbar = ({ isDarkTheme, toggleTheme, userData }) => {
 
       setTimeLeft(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
 
-      // Update last 10 minutes state for styling
       if (minutesLeft <= 10 && !isLast10Minutes) {
         setIsLast10Minutes(true);
       }
@@ -119,7 +164,6 @@ const Navbar = ({ isDarkTheme, toggleTheme, userData }) => {
         if (!alertShownRef.current.expired) {
           await showAlert(`Your booking for ${deviceName} has expired!`);
           alertShownRef.current.expired = true;
-          // Navigate to reservations after showing alert
           setTimeout(navigateToReservations, 1000);
         }
       } else if (minutesLeft === 10 && !alertShownRef.current.tenMinutes) {
@@ -144,19 +188,20 @@ const Navbar = ({ isDarkTheme, toggleTheme, userData }) => {
       if (deviceData) {
         setDeviceName(deviceData.name);
         startCountdown(deviceData.endTime, deviceData.name);
+      } else {
+        setTimeLeft(null);
       }
     };
 
     initializeTimer();
 
-    // Refresh every minute
     const refreshInterval = setInterval(initializeTimer, 60000);
 
     return () => {
       clearInterval(timerRef.current);
       clearInterval(refreshInterval);
     };
-  }, [userData?.device_id]);
+  }, []);
 
   return (
     <div className={`navbar-container ${isDarkTheme ? "dark" : ""}`}>
@@ -181,11 +226,11 @@ const Navbar = ({ isDarkTheme, toggleTheme, userData }) => {
           ) : error ? (
             <div className="timer-error">{error}</div>
           ) : timeLeft ? (
-            <div className={`device-timer `}>
+            <div className={`device-timer`}>
               <span className="Device-name" title={deviceName}>
                 {deviceName.length > 12 ? `${deviceName.substring(0, 10)}...` : deviceName} -
               </span>
-               <span className={`timer ${isLast10Minutes ? 'last-10-minutes' : ''}`}> 
+              <span className={`timer ${isLast10Minutes ? 'last-10-minutes' : ''}`}> 
                 <TimerIcon size={20} style={{ marginRight: '4px'}} /> {timeLeft} 
               </span>
             </div>
