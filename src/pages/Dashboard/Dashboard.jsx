@@ -116,7 +116,7 @@ const Dashboard = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        "https://3nv6k49z-5000.inc1.devtunnels.ms/api/booked-devices"
+        " http://127.0.0.1:5000/api/booked-devices"
       );
 
       if (response.data.success) {

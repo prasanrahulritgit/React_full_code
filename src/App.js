@@ -5,6 +5,7 @@ import "./index.css";
 import "@fontsource/poppins"; // Defaults to weight 400
 import LoginSignupPage from './components/Auth/LoginSignupPage';
 import { Navigate } from 'react-router-dom';
+import Login from './components/Auth/Login';
 
 
 const App = () => {
@@ -13,7 +14,9 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Navigate to="/auth" replace />} />
         <Route path="/auth" element={<LoginSignupPage />} />
+        <Route path="/Login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
+    
       </Routes>
     </Router>
   );

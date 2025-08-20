@@ -155,7 +155,7 @@ const LoginSignupPage = ({ setIsAuthenticated }) => {
 
     const handleLaunchDashboard = () => {
     // Redirect to external login URL
-    window.location.href = 'https://3nv6k49z-5000.inc1.devtunnels.ms/';
+    navigate('/Login');;
   };
 
   useEffect(() => {
