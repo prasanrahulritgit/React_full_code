@@ -7,7 +7,7 @@ import LoginSignupPage from './components/Auth/LoginSignupPage';
 import { Navigate } from 'react-router-dom';
 import AdminDashboard from './components/Admin_Dashboard/AdminDashboard';
 import UserReservation from './components/User_Reservation/UserReservation';
-import Login from './components/Auth/Login';
+import Login from './components/Auth/Login/Login';
 
 
 const App = () => {
