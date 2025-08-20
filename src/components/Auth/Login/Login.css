@@ -119,11 +119,6 @@
 .password-input {
   padding-right: 40px;
 }
-<<<<<<< HEAD
- 
-=======
-
->>>>>>> bf87bfc984ccc7fc23e906caca35e52b3ae7c448
 .toggle-password {
   position: absolute;
   right: 12px;
@@ -232,11 +227,6 @@
   outline: 2px solid #1281d6;
   outline-offset: 2px;
 }
-<<<<<<< HEAD
- 
-=======
-
->>>>>>> bf87bfc984ccc7fc23e906caca35e52b3ae7c448
  
     .login-card:hover {
         box-shadow: 0 0 30px rgb(255, 106, 0);
@@ -255,17 +245,6 @@
         color: #000000;
         z-index: 2;
     }
-<<<<<<< HEAD
- 
-    .password-group {
-        position: relative;
-    }
- 
-    .password-input {
-        padding-right: 40px; /* make space for the eye icon */
-    }
- 
-=======
 
     .password-group {
         position: relative;
@@ -275,7 +254,6 @@
         padding-right: 40px; /* make space for the eye icon */
     }
 
->>>>>>> bf87bfc984ccc7fc23e906caca35e52b3ae7c448
     .toggle-password {
         position: absolute;
         right: 20px;
@@ -400,8 +378,4 @@
         .login-card {
             padding: 40px 30px;
         }
-<<<<<<< HEAD
     }
-=======
-    }
->>>>>>> bf87bfc984ccc7fc23e906caca35e52b3ae7c448

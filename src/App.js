@@ -5,12 +5,9 @@ import "./index.css";
 import "@fontsource/poppins"; // Defaults to weight 400
 import LandingPage from './components/Auth/LandingPage';
 import { Navigate } from 'react-router-dom';
-<<<<<<< HEAD
-import AdminDashboard from './components/Admin_Dashboard/AdminDashboard';
-import UserReservation from './components/User_Reservation/UserReservation';
-=======
->>>>>>> bf87bfc984ccc7fc23e906caca35e52b3ae7c448
 import Login from './components/Auth/Login/Login';
+import AdminDashboard from "./components/Admin_Dashboard/AdminDashboard";
+import UserReservation from "./components/User_Reservation/UserReservation";
 
 
 const App = () => {
