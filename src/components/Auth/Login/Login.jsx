@@ -4,7 +4,11 @@ import './Login.css';
 import logo from "../../../assets/RutoMatrix_Nonbackground.png";
 import tes_logo from "../../../assets/tessolve.png";
 import { Eye, EyeOff, User, Lock, AlertCircle, CheckCircle, ArrowRight } from 'lucide-react';
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> bf87bfc984ccc7fc23e906caca35e52b3ae7c448
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -65,15 +69,26 @@ const Login = () => {
       setError('An error occurred during login. Please try again.');
     }
   };
+<<<<<<< HEAD
  
   // 🔹 Add old DOM logic here
   useEffect(() => {
  
+=======
+
+  // 🔹 Add old DOM logic here
+  useEffect(() => {
+
+>>>>>>> bf87bfc984ccc7fc23e906caca35e52b3ae7c448
     const alerts = document.querySelectorAll('.alert');
     const togglePassword = document.querySelector("#togglePassword");
     const passwordInput = document.querySelector(".password-input");
     const icon = togglePassword ? togglePassword.querySelector("i") : null;
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> bf87bfc984ccc7fc23e906caca35e52b3ae7c448
     if (togglePassword && passwordInput && icon) {
       const handleMouseDown = () => {
         passwordInput.setAttribute("type", "text");
@@ -87,11 +102,19 @@ const Login = () => {
         passwordInput.setAttribute("type", "password");
         icon.setAttribute("data-lucide", "eye");
       };
+<<<<<<< HEAD
  
       togglePassword.addEventListener("mousedown", handleMouseDown);
       togglePassword.addEventListener("mouseup", handleMouseUp);
       togglePassword.addEventListener("mouseleave", handleMouseLeave);
  
+=======
+
+      togglePassword.addEventListener("mousedown", handleMouseDown);
+      togglePassword.addEventListener("mouseup", handleMouseUp);
+      togglePassword.addEventListener("mouseleave", handleMouseLeave);
+
+>>>>>>> bf87bfc984ccc7fc23e906caca35e52b3ae7c448
       // cleanup
       return () => {
         togglePassword.removeEventListener("mousedown", handleMouseDown);
@@ -99,7 +122,11 @@ const Login = () => {
         togglePassword.removeEventListener("mouseleave", handleMouseLeave);
       };
     }
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> bf87bfc984ccc7fc23e906caca35e52b3ae7c448
     alerts.forEach(alert => {
       setTimeout(() => {
         alert.style.opacity = '0';
@@ -107,7 +134,11 @@ const Login = () => {
       }, 5000);
     });
   }, [error, success]); // rerun when alerts change
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> bf87bfc984ccc7fc23e906caca35e52b3ae7c448
   return (
     <div className="login-container">
       <div className="logos-container">
@@ -159,7 +190,11 @@ const Login = () => {
               required
             />
             <label>Password</label>
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> bf87bfc984ccc7fc23e906caca35e52b3ae7c448
             {/* 👁️ Toggle button */}
             <span
               className="toggle-password"
@@ -179,5 +214,10 @@ const Login = () => {
     </div>
   );
 };
+<<<<<<< HEAD
  
 export default Login;
+=======
+
+export default Login;
+>>>>>>> bf87bfc984ccc7fc23e906caca35e52b3ae7c448

@@ -42,162 +42,6 @@
   object-fit: contain;
 }
 
-.settings-toggle {
-  background: rgba(0, 0, 0, 0.1);
-  border: none;
-  border-radius: 4px;
-  padding: 8px 15px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-  color: #333;
-}
-
-.settings-toggle:hover {
-  background: rgba(0, 0, 0, 0.2);
-}
-
-
-.navbar-container.dark .settings-toggle {
-  background: rgba(255, 255, 255, 0.1);
-  color: #4a4747;
-}
-
-.navbar-container.dark .settings-toggle:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-/* Settings dropdown */
-.settings-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 2rem;
-  width: 280px;
-  background-color: white;
-  border-radius: 0 0 8px 8px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  z-index: 101;
-  padding: 1.5rem;
-  transition: all 0.3s ease;
-}
-
-/* Dark theme for settings dropdown */
-.navbar-container.dark .settings-dropdown {
-  background-color: #2a2a2a;
-  color: #f5f5f5;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #eee;
-}
-
-/* Dark theme for user info */
-.navbar-container.dark .user-info {
-  border-bottom-color: #444;
-}
-
-.user-avatar {
-  font-size: 2rem;
-}
-
-.user-details {
-  flex: 1;
-}
-
-.user-name {
-  font-weight: 600;
-}
-
-.user-email {
-  font-size: 0.875rem;
-  color: #666;
-  transition: color 0.3s ease;
-}
-
-/* Dark theme for user email */
-.navbar-container.dark .user-email {
-  color: #aaa;
-}
-
-.theme-toggle {
-  margin: 1rem 0;
-  padding: 1rem 0;
-  border-bottom: 1px solid #eee;
-}
-
-/* Dark theme for theme toggle */
-.navbar-container.dark .theme-toggle {
-  border-bottom-color: #444;
-}
-
-.theme-toggle label {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.slider {
-  position: relative;
-  width: 50px;
-  height: 24px;
-  background-color: #ccc;
-  border-radius: 24px;
-  margin-right: 10px;
-  transition: .4s;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 16px;
-  width: 16px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  transition: .4s;
-  border-radius: 50%;
-}
-
-input[type="checkbox"] {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-input:checked + .slider {
-  background-color: #0971B3;
-}
-
-/* Dark theme for checked slider */
-.navbar-container.dark input:checked + .slider {
-  background-color: #EB6101;
-}
-
-input:checked + .slider:before {
-  transform: translateX(26px);
-}
-
-.theme-label {
-  font-size: 0.875rem;
-}
-
-.logout-button {
-  width: 100%;
-  padding: 0.75rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
 .Device-name {
   margin-right: 10px;
   font-weight: bold;
@@ -206,6 +50,7 @@ input:checked + .slider:before {
   text-overflow: ellipsis;
   max-width: 100px;
   font-size: 16px;
+  color: #0f0f0f;
 }
 
 .device-timer {
@@ -225,6 +70,7 @@ input:checked + .slider:before {
   display: flex;
   align-items: center;
   font-weight: 600;
+  color: #0971b5;
 }
 
 .last-10-minutes {
@@ -263,6 +109,10 @@ input:checked + .slider:before {
 
 .navbar-container.dark .timer {
   color: #ff8c00;
+}
+
+.navbar-container.dark .Device-name{
+  color: #fff;
 }
 
 /* Target only the timer span in last 10 minutes */
@@ -313,3 +163,4 @@ input:checked + .slider:before {
 .dark .back-button:hover .back-text {
   color: #0971B3; /* Slightly lighter orange */
 }
+
