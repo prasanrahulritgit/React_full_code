@@ -1,0 +1,401 @@
+.dashboard-container {
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  background: linear-gradient(135deg, #f5f7fa, #e6ecf2);
+  min-height: 100vh;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+}
+
+.dashboard-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: radial-gradient(
+    circle at top right,
+    rgba(9, 113, 179, 0.1),
+    transparent 60%
+  );
+  z-index: 0;
+}
+
+.dashboard-container.dark-theme {
+  background: linear-gradient(135deg, #1a1a1a, #2c2c2c);
+  color: #f5f5f5;
+}
+
+.devices-container.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* exactly 3 per row */
+  gap: 40px;
+  justify-items: center;
+  width: 100%;
+  padding: 20px 0;
+}
+
+.devices-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.dashboard-content {
+  flex: 1;
+  padding: 20px;
+  overflow-x: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.device-card {
+  width: 240px; /* Slightly smaller */
+  height: 240px;
+  padding: 30px;
+  font-size: 16px;
+  background: white;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 10px #54545466;
+  border: 2px solid #0971b3;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.device-card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  border: 1px solid #ff6a00;
+  transform: scale(1.05);
+}
+
+.device-card.active {
+  border-color: #0971b3;
+  background-color: #f0f8ff;
+  box-shadow: 0 4px 12px rgba(9, 113, 179, 0.2);
+}
+
+.device-icon {
+  font-size: 42px;
+  margin-bottom: 12px;
+}
+
+.device-name {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 6px;
+  text-align: center;
+  color: #070707;
+}
+
+.device-status {
+  font-size: 14px;
+  color: #ff6a00;
+  font-weight: 600;
+}
+
+.device-card.active .device-status {
+  color: #0971b3;
+  font-weight: 600;
+}
+
+/* Dark theme styles */
+.dark-theme .device-card {
+  background-color: #1e1e1e;
+  border: 2px solid #ff6a00;
+  box-shadow: 0 4px 10px #0006;
+  color: white;
+}
+
+.dark-theme .device-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  border: 1px solid #0971b3;
+}
+
+.dark-theme .device-name {
+  color: #f5f5f5;
+}
+
+.devices-container.grid,
+.centered-layout {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 cards per row */
+  gap: 30px; /* Slightly reduced gap to fit 4 cards */
+  justify-items: center;
+  width: 100%;
+  max-width: 1300px; /* Increased max-width to accommodate 4 cards */
+  margin: 0 auto;
+}
+
+.dark-theme .device-card.active {
+  background-color: #1a2a3a;
+  border-color: #0a80d1;
+}
+
+.dark-theme .device-status {
+  color: #aaa;
+}
+
+.dark-theme .device-card.active .device-status {
+  color: #0a80d1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .dashboard-content {
+    padding: 10px;
+  }
+
+  .centered-layout,
+  .grid-row {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .device-card {
+    width: 100%;
+    max-width: 200px;
+    padding: 20px;
+  }
+}
+
+.dashboard-header {
+  position: absolute;
+  top: 80px;
+  right: 30px;
+  z-index: 10;
+}
+
+.settings-toggle-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  padding: 6px;
+}
+
+.settings-dropdown {
+  margin-top: 10px;
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  min-width: 220px;
+  position: absolute;
+  top: 30px;
+  right: 0;
+  z-index: 11;
+}
+
+.settings-dropdown.dark {
+  background-color: #1e1e1e;
+  color: #fff;
+}
+
+.logout-button {
+  margin-top: 12px;
+  background-color: #0971b3;
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.logout-button.dark {
+  background-color: #ff6a00;
+}
+
+.dashboard-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0971b3;
+  margin: 0 0 8px 55px;
+  text-align: left;
+}
+
+.dashboard-para {
+  font-size: 16px;
+  font-weight: 400;
+  color: #444;
+  margin: 0 0 20px 55px;
+  text-align: left;
+}
+
+.dark-theme .dashboard-title {
+  color: #ff6a00;
+}
+
+.dark-theme .dashboard-para {
+  color: #ccc;
+}
+
+.device-card.active {
+  border-color: #0971b3;
+  box-shadow: 0 0 15px rgba(9, 113, 179, 0.6);
+}
+.dark-theme .device-card.active {
+  border-color: #ff6a00;
+  box-shadow: 0 0 15px rgba(255, 106, 0, 0.6);
+}
+
+.status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 8px;
+}
+
+.status-indicator.running {
+  background-color: #2ecc71;
+}
+
+.status-indicator.ready {
+  background-color: #f1c40f;
+}
+
+.dark-theme .status-indicator.running {
+  background-color: #2ecc71;
+}
+
+.dark-theme .status-indicator.ready {
+  background-color: #f39c12;
+}
+
+.dashboard-content-wrapper {
+  background-color: #f9fbfd;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  padding: 40px 30px;
+  margin: 40px auto;
+  max-width: 1200px;
+  width: 90%;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.dark-theme .dashboard-content-wrapper {
+  background-color: #151618;
+  box-shadow: 0 10px 30px rgba(255, 255, 255, 0.05);
+}
+
+.dashboard-content-wrapper:hover {
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-center-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+}
+
+/* Update your CSS with these changes */
+.devices-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+  justify-items: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.dashboard-content-wrapper {
+  width: 100%;
+  max-width: 1300px;
+  padding: 30px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .devices-grid {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 900px;
+  }
+}
+
+@media (max-width: 900px) {
+  .devices-grid {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 600px;
+  }
+}
+
+@media (max-width: 600px) {
+  .devices-grid {
+    grid-template-columns: 1fr;
+    max-width: 300px;
+  }
+
+  .device-card {
+    width: 100%;
+    max-width: 260px;
+  }
+}
+
+.launch-button {
+  position: absolute;
+  bottom: -50px; /* Start hidden below card */
+  left: 0;
+  right: 0;
+  padding: 10px;
+  background-color: #e6670cf1;
+  color: white;
+  border: none;
+  border-radius: 0 0 10px 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(100%);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  font-size: 14px;
+}
+
+.launch-button.visible {
+  bottom: 0;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.launch-button:hover {
+  background-color: #ff6a00;
+}
+
+/* Dark theme styles for the button */
+.dark-theme .launch-button {
+  background-color: #0972b3da;
+}
+
+.dark-theme .launch-button:hover {
+  background-color: #0971b3;
+}
+
+.launch-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.dark-theme .launch-button:disabled {
+  background-color: #555555;
+}
