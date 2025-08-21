@@ -1,9 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'datatables.net-bs5/css/dataTables.bootstrap5.css';
-import 'font-awesome/css/font-awesome.min.css';
-import 'flatpickr/dist/flatpickr.min.css';
-import './Reservation.css';
+import './UserReservation.css';
 
 const UserReservation = () => {
   const [currentUser, setCurrentUser] = useState({ is_authenticated: true });
@@ -23,12 +19,10 @@ const UserReservation = () => {
   const [showDeviceDetails, setShowDeviceDetails] = useState(false);
   const [deviceDetails, setDeviceDetails] = useState(null);
 
-  // Initialize flatpickr and other effects would go here
   useEffect(() => {
-    // Initialize components and fetch data
+
     document.title = "Device Reservation";
-    
-    // This would typically fetch from your backend
+
     const mockReservations = [
       {
         id: 1,
@@ -57,7 +51,6 @@ const UserReservation = () => {
   };
 
   const handleQuickSelectTime = (field, minutes) => {
-    // This would update the time fields
     console.log(`Quick select ${minutes} minutes for ${field}`);
   };
 
@@ -70,13 +63,11 @@ const UserReservation = () => {
   };
 
   const handleConfirmDevice = () => {
-    // Submit reservation logic would go here
     setShowDeviceSelection(false);
     setSelectedDevice(null);
   };
 
   const handleCancelReservation = (reservationId) => {
-    // Cancel reservation logic would go here
     console.log(`Cancel reservation ${reservationId}`);
   };
 
@@ -119,7 +110,7 @@ const UserReservation = () => {
       )}
 
       <div className="card reservation-card mb-4">
-        <div className="card-header reservation-header">
+        <div className="reservation-header">
           <h5 className="mb-0"><i className="fas fa-calendar-plus me-2"></i>Create New Reservation</h5>
         </div>
         <div className="card-body">
@@ -452,43 +443,40 @@ const UserReservation = () => {
                 <nav>
                   <ul className="pagination pagination-sm mb-0">
                     <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`} id="prevPage">
-                      <a 
-                        className="page-link" 
-                        href="#" 
+                      <button
+                        type="button"
+                        className="page-link"
                         tabIndex={currentPage === 1 ? -1 : 0}
-                        onClick={(e) => {
-                          e.preventDefault();
+                        disabled={currentPage === 1}
+                        onClick={() => {
                           if (currentPage > 1) setCurrentPage(currentPage - 1);
                         }}
                       >
                         Previous
-                      </a>
+                      </button>
                     </li>
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                       <li key={page} className={`page-item ${currentPage === page ? 'active' : ''}`}>
-                        <a 
-                          className="page-link" 
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setCurrentPage(page);
-                          }}
+                        <button
+                          type="button"
+                          className="page-link"
+                          onClick={() => setCurrentPage(page)}
                         >
                           {page}
-                        </a>
+                        </button>
                       </li>
                     ))}
                     <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`} id="nextPage">
-                      <a 
-                        className="page-link" 
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
+                      <button
+                        type="button"
+                        className="page-link"
+                        disabled={currentPage === totalPages}
+                        onClick={() => {
                           if (currentPage < totalPages) setCurrentPage(currentPage + 1);
                         }}
                       >
                         Next
-                      </a>
+                      </button>
                     </li>
                   </ul>
                 </nav>

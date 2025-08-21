@@ -1,0 +1,533 @@
+/* UserReservation.css - Fixed CSS to match the expected design */
+
+/* Global container fixes */
+.container-fluid {
+  padding: 0 15px;
+}
+
+/* Header Styles */
+.d-flex.justify-content-between.align-items-center.mb-4 {
+  margin-bottom: 1.5rem !important;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #333;
+}
+
+.h3.mb-0 {
+  color: #1281d6;
+  font-weight: 600;
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+/* Fix for flatpickr inputs */
+.flatpickr-input {
+  background-color: #000 !important;
+  border: 1px solid #333 !important;
+  color: #1281d6 !important;
+  padding-left: 45px !important;
+  height: calc(3.5rem + 2px);
+  border-radius: 4px;
+}
+
+.flatpickr-input:focus {
+  border-color: #ff6a00 !important;
+  box-shadow: 0 0 0 0.2rem rgba(255, 106, 0, 0.25) !important;
+}
+
+/* Button styles */
+.btn-outline-danger {
+  color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  color: white;
+}
+
+/* Alert Messages */
+.alert-messages {
+  margin-bottom: 1.5rem;
+}
+
+.alert {
+  border-radius: 4px;
+  border: none;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.alert-warning {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.alert-info {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+/* Reservation Card */
+.reservation-card {
+  border: 1px solid #333;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  background-color: #1e1e1e;
+}
+
+.reservation-header {
+  background-color: #ff6a00;
+  color: white;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #333;
+  border-radius: 8px 8px 0 0;
+}
+
+.reservation-header h5 {
+  margin: 0;
+  font-weight: 600;
+}
+
+.reservation-form {
+  padding: 1.5rem;
+}
+
+.form-label {
+  color: #1281d6;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.input-icon-group {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #ff6a00;
+  z-index: 5;
+}
+
+.form-control-lg {
+  padding-left: 45px;
+  height: calc(3.5rem + 2px);
+  background-color: #000;
+  border: 1px solid #333;
+  color: #1281d6;
+  border-radius: 4px;
+}
+
+.form-control-lg:focus {
+  border-color: #ff6a00;
+  box-shadow: 0 0 0 0.2rem rgba(255, 106, 0, 0.25);
+}
+
+.quick-select-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.quick-select-btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  background-color: #1e1e1e;
+  border: 1px solid #1281d6;
+  color: #1281d6;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.quick-select-btn:hover {
+  background-color: rgba(18, 129, 214, 0.1);
+}
+
+.btn-reserve {
+  background-color: #ff6a00;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+  margin-top: 1rem;
+}
+
+.btn-reserve:hover {
+  background-color: #e65c00;
+  color: white;
+}
+
+/* Reservations Table - FIXED */
+.card.shadow-sm {
+  border: 1px solid #333;
+  border-radius: 8px;
+  background-color: #1e1e1e;
+  overflow: hidden;
+}
+
+.card-header {
+  background-color: #20201f !important; /* Force orange background */
+  color: white !important; /* Force white text */
+  border-bottom: 1px solid #333;
+  padding: 1rem 1.5rem;
+}
+
+.card-header h5 {
+  margin: 0;
+  font-weight: 600;
+  color: white !important; /* Force white text */
+}
+
+.form-select-sm {
+  background-color: #000;
+  border: 1px solid #333;
+  color: #1281d6;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.form-select-sm:focus {
+  border-color: #ff6a00;
+  box-shadow: 0 0 0 0.2rem rgba(255, 106, 0, 0.25);
+}
+
+.input-group-sm {
+  width: 200px;
+  display:flex;
+  flex-direction: row-reverse;
+}
+
+.input-group-sm .form-control {
+  background-color: #000;
+  border: 1px solid #333;
+  color: #1281d6;
+  border-radius: 4px 0 0 4px;
+  font-size: 0.875rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.input-group-sm .btn {
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  color: #1281d6;
+  border-radius: 0 4px 4px 0;
+  padding: 0.25rem 0.5rem;
+}
+
+.input-group-sm .btn:hover {
+  background-color: rgba(18, 129, 214, 0.1);
+}
+
+.scrollable-table {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.table {
+  color: #1281d6;
+  margin-bottom: 0;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* FIXED: Table header styling */
+.table thead th {
+  background-color: #ff6a00 !important; /* Force orange background */
+  color: white !important; /* Force white text */
+  border-bottom: 1px solid #333;
+  padding: 0.75rem;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* FIXED: Table body row styling */
+.table tbody tr {
+  background-color: #1a1a1a;
+}
+
+.table tbody tr:nth-of-type(even) {
+  background-color: #222222;
+}
+
+.table tbody td {
+  padding: 0.75rem;
+  vertical-align: middle;
+  border-top: 1px solid #333;
+}
+
+.sortable {
+  cursor: pointer;
+  position: relative;
+}
+
+.sortable:hover {
+  color: #ffffff !important;
+}
+
+.sorted-asc::after {
+  content: " ↑";
+  color: white;
+}
+
+.sorted-desc::after {
+  content: " ↓";
+  color: white;
+}
+
+.status-badge {
+  font-size: 0.8rem;
+  padding: 0.35em 0.65em;
+  font-weight: 500;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.badge-expired {
+  background-color: #6c757d;
+  color: white;
+}
+
+.badge-active {
+  background-color: #28a745;
+  color: white;
+}
+
+.badge-upcoming {
+  background-color: #1281d6;
+  color: white;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  border-radius: 4px;
+}
+
+.btn-outline-primary {
+  color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.btn-outline-primary:hover:not(:disabled) {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.btn-outline-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #bb2d3b;
+  border-color: #b02a37;
+}
+
+.text-center.py-4.text-muted {
+  color: #6c757d !important;
+  padding: 2rem !important;
+}
+
+.fa-2x {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: #6c757d;
+}
+
+/* Pagination */
+.card-footer {
+  background-color: #1e1e1e;
+  border-top: 1px solid #333;
+  padding: 0.75rem 1.5rem;
+}
+
+.text-muted.small {
+  color: #6c757d !important;
+}
+
+.pagination {
+  margin-bottom: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.page-item .page-link {
+  background-color: #000;
+  border: 1px solid #333;
+  color: #1281d6;
+  border-radius: 4px;
+  margin: 0 0.15rem;
+  padding: 0.375rem 0.75rem;
+}
+
+.page-item.active .page-link {
+  background-color: #1281d6;
+  border-color: #1281d6;
+  color: white;
+}
+
+.page-item.disabled .page-link {
+  background-color: #1e1e1e;
+  border-color: #333;
+  color: #6c757d;
+}
+
+/* Toast */
+.toast {
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 4px;
+}
+
+.toast-header.bg-success {
+  background-color: #198754 !important;
+  color: white;
+}
+
+.toast-body {
+  color: #cccccc;
+}
+
+/* Fix for table hover */
+.table-hover tbody tr:hover {
+  background-color: rgba(255, 106, 0, 0.1) !important;
+}
+
+/* Ensure proper spacing in table actions */
+.d-flex.align-items-center {
+  gap: 0.5rem;
+}
+
+/* Make sure the table is properly styled */
+.table td, .table th {
+  vertical-align: middle;
+}
+
+/* Fix for the "No reservations found" message */
+.text-muted {
+  color: #6c757d !important;
+}
+
+/* Font Awesome icons */
+.fas, .far {
+  margin-right: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .card-header .d-flex {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start !important;
+  }
+  
+  .card-header .input-group {
+    width: 100% !important;
+    margin-top: 10px;
+  }
+  
+  .form-select-sm {
+    margin-bottom: 10px;
+  }
+  
+  .quick-select-buttons {
+    justify-content: center;
+  }
+}
+
+/* Utility classes */
+.mb-4 {
+  margin-bottom: 1.5rem !important;
+}
+
+.mt-2 {
+  margin-top: 0.5rem !important;
+}
+
+.mt-4 {
+  margin-top: 1.5rem !important;
+}
+
+.me-2 {
+  margin-right: 0.5rem !important;
+}
+
+.me-3 {
+  margin-right: 1rem !important;
+}
+
+.text-center {
+  text-align: center !important;
+}
+
+.d-flex {
+  display: flex !important;
+}
+
+.justify-content-between {
+  justify-content: space-between !important;
+}
+
+.align-items-center {
+  align-items: center !important;
+}
+
+.p-0 {
+  padding: 0 !important;
+}
+
+.p-3 {
+  padding: 1rem !important;
+}
+
+.py-4 {
+  padding-top: 1.5rem !important;
+  padding-bottom: 1.5rem !important;
+}
+
+/* Remove any conflicting styles */
+.table-secondary {
+  background-color: rgba(108, 117, 125, 0.1) !important;
+}
+
+.table-success {
+  background-color: rgba(40, 167, 69, 0.1) !important;
+}
+
+.row.g-3 {
+    --bs-gutter-x: 1.5rem;
+    --bs-gutter-y: 0;
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: calc(-1 * var(--bs-gutter-y));
+    margin-right: calc(-.5 * var(--bs-gutter-x));
+    margin-left: calc(-.5 * var(--bs-gutter-x));
+}
+
+.col-md-6 {
+    flex: 0 0 50%;
+    max-width: 50%;
+}
