@@ -1,0 +1,636 @@
+.admin-reservation-container {
+  background-color: var(--primary-bg);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  padding: 20px;
+}
+
+.admin-card-body {
+  color: #cccccc;
+}
+
+.admin-card {
+  background-color: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.admin-card.selected {
+  border: 2px solid var(--accent-orange) !important;
+  box-shadow: 0 0 10px rgba(255, 106, 0, 0.3);
+}
+
+.admin-card-header {
+  background-color: var(--table-header-bg);
+  border-bottom: 1px solid var(--border-color);
+  padding: 15px;
+}
+
+.admin-flatpickr-input {
+  background-color: #000 !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+  padding-left: 45px !important;
+}
+
+.admin-table {
+  color: var(--text-primary);
+}
+
+.admin-table thead th {
+  background-color: var(--table-header-bg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.admin-table tbody tr {
+  background-color: var(--table-row-odd);
+}
+
+.admin-table tbody tr:nth-of-type(even) {
+  background-color: var(--table-row-even);
+}
+
+.admin-btn-primary {
+  background-color: var(--accent-orange);
+  border-color: var(--accent-orange);
+  color: #000;
+}
+
+.admin-btn-outline-secondary {
+  color: var(--accent-blue);
+  border-color: var(--accent-blue);
+}
+
+.admin-btn-outline-danger {
+  color: var(--accent-orange);
+  border-color: var(--accent-orange);
+}
+
+.admin-orange-btn {
+  background-color: #ff6a00;
+  color: white;
+  border: 1px solid #ff6a00;
+}
+
+.admin-orange-btn:hover {
+  background-color: #e65c00;
+  border-color: #e65c00;
+}
+
+.admin-filter-container {
+  background-color: var(--secondary-bg);
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border-color);
+}
+
+.admin-form-control, .admin-form-select {
+  background-color: #000;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.admin-form-control:focus, .admin-form-select:focus {
+  background-color: #000;
+  border-color: var(--accent-orange);
+  color: var(--text-primary);
+  box-shadow: 0 0 0 0.2rem rgba(255, 106, 0, 0.25);
+}
+
+.admin-action-buttons .btn {
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
+
+.admin-status-badge {
+  font-size: 0.8rem;
+  padding: 0.35em 0.65em;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.admin-badge-expired {
+  background-color: #6c757d;
+  color: white;
+}
+
+.admin-badge-active {
+  background-color: #28a745;
+  color: white;
+}
+
+.admin-badge-upcoming {
+  background-color: var(--accent-blue);
+  color: white;
+}
+
+.admin-scrollable-table {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.admin-scrollable-table thead th {
+  position: sticky;
+  top: 0;
+  background-color: var(--table-header-bg) !important;
+  z-index: 10;
+}
+
+.admin-input-icon-group {
+  position: relative;
+}
+
+.admin-input-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--accent-orange);
+  z-index: 5;
+}
+
+.admin-form-control-lg {
+  padding-left: 45px;
+}
+
+.admin-form-label {
+  color: #1281d6;
+}
+
+.admin-reservation-card {
+  border-radius: 10px;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+  background-color: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+}
+
+.admin-reservation-header {
+  border-bottom: 1px solid var(--border-color);
+  padding: 1rem 1.5rem;
+}
+
+.admin-btn-reserve {
+  background-color: #ff6a00;
+  transition: background-color 0.3s ease;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-weight: 500;
+}
+
+.admin-btn-reserve:hover {
+  background-color: #1281d6 !important;
+  border-color: #1281d6 !important;
+  color: white !important;
+}
+
+.admin-table-secondary {
+  background-color: rgba(108, 117, 125, 0.1) !important;
+}
+
+.admin-table-success {
+  background-color: rgba(40, 167, 69, 0.1) !important;
+}
+
+.admin-sortable {
+  cursor: pointer;
+}
+
+.admin-sortable:hover {
+  color: #ffffff;
+}
+
+.admin-sorted-asc::after, .admin-sorted-desc::after {
+  margin-left: 5px;
+}
+
+.admin-sorted-asc::after {
+  content: "↑";
+  color: var(--accent-orange);
+}
+
+.admin-sorted-desc::after {
+  content: "↓";
+  color: var(--accent-orange);
+}
+
+.admin-welcome-text {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+}
+
+.admin-welcome-text span {
+  color: var(--accent-orange);
+  font-weight: 600;
+}
+
+.admin-mb-4 {
+  width: 100%;
+}
+
+.admin-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.admin-overlay-content {
+  background-color: var(--secondary-bg);
+  border-radius: 10px;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 20px auto;
+  border: 1px solid var(--border-color);
+  width: 90%;
+}
+
+.admin-overlay-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.admin-close-overlay {
+  color: var(--accent-orange);
+  font-size: 28px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.admin-device-tabs {
+  margin-bottom: 20px;
+  display: flex;
+}
+
+.admin-device-tab {
+  padding: 10px 20px;
+  cursor: pointer;
+  background-color: var(--primary-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+.admin-device-tab.active {
+  background-color: var(--accent-orange);
+  color: #000;
+}
+
+.admin-device-tab:first-child {
+  border-radius: 5px 0 0 5px;
+}
+
+.admin-device-tab:last-child {
+  border-radius: 0 5px 5px 0;
+}
+
+.admin-server-rack-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.admin-device-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.admin-device-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: rgb(16, 15, 15);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+.admin-device-card.selected {
+  border: 2px solid var(--accent-orange);
+  background-color: rgba(255, 106, 0, 0.1);
+}
+
+.admin-device-card.booked {
+  opacity: 0.6;
+  cursor: not-allowed;
+  border-color: #dc3545 !important;
+}
+
+.admin-device-card.booked:hover {
+  transform: none !important;
+  border-color: #dc3545 !important;
+}
+
+.admin-device-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.admin-device-card.available:hover {
+  border-color: #28a745;
+}
+
+.admin-device-name {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.admin-device-status {
+  font-size: 0.9rem;
+}
+
+.admin-pagination-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.admin-pagination {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-page-item {
+  list-style: none;
+}
+
+.admin-page-link {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #dee2e6;
+  color: #007bff;
+  text-decoration: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: block;
+}
+
+.admin-page-link:hover {
+  background-color: rgba(18, 129, 214, 0.1);
+}
+
+.admin-page-item.active .admin-page-link {
+  background-color: var(--accent-blue);
+  color: white;
+  border-color: var(--accent-blue);
+}
+
+.admin-page-item.disabled .admin-page-link {
+  color: #6c757d;
+  pointer-events: none;
+  background-color: var(--secondary-bg);
+  border-color: var(--border-color);
+}
+
+.admin-status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+
+.admin-status-indicator.available {
+  background-color: #28a745;
+  box-shadow: 0 0 5px #28a745;
+}
+
+.admin-status-indicator.booked {
+  background-color: #dc3545;
+  box-shadow: 0 0 5px #dc3545;
+}
+
+.admin-confirm-selection {
+  margin-top: 20px;
+  text-align: center;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.admin-quick-select-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.admin-quick-select-btn {
+  padding: 5px 10px;
+  font-size: 0.85rem;
+  background-color: var(--secondary-bg);
+  border: 1px solid var(--accent-blue);
+  color: var(--accent-blue);
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.admin-quick-select-btn:hover {
+  background-color: rgba(18, 129, 214, 0.1);
+}
+
+.admin-booked-devices-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-booked-device-card {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  background-color: var(--secondary-bg);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.admin-booked-device-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.admin-booked-device-card-title {
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.admin-booked-device-card-status {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.admin-booked-device-card-body {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.admin-booked-device-card-row {
+  display: flex;
+  margin-bottom: 0.5rem;
+}
+
+.admin-booked-device-card-label {
+  font-weight: 500;
+  width: 100px;
+  color: var(--accent-orange);
+}
+
+.admin-booked-device-card-value {
+  flex: 1;
+  color: var(--text-secondary);
+}
+
+.admin-booked-device-card-footer {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.admin-device-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--accent-orange);
+}
+
+.admin-rutomatrix-icon {
+  color: #1281d6;
+}
+
+.admin-pulse-icon {
+  background-repeat: no-repeat;
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  filter: brightness(0) saturate(100%) invert(31%) sepia(98%) saturate(1239%) hue-rotate(176deg) brightness(91%) contrast(89%);
+}
+
+.admin-ct-icon {
+  color: #ffc107;
+}
+
+.admin-pc-icon {
+  color: #17a2b8;
+}
+
+.admin-other-icon {
+  color: #6c757d;
+}
+
+.admin-toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+
+.admin-toast {
+  background-color: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 12px 20px;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  animation: slideInRight 0.3s forwards;
+}
+
+.admin-toast.success {
+  border-left: 4px solid #28a745;
+}
+
+.admin-toast.error {
+  border-left: 4px solid #dc3545;
+}
+
+.admin-toast.info {
+  border-left: 4px solid var(--accent-blue);
+}
+
+.admin-toast.warning {
+  border-left: 4px solid #ffc107;
+}
+
+.admin-toast-icon {
+  margin-right: 10px;
+  font-size: 1.2rem;
+}
+
+.admin-toast-message {
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.admin-toast-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 1.2rem;
+  margin-left: 10px;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .admin-device-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+  
+  .admin-booked-devices-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .admin-overlay-content {
+    padding: 15px;
+    margin: 10px;
+  }
+  
+  .admin-card-header .d-flex {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .admin-card-header .input-group {
+    width: 100% !important;
+  }
+}

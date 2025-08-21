@@ -1,0 +1,77 @@
+:root {
+  --primary-bg: #121212;
+  --secondary-bg: #1e1e1e;
+  --accent-orange: #ff6a00;
+  --accent-blue: #1281d6;
+  --text-primary: #1281d6;
+  --text-secondary: #cccccc;
+  --border-color: #333333;
+}
+
+.edit-device-container {
+  background-color: var(--primary-bg);
+  color: var(--text-primary);
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.edit-device-container .card {
+  background-color: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.edit-device-container .card-body {
+  color: var(--text-secondary);
+}
+
+.edit-device-container .form-control {
+  background-color: #000;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.edit-device-container .form-control:focus {
+  background-color: #000;
+  border-color: var(--accent-orange);
+  color: var(--text-primary);
+  box-shadow: 0 0 0 0.2rem rgba(255, 106, 0, 0.25);
+}
+
+.edit-device-container .btn-primary {
+  background-color: var(--accent-orange);
+  border-color: var(--accent-orange);
+  color: #000;
+}
+
+.edit-device-container .btn-primary:hover {
+  background-color: #e65c00;
+  border-color: #e65c00;
+  color: #000;
+}
+
+.edit-device-container .btn-secondary {
+  background-color: var(--accent-blue);
+  border-color: var(--accent-blue);
+  color: white;
+}
+
+.edit-device-container .btn-secondary:hover {
+  background-color: #0f6ab3;
+  border-color: #0f6ab3;
+  color: white;
+}
+
+.edit-device-container .alert-danger {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+}
+
+.edit-device-container h2 {
+  color: var(--text-primary);
+}
+
+.edit-device-container .form-label {
+  color: var(--text-secondary);
+}
