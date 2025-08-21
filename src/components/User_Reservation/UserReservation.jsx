@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'datatables.net-bs5/css/dataTables.bootstrap5.css';
+import 'font-awesome/css/font-awesome.min.css';
+import 'flatpickr/dist/flatpickr.min.css';
 import './UserReservation.css';
 
 const UserReservation = () => {
@@ -24,26 +28,6 @@ const UserReservation = () => {
   const [loading, setLoading] = useState(false);
   const [reservationLoading, setReservationLoading] = useState(false);
 
-<<<<<<< HEAD
-  useEffect(() => {
-
-    document.title = "Device Reservation";
-
-    const mockReservations = [
-      {
-        id: 1,
-        device_id: "DEV001",
-        start_time: new Date(Date.now() + 2*60*60*1000), // 2 hours from now
-        end_time: new Date(Date.now() + 4*60*60*1000),  // 4 hours from now
-      },
-      {
-        id: 2,
-        device_id: "DEV002",
-        start_time: new Date(Date.now() - 1*60*60*1000), // 1 hour ago
-        end_time: new Date(Date.now() + 1*60*60*1000),   // 1 hour from now
-      }
-    ];
-=======
   // API base URL
   const API_BASE = 'http://localhost:5000'; // Update with your Flask server URL
 
@@ -56,7 +40,6 @@ const UserReservation = () => {
     const interval = setInterval(() => {
       setNow(new Date());
     }, 60000);
->>>>>>> 1988eb189416451b3cba53fc2feb552ce5f96f76
     
     return () => clearInterval(interval);
   }, []);
@@ -335,40 +318,6 @@ const handleShowDeviceDetails = (device) => {
     setSortConfig({ key, direction });
   };
 
-<<<<<<< HEAD
-  const handleQuickSelectTime = (field, minutes) => {
-    console.log(`Quick select ${minutes} minutes for ${field}`);
-  };
-
-  const handleBookReservation = () => {
-    setShowDeviceSelection(true);
-  };
-
-  const handleDeviceSelection = (device) => {
-    setSelectedDevice(device);
-  };
-
-  const handleConfirmDevice = () => {
-    setShowDeviceSelection(false);
-    setSelectedDevice(null);
-  };
-
-  const handleCancelReservation = (reservationId) => {
-    console.log(`Cancel reservation ${reservationId}`);
-  };
-
-  const handleLaunchDevice = (deviceId, reservationId) => {
-    // Launch device logic would go here
-    console.log(`Launch device ${deviceId} for reservation ${reservationId}`);
-  };
-
-  const handleShowDeviceDetails = (device) => {
-    setDeviceDetails(device);
-    setShowDeviceDetails(true);
-  };
-
-=======
->>>>>>> 1988eb189416451b3cba53fc2feb552ce5f96f76
   // Calculate pagination
   const indexOfLastEntry = currentPage * entriesPerPage;
   const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
@@ -457,7 +406,7 @@ const handleShowDeviceDetails = (device) => {
       )}
 
       <div className="card reservation-card mb-4">
-        <div className="reservation-header">
+        <div className="card-header reservation-header">
           <h5 className="mb-0"><i className="fas fa-calendar-plus me-2"></i>Create New Reservation</h5>
         </div>
         <div className="card-body">
@@ -910,68 +859,6 @@ const handleShowDeviceDetails = (device) => {
                               No reservations found
                             </td>
                           </tr>
-<<<<<<< HEAD
-                        );
-                      })
-                    ) : (
-                      <tr>
-                        <td colSpan="5" className="text-center py-4 text-muted">
-                          <i className="far fa-calendar-times fa-2x mb-2"></i><br />
-                          No reservations found
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              <div className="card-footer d-flex justify-content-between align-items-center">
-                <div className="text-muted small">
-                  Showing <span id="showingFrom">{indexOfFirstEntry + 1}</span> to <span id="showingTo">
-                    {Math.min(indexOfLastEntry, userReservations.length)}
-                  </span> of <span id="totalEntries">{userReservations.length}</span> entries
-                </div>
-                <nav>
-                  <ul className="pagination pagination-sm mb-0">
-                    <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`} id="prevPage">
-                      <button
-                        type="button"
-                        className="page-link"
-                        tabIndex={currentPage === 1 ? -1 : 0}
-                        disabled={currentPage === 1}
-                        onClick={() => {
-                          if (currentPage > 1) setCurrentPage(currentPage - 1);
-                        }}
-                      >
-                        Previous
-                      </button>
-                    </li>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                      <li key={page} className={`page-item ${currentPage === page ? 'active' : ''}`}>
-                        <button
-                          type="button"
-                          className="page-link"
-                          onClick={() => setCurrentPage(page)}
-                        >
-                          {page}
-                        </button>
-                      </li>
-                    ))}
-                    <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`} id="nextPage">
-                      <button
-                        type="button"
-                        className="page-link"
-                        disabled={currentPage === totalPages}
-                        onClick={() => {
-                          if (currentPage < totalPages) setCurrentPage(currentPage + 1);
-                        }}
-                      >
-                        Next
-                      </button>
-                    </li>
-                  </ul>
-                </nav>
-              </div>
-=======
                         )}
                       </tbody>
                     </table>
@@ -985,50 +872,47 @@ const handleShowDeviceDetails = (device) => {
                     <nav>
                       <ul className="pagination pagination-sm mb-0">
                         <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`} id="prevPage">
-                          <a 
-                            className="page-link" 
-                            href="#" 
+                          <button
+                            type="button"
+                            className="page-link"
                             tabIndex={currentPage === 1 ? -1 : 0}
-                            onClick={(e) => {
-                              e.preventDefault();
+                            disabled={currentPage === 1}
+                            onClick={() => {
                               if (currentPage > 1) setCurrentPage(currentPage - 1);
                             }}
                           >
                             Previous
-                          </a>
+                          </button>
                         </li>
                         {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                           <li key={page} className={`page-item ${currentPage === page ? 'active' : ''}`}>
-                            <a 
-                              className="page-link" 
-                              href="#"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                setCurrentPage(page);
-                              }}
+                            <button
+                              type="button"
+                              className="page-link"
+                              onClick={() => setCurrentPage(page)}
+                              aria-current={currentPage === page ? "page" : undefined}
                             >
                               {page}
-                            </a>
+                            </button>
                           </li>
                         ))}
                         <li className={`page-item ${currentPage === totalPages || totalPages === 0 ? 'disabled' : ''}`} id="nextPage">
-                          <a 
-                            className="page-link" 
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
+                          <button
+                            type="button"
+                            className="page-link"
+                            disabled={currentPage === totalPages || totalPages === 0}
+                            onClick={() => {
                               if (currentPage < totalPages) setCurrentPage(currentPage + 1);
                             }}
                           >
                             Next
-                          </a>
+                          </button>
                         </li>
                       </ul>
                     </nav>
                   </div>
                 </>
               )}
->>>>>>> 1988eb189416451b3cba53fc2feb552ce5f96f76
             </div>
           </div>
         </div>
