@@ -27,11 +27,12 @@ const UserReservation = () => {
   const [endTime, setEndTime] = useState('');
   const [loading, setLoading] = useState(false);
   const [reservationLoading, setReservationLoading] = useState(false);
+  const [bookedDevicesData, setBookedDevicesData] = useState([]);
+  const [deviceReservationMap, setDeviceReservationMap] = useState({});
 
   // API base URL
   const API_BASE = 'http://localhost:5000'; // Update with your Flask server URL
 
-  
   useEffect(() => {
     document.title = "Device Reservation";
     fetchUserReservations();
@@ -44,75 +45,82 @@ const UserReservation = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Fetch user reservations
-// Fetch user reservations
-const fetchUserReservations = async () => {
-  try {
-    setReservationLoading(true);
-    const response = await fetch(`${API_BASE}/api/user-reservations`, {
-      credentials: 'include' // Include cookies for authentication
-    });
+  // Show toast notification
+  const showToast = (text, category = 'info') => {
+    const id = Date.now();
+    setMessages(prev => [...prev, { id, text, category }]);
     
-    if (response.ok) {
-      const data = await response.json();
-      if (data.success) {
-        // Transform the data to match your frontend structure
-        const transformedReservations = data.reservations.map(res => ({
-          id: res.reservation_id,
-          device_id: res.device_id,
-          device_name: res.device_name,
-          start_time: new Date(res.start_time),
-          end_time: new Date(res.end_time),
-          status: res.status,
-          device_ips: res.device_ips, // Now contains all IP addresses
-          user_name: res.user_name,
-          user_ip: res.user_ip,
-          is_active: res.is_active,
-          can_manage: res.can_manage
-        }));
-        setUserReservations(transformedReservations);
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+      setMessages(prev => prev.filter(msg => msg.id !== id));
+    }, 5000);
+  };
+
+  // Fetch user reservations
+  const fetchUserReservations = async () => {
+    try {
+      setReservationLoading(true);
+      const response = await fetch(`${API_BASE}/api/user-reservations`, {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          const transformedReservations = data.reservations.map(res => ({
+            id: res.reservation_id,
+            device_id: res.device_id,
+            device_name: res.device_name,
+            start_time: new Date(res.start_time),
+            end_time: new Date(res.end_time),
+            status: res.status,
+            device_ips: res.device_ips,
+            user_name: res.user_name,
+            user_ip: res.user_ip,
+            is_active: res.is_active,
+            can_manage: res.can_manage
+          }));
+          setUserReservations(transformedReservations);
+        } else {
+          showToast(data.message, 'danger');
+        }
       } else {
-        setMessages([{ text: data.message, category: 'danger' }]);
+        showToast('Failed to fetch reservations', 'danger');
       }
-    } else {
-      setMessages([{ text: 'Failed to fetch reservations', category: 'danger' }]);
+    } catch (error) {
+      console.error('Error fetching user reservations:', error);
+      showToast('Network error while fetching reservations', 'danger');
+    } finally {
+      setReservationLoading(false);
     }
-  } catch (error) {
-    console.error('Error fetching user reservations:', error);
-    setMessages([{ text: 'Network error while fetching reservations', category: 'danger' }]);
-  } finally {
-    setReservationLoading(false);
-  }
-};
+  };
 
   // Fetch available devices based on selected time range
-// Fetch available devices based on selected time range
-const fetchAvailableDevices = async (start, end) => {
-  try {
-    setLoading(true);
-    const response = await fetch(
-      `${API_BASE}/api/devices/availability?start_time=${start.toISOString()}&end_time=${end.toISOString()}`,
-      { credentials: 'include' }
-    );
-    
-    if (response.ok) {
-      const data = await response.json();
-      if (data.success) {
-        // Make sure to handle the new response format if it changed
-        setAvailableDevices(data.devices.filter(device => device.status === 'available'));
+  const fetchAvailableDevices = async (start, end) => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `${API_BASE}/api/devices/availability?start_time=${start.toISOString()}&end_time=${end.toISOString()}`,
+        { credentials: 'include' }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setAvailableDevices(data.devices.filter(device => device.status === 'available'));
+        } else {
+          showToast(data.message, 'danger');
+        }
       } else {
-        setMessages([{ text: data.message, category: 'danger' }]);
+        showToast('Failed to fetch available devices', 'danger');
       }
-    } else {
-      setMessages([{ text: 'Failed to fetch available devices', category: 'danger' }]);
+    } catch (error) {
+      console.error('Error fetching available devices:', error);
+      showToast('Network error while fetching devices', 'danger');
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error('Error fetching available devices:', error);
-    setMessages([{ text: 'Network error while fetching devices', category: 'danger' }]);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   // Fetch booked devices
   const fetchBookedDevices = async () => {
@@ -127,15 +135,43 @@ const fetchAvailableDevices = async (start, end) => {
         const data = await response.json();
         if (data.success) {
           setBookedDevices(data.data.booked_devices);
+          
+          // Create device reservation map
+          const reservationMap = {};
+          data.data.booked_devices.forEach(booking => {
+            if (!booking.device || !booking.device.id || !booking.id) return;
+            
+            const deviceId = booking.device.id;
+            const reservationId = booking.id;
+            
+            if (!reservationMap[deviceId]) {
+              reservationMap[deviceId] = {};
+            }
+            
+            if (!reservationMap[deviceId][reservationId]) {
+              reservationMap[deviceId][reservationId] = {
+                ...booking,
+                drivers: [
+                  { ip_type: 'CT1', ip_address: booking.device.ct1_ip || 'N/A' },
+                  { ip_type: 'PC', ip_address: booking.device.pc_ip || 'N/A' },
+                  { ip_type: 'Pulse1', ip_address: booking.device.pulse1_ip || 'N/A' },
+                  { ip_type: 'Rutomatrix', ip_address: booking.device.rutomatrix_ip || 'N/A' }
+                ]
+              };
+            }
+          });
+          
+          setDeviceReservationMap(reservationMap);
+          setBookedDevicesData(data.data.booked_devices);
         } else {
-          setMessages([{ text: data.message, category: 'danger' }]);
+          showToast(data.message, 'danger');
         }
       } else {
-        setMessages([{ text: 'Failed to fetch booked devices', category: 'danger' }]);
+        showToast('Failed to fetch booked devices', 'danger');
       }
     } catch (error) {
       console.error('Error fetching booked devices:', error);
-      setMessages([{ text: 'Network error while fetching booked devices', category: 'danger' }]);
+      showToast('Network error while fetching booked devices', 'danger');
     } finally {
       setLoading(false);
     }
@@ -144,7 +180,7 @@ const fetchAvailableDevices = async (start, end) => {
   // Handle device selection modal opening
   const handleBookReservation = () => {
     if (!startTime || !endTime) {
-      setMessages([{ text: 'Please select both start and end times', category: 'warning' }]);
+      showToast('Please select both start and end times', 'warning');
       return;
     }
     
@@ -152,12 +188,12 @@ const fetchAvailableDevices = async (start, end) => {
     const end = new Date(endTime);
     
     if (start >= end) {
-      setMessages([{ text: 'End time must be after start time', category: 'warning' }]);
+      showToast('End time must be after start time', 'warning');
       return;
     }
     
     if (start < new Date()) {
-      setMessages([{ text: 'Start time cannot be in the past', category: 'warning' }]);
+      showToast('Start time cannot be in the past', 'warning');
       return;
     }
     
@@ -171,57 +207,56 @@ const fetchAvailableDevices = async (start, end) => {
     setSelectedDevice(device);
   };
 
-
-// Update your handleConfirmDevice function
-const handleConfirmDevice = async () => {
-  if (!selectedDevice) {
-    setMessages([{ text: 'Please select a device', category: 'warning' }]);
-    return;
-  }
-  
-  try {
-    
-    setLoading(true);
-    const response = await fetch(`${API_BASE}/api/reservations`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        device_id: selectedDevice.device_id,
-        start_time: startTime,
-        end_time: endTime,
-        purpose: 'Device reservation'
-      })
-    });
-    
-    if (response.status === 401) {
-      setMessages([{ text: 'Session expired. Please login again', category: 'warning' }]);
-      window.location.href = '/login';
+  // Handle confirm device selection
+  const handleConfirmDevice = async () => {
+    if (!selectedDevice) {
+      showToast('Please select a device', 'warning');
       return;
     }
     
-    if (response.ok) {
-      const data = await response.json();
-      if (data.success) {
-        setMessages([{ text: 'Reservation created successfully', category: 'success' }]);
-        fetchUserReservations();
-      } else {
-        setMessages([{ text: data.message, category: 'danger' }]);
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE}/api/reservations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          device_id: selectedDevice.device_id,
+          start_time: startTime,
+          end_time: endTime,
+          purpose: 'Device reservation'
+        })
+      });
+      
+      if (response.status === 401) {
+        showToast('Session expired. Please login again', 'warning');
+        window.location.href = '/login';
+        return;
       }
-    } else {
-      setMessages([{ text: 'Failed to create reservation', category: 'danger' }]);
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          showToast('Reservation created successfully', 'success');
+          fetchUserReservations();
+        } else {
+          showToast(data.message, 'danger');
+        }
+      } else {
+        showToast('Failed to create reservation', 'danger');
+      }
+    } catch (error) {
+      console.error('Error creating reservation:', error);
+      showToast('Network error while creating reservation', 'danger');
+    } finally {
+      setLoading(false);
+      setShowDeviceSelection(false);
+      setSelectedDevice(null);
     }
-  } catch (error) {
-    console.error('Error creating reservation:', error);
-    setMessages([{ text: 'Network error while creating reservation', category: 'danger' }]);
-  } finally {
-    setLoading(false);
-    setShowDeviceSelection(false);
-    setSelectedDevice(null);
-  }
-};
+  };
+
   // Cancel a reservation
   const handleCancelReservation = async (reservationId) => {
     if (!window.confirm('Are you sure you want to cancel this reservation?')) {
@@ -238,54 +273,49 @@ const handleConfirmDevice = async () => {
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
-          setMessages([{ text: 'Reservation cancelled successfully', category: 'success' }]);
-          fetchUserReservations(); // Refresh the reservations list
+          showToast('Reservation cancelled successfully', 'success');
+          fetchUserReservations();
         } else {
-          setMessages([{ text: data.message, category: 'danger' }]);
+          showToast(data.message, 'danger');
         }
       } else {
-        setMessages([{ text: 'Failed to cancel reservation', category: 'danger' }]);
+        showToast('Failed to cancel reservation', 'danger');
       }
     } catch (error) {
       console.error('Error cancelling reservation:', error);
-      setMessages([{ text: 'Network error while cancelling reservation', category: 'danger' }]);
+      showToast('Network error while cancelling reservation', 'danger');
     } finally {
       setReservationLoading(false);
     }
   };
 
-// Launch device (this would typically redirect to the device)
-const handleLaunchDevice = (deviceId, reservationId) => {
-  // Find the reservation to get the device IPs
-  const reservation = userReservations.find(r => r.id === reservationId);
-  if (reservation && reservation.device_ips) {
-    // For now, just show the IPs in an alert or let user choose
-    const ipList = Object.entries(reservation.device_ips)
-      .map(([type, ip]) => `${type}: ${ip}`)
-      .join('\n');
-    
-    // Show IPs to user and let them choose
-    alert(`Available IP addresses for this device:\n${ipList}`);
-    
-    // Or you could implement a modal to let the user choose which IP to connect to
-    // For example, connect to PC_IP by default if available
-    if (reservation.device_ips.pc_ip) {
-      window.open(`http://${reservation.device_ips.pc_ip}`, '_blank');
-    } else if (reservation.device_ips.rutomatrix_ip) {
-      window.open(`http://${reservation.device_ips.rutomatrix_ip}`, '_blank');
+  // Launch device
+  const handleLaunchDevice = (deviceId, reservationId) => {
+    const reservation = userReservations.find(r => r.id === reservationId);
+    if (reservation && reservation.device_ips) {
+      const ipList = Object.entries(reservation.device_ips)
+        .map(([type, ip]) => `${type}: ${ip}`)
+        .join('\n');
+      
+      // Show IPs to user and let them choose
+      alert(`Available IP addresses for this device:\n${ipList}`);
+      
+      // Connect to PC_IP by default if available
+      if (reservation.device_ips.pc_ip) {
+        window.open(`http://${reservation.device_ips.pc_ip}`, '_blank');
+      } else if (reservation.device_ips.rutomatrix_ip) {
+        window.open(`http://${reservation.device_ips.rutomatrix_ip}`, '_blank');
+      }
+    } else {
+      showToast('Device IP addresses not available', 'warning');
     }
-    // Add other IP types as needed
-  } else {
-    setMessages([{ text: 'Device IP addresses not available', category: 'warning' }]);
-  }
-};
+  };
 
   // Show device details
-
-const handleShowDeviceDetails = (device) => {
-  setDeviceDetails(device);
-  setShowDeviceDetails(true);
-};
+  const handleShowDeviceDetails = (device) => {
+    setDeviceDetails(device);
+    setShowDeviceDetails(true);
+  };
 
   // Handle time input changes
   const handleTimeChange = (field, value) => {
@@ -318,6 +348,44 @@ const handleShowDeviceDetails = (device) => {
     setSortConfig({ key, direction });
   };
 
+  // Get device icon class
+  const getDeviceIconClass = (deviceType) => {
+    const type = (deviceType || '').toLowerCase();
+    if (type.includes('rutomatrix')) return 'fas fa-microchip rutomatrix-icon';
+    if (type.includes('pulse')) return 'fas fa-heartbeat pulse-icon';
+    if (type.includes('ct')) return 'fas fa-camera ct-icon';
+    if (type.includes('pc')) return 'fas fa-desktop pc-icon';
+    return 'fas fa-server other-icon';
+  };
+
+  // Format date time
+  const formatDateTime = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Check if time overlaps
+  const isTimeOverlap = (start1, end1, start2, end2) => {
+    const startDate1 = new Date(start1);
+    const endDate1 = new Date(end1);
+    const startDate2 = new Date(start2);
+    const endDate2 = new Date(end2);
+    
+    return startDate1 < endDate2 && endDate1 > startDate2;
+  };
+
+  // Filter booked devices by ID
+  const filterBookedDevicesById = (filterValue) => {
+    return bookedDevicesData.filter(device => 
+      device.device.id.toLowerCase().includes(filterValue.toLowerCase())
+    );
+  };
+
   // Calculate pagination
   const indexOfLastEntry = currentPage * entriesPerPage;
   const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
@@ -342,7 +410,6 @@ const handleShowDeviceDetails = (device) => {
         bValue = b.end_time;
         break;
       case 'status':
-        // Determine status for sorting
         const isExpiredA = a.end_time < now;
         const isActiveA = a.start_time <= now && now <= a.end_time;
         aValue = isExpiredA ? 'expired' : isActiveA ? 'active' : 'upcoming';
@@ -379,9 +446,7 @@ const handleShowDeviceDetails = (device) => {
     device.device_id.toLowerCase().includes(deviceFilter.toLowerCase())
   );
 
-  const filteredBookedDevices = bookedDevices.filter(device => 
-    device.device.id.toLowerCase().includes(bookedDeviceFilter.toLowerCase())
-  );
+  const filteredBookedDevices = filterBookedDevicesById(bookedDeviceFilter);
 
   return (
     <div className="container-fluid py-4">
@@ -396,10 +461,10 @@ const handleShowDeviceDetails = (device) => {
 
       {messages.length > 0 && (
         <div className="alert-messages">
-          {messages.map((message, index) => (
-            <div key={index} className={`alert alert-${message.category} alert-dismissible fade show`} role="alert">
+          {messages.map((message) => (
+            <div key={message.id} className={`alert alert-${message.category} alert-dismissible fade show`} role="alert">
               {message.text}
-              <button type="button" className="btn-close" onClick={() => setMessages(messages.filter((_, i) => i !== index))}></button>
+              <button type="button" className="btn-close" onClick={() => setMessages(messages.filter(m => m.id !== message.id))}></button>
             </div>
           ))}
         </div>
@@ -542,11 +607,14 @@ const handleShowDeviceDetails = (device) => {
                         {filteredAvailableDevices.map(device => (
                           <div key={device.device_id} className="col-md-4 mb-3">
                             <div 
-                              className={`card device-card ${selectedDevice?.device_id === device.device_id ? 'border-primary' : ''}`}
+                              className={`card device-card ${selectedDevice?.device_id === device.device_id ? 'border-primary selected' : ''}`}
                               onClick={() => handleDeviceSelection(device)}
                               style={{ cursor: 'pointer' }}
                             >
                               <div className="card-body">
+                                <div className="device-icon">
+                                  <i className={getDeviceIconClass(device.type)}></i>
+                                </div>
                                 <h5 className="card-title">{device.device_id}</h5>
                                 <p className="card-text">
                                   <span className="badge bg-success">Available</span>
@@ -605,29 +673,66 @@ const handleShowDeviceDetails = (device) => {
                       </div>
                     ) : filteredBookedDevices.length > 0 ? (
                       <div className="row">
-                        {filteredBookedDevices.map(device => (
-                          <div key={device.id} className="col-md-6 mb-3">
-                            <div className="card device-card">
-                              <div className="card-body">
-                                <h5 className="card-title">{device.device.id}</h5>
-                                <p className="card-text">
-                                  <span className="badge bg-warning">Booked</span>
-                                </p>
-                                <p className="card-text">
-                                  <strong>Reserved by:</strong> User #{device.user.id}<br />
-                                  <strong>Start:</strong> {new Date(device.time.start).toLocaleString()}<br />
-                                  <strong>End:</strong> {new Date(device.time.end).toLocaleString()}
-                                </p>
-                                <button 
-                                  className="btn btn-sm btn-info"
-                                  onClick={() => handleShowDeviceDetails(device)}
-                                >
-                                  <i className="fas fa-info-circle"></i> Details
-                                </button>
+                        {filteredBookedDevices.map(device => {
+                          const now = new Date();
+                          const startTime = new Date(device.time.start);
+                          const endTime = new Date(device.time.end);
+                          
+                          const status = endTime < now ? 'Expired' :
+                                      startTime <= now && now <= endTime ? 'Active' : 'Upcoming';
+                          
+                          const statusClass = endTime < now ? 'bg-secondary' :
+                                          startTime <= now && now <= endTime ? 'bg-success' : 'bg-primary';
+                          
+                          const iconClass = 'fas fa-desktop';
+                          
+                          return (
+                            <div key={device.id} className="col-md-6 mb-3">
+                              <div className="card device-card booked-device-card">
+                                <div className="card-body">
+                                  <div className="booked-device-card-header">
+                                    <div className="d-flex align-items-center">
+                                      <i className={`${iconClass} me-2`}></i>
+                                      <h5 className="booked-device-card-title mb-0">Device {device.device.id}</h5>
+                                    </div>
+                                    <span className={`badge ${statusClass} booked-device-card-status`}>{status}</span>
+                                  </div>
+                                  <div className="booked-device-card-body">
+                                    <div className="booked-device-card-row">
+                                      <span className="booked-device-card-label">Device ID:</span>
+                                      <span className="booked-device-card-value">{device.device.id}</span>
+                                    </div>
+                                    <div className="booked-device-card-row">
+                                      <span className="booked-device-card-label">User ID:</span>
+                                      <span className="booked-device-card-value">{device.user.id || 'N/A'}</span>
+                                    </div>
+                                    <div className="booked-device-card-row">
+                                      <span className="booked-device-card-label">Start:</span>
+                                      <span className="booked-device-card-value">{formatDateTime(device.time.start)}</span>
+                                    </div>
+                                    <div className="booked-device-card-row">
+                                      <span className="booked-device-card-label">End:</span>
+                                      <span className="booked-device-card-value">{formatDateTime(device.time.end)}</span>
+                                    </div>
+                                    <div className="booked-device-card-row">
+                                      <span className="booked-device-card-label">Duration:</span>
+                                      <span className="booked-device-card-value">{device.time.duration_minutes} minutes</span>
+                                    </div>
+                                  </div>
+                                  {device.user.role === 'admin' && (
+                                    <div className="booked-device-card-footer">
+                                      <button className="btn btn-sm btn-outline-danger cancel-btn"
+                                        title="Cancel Reservation"
+                                        onClick={() => handleCancelReservation(device.id)}>
+                                        <i className="fas fa-times"></i> Cancel
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     ) : (
                       <div className="text-center py-4 text-muted">
