@@ -1,4 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'datatables.net-bs5/css/dataTables.bootstrap5.css';
+import 'font-awesome/css/font-awesome.min.css';
+import 'flatpickr/dist/flatpickr.min.css';
 import "./LandingPage.css";
 
 import ThreeDModel from "./ThreeDModel";

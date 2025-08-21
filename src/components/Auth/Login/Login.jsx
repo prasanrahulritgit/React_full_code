@@ -4,95 +4,59 @@ import './Login.css';
 import logo from "../../../assets/RutoMatrix_Nonbackground.png";
 import tes_logo from "../../../assets/tessolve.png";
 import { Eye, EyeOff, User, Lock, AlertCircle, CheckCircle, ArrowRight } from 'lucide-react';
+
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [csrfToken, setCsrfToken] = useState('');
-  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
- 
-  // Fetch CSRF token on component mount
-  useEffect(() => {
-    const fetchCsrfToken = async () => {
-      try {
-        const response = await fetch('http://127.0.0.1:5000/get-csrf');
-        const data = await response.json();
-        if (data.success) {
-          setCsrfToken(data.csrf_token);
-        }
-      } catch (error) {
-        console.error('Error fetching CSRF token:', error);
-      }
-    };
- 
-    fetchCsrfToken();
-  }, []);
- 
+  const navigate = useNavigate();
+  const [setMessages, setMessage] = useState(false); 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
- 
-  try {
-    const response = await fetch('http://127.0.0.1:5000/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({ username, password }),
-    });
+    setIsLoading(true);
 
-    const data = await response.json();
+try {
+  const response = await fetch('/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify({ username, password }),
+  });
 
-    if (data.success) {
-      // Use window.location.href for redirect since we're changing domains
-      window.location.href = data.redirect;
+  const data = await response.json();
+
+  // Check if login was successful first
+  if (data.success) {
+    // Then redirect based on user role
+    if (data.user_role === 'admin') {
+     
+      window.location.href = '/admin_dashboard';
     } else {
-      setError(data.message || 'Login failed');
+      window.location.href = '/user_reservation';
     }
-  } catch (error) {
-    console.error('Login error:', error);
-    setError('An error occurred during login. Please try again.');
-  } finally {
-    setIsLoading(false);
+  } else {
+    setMessages([{ text: data.message, category: 'danger' }]);
   }
-};
-  // 🔹 Add old DOM logic here
+} catch (error) {
+  console.error('Login error:', error);
+  setError('An error occurred during login. Please try again.');
+} finally {
+  setIsLoading(false);
+}
+  }
+
+  // Add old DOM logic here
   useEffect(() => {
-
     const alerts = document.querySelectorAll('.alert');
-    const togglePassword = document.querySelector("#togglePassword");
-    const passwordInput = document.querySelector(".password-input");
-    const icon = togglePassword ? togglePassword.querySelector("i") : null;
-    if (togglePassword && passwordInput && icon) {
-      const handleMouseDown = () => {
-        passwordInput.setAttribute("type", "text");
-        icon.setAttribute("data-lucide", "eye-off");
-      };
-      const handleMouseUp = () => {
-        passwordInput.setAttribute("type", "password");
-        icon.setAttribute("data-lucide", "eye");
-      };
-      const handleMouseLeave = () => {
-        passwordInput.setAttribute("type", "password");
-        icon.setAttribute("data-lucide", "eye");
-      };
-
-      togglePassword.addEventListener("mousedown", handleMouseDown);
-      togglePassword.addEventListener("mouseup", handleMouseUp);
-      togglePassword.addEventListener("mouseleave", handleMouseLeave);
-
-      // cleanup
-      return () => {
-        togglePassword.removeEventListener("mousedown", handleMouseDown);
-        togglePassword.removeEventListener("mouseup", handleMouseUp);
-        togglePassword.removeEventListener("mouseleave", handleMouseLeave);
-      };
-    }
+    
     alerts.forEach(alert => {
       setTimeout(() => {
         alert.style.opacity = '0';
@@ -100,32 +64,33 @@ const Login = () => {
       }, 5000);
     });
   }, [error, success]); // rerun when alerts change
+
   return (
     <div className="login-container">
       <div className="logos-container">
         <img src={logo} alt="RutoMatrix Logo" className="logo" />
         <img src={tes_logo} alt="Tessolve Logo" className="logo" />
       </div>
- 
+
       <div className="login-card">
         <div className="header">
           <h2>Sign In</h2>
         </div>
- 
+
         {error && (
           <div className="alert alert-danger">
-            <i data-lucide="alert-circle"></i>
+            <AlertCircle size={18} />
             <span style={{ marginLeft: '8px' }}>{error}</span>
           </div>
         )}
- 
+
         {success && (
           <div className="alert alert-success">
-            <i data-lucide="check-circle"></i>
+            <CheckCircle size={18} />
             <span style={{ marginLeft: '8px' }}>{success}</span>
           </div>
         )}
- 
+
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <User className="icon" size={20} />
@@ -136,10 +101,11 @@ const Login = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
+              disabled={isLoading}
             />
             <label>Username</label>
           </div>
- 
+
           <div className="form-group password-group">
             <Lock className="icon" size={18} />
             <input
@@ -149,6 +115,7 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              disabled={isLoading}
             />
             <label>Password</label>
             {/* 👁️ Toggle button */}
@@ -160,10 +127,14 @@ const Login = () => {
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </span>
           </div>
- 
-          <button type="submit" className="btn-login">
-            Sign In
-            <ArrowRight size={18} />
+
+          <button 
+            type="submit" 
+            className="btn-login"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Signing In...' : 'Sign In'}
+            {!isLoading && <ArrowRight size={18} />}
           </button>
         </form>
       </div>
