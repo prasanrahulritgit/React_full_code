@@ -3,10 +3,10 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'datatables.net-bs5/css/dataTables.bootstrap5.css';
 import 'font-awesome/css/font-awesome.min.css';
 import 'flatpickr/dist/flatpickr.min.css';
-import './UserReservation.css';
+import './AdminReservation.css';
 import '@fortawesome/fontawesome-free';
 
-const UserReservation = () => {
+const AdminReservation = () => {
   const [currentUser, setCurrentUser] = useState({ is_authenticated: true });
   const [messages, setMessages] = useState([]);
   const [userReservations, setUserReservations] = useState([]);
@@ -922,4 +922,4 @@ const handleShowDeviceDetails = (device) => {
   );
 };
 
-export default UserReservation;
+export default AdminReservation;

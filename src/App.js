@@ -1,14 +1,17 @@
+// App.js
 import React from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import "./index.css";
-import "@fontsource/poppins"; // Defaults to weight 400
+import "@fontsource/poppins";
 import LandingPage from './components/Auth/LandingPage';
-import { Navigate } from 'react-router-dom';
 import Login from './components/Auth/Login/Login';
-import AdminDashboard from "./components/Admin_Dashboard/AdminDashboard";
+import AdminDashboard from "./components/Admin_Dashboard/Admin_Dashboard";
 import UserReservation from "./components/User_Reservation/UserReservation";
-
+import AdminReservation from "./components/AdminReservation/AdminReservation"; // Import the AdminReservation component
+import Device from "./components/Device/Device";
+import EditDevice from "./components/Device/EditDevice";
+import User from "./components/User/User";
 
 const App = () => {
   return (
@@ -17,10 +20,25 @@ const App = () => {
         <Route path="/" element={<Navigate to="/auth" replace />} />
         <Route path="/auth" element={<LandingPage />} />
         <Route path="/Login" element={<Login />} />
+
+        {/* NESTED ADMIN DASHBOARD */}
+        <Route path="/admin_dashboard/*" element={<AdminDashboard />}>
+          {/* default tab */}
+          <Route index element={<Navigate to="device" replace />} />
+          <Route path="device" element={<Device />} />
+          <Route path="user" element={<User />} />
+          <Route path="reservation" element={<AdminReservation />} /> {/* Changed to AdminReservation */}
+          {/* Use your actual History component if you have one */}
+          <Route path="history" element={<Dashboard />} />
+        </Route>
+
+        {/* (Optional) keep direct pages if you still want them accessible */}
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/admin_dashboard" element={<AdminDashboard />} />
         <Route path="/user_reservation" element={<UserReservation />} />
-    
+        <Route path="/admin_reservation" element={<AdminReservation />} /> {/* Added direct route for admin reservation */}
+        <Route path="/device" element={<Device />} />
+        <Route path="/device/edit/:deviceId/:field" element={<EditDevice />} />
+        <Route path="/user" element={<User />} />
       </Routes>
     </Router>
   );
