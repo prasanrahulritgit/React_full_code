@@ -303,7 +303,7 @@ const LandingPage = ({ setIsAuthenticated }) => {
   return (
     <div className="app">
       {/* Navigation */}
-      <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
+      <nav className={`Navbar ${scrolled ? "scrolled" : ""}`}>
         <div className="container">
           <img className="logo_r" src={logo} alt="Rutomatrix Logo" />
           <ul className="nav-links">

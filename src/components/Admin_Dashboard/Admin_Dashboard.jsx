@@ -1,8 +1,12 @@
+import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'datatables.net-bs5/css/dataTables.bootstrap5.css';
-import 'font-awesome/css/font-awesome.min.css';
-import 'flatpickr/dist/flatpickr.min.css';
+import { 
+  FaServer, 
+  FaUsers, 
+  FaCalendarAlt, 
+  FaHistory, 
+  FaSignOutAlt 
+} from 'react-icons/fa';
 import './Admin_Dashboard.css';
 
 const AdminDashboard = () => {
@@ -12,59 +16,78 @@ const AdminDashboard = () => {
 
   return (
     <div className="admin-dashboard">
-      <nav className="admin-navbar">
-        <div className="nav-container">
-          <ul className="nav-menu">
-            <li className="nav-item">
-              <NavLink
-                to="/admin_dashboard/device"
-                className={({ isActive }) => `nav-link pill ${isActive ? 'active' : ''}`}
-                end
-              >
-                Devices
-              </NavLink>
-            </li>
-
-            {isAuthenticated && userRole === 'admin' && (
+      <nav className="navbar navbar-expand-lg mb-4">
+        <div className="container-fluid">
+          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span className="navbar-toggler-icon"></span>
+          </button>
+          <div className="collapse navbar-collapse" id="navbarNav">
+            <ul className="navbar-nav me-auto">
+              {/* Devices Tab */}
               <li className="nav-item">
                 <NavLink
-                  to="/admin_dashboard/user"
-                  className={({ isActive }) => `nav-link pill ${isActive ? 'active' : ''}`}
+                  to="/admin_dashboard/device"
+                  className={({ isActive }) => 
+                    `nav-link orange ${isActive ? 'active' : ''}`
+                  }
+                  end
                 >
-                  Users
+                  <FaServer className="me-2" /> Devices
                 </NavLink>
               </li>
-            )}
-
-            {isAuthenticated && (
-              <>
+              
+              {/* Users Tab (Admin Only) */}
+              {isAuthenticated && userRole === 'admin' && (
+                <li className="nav-item">
+                  <NavLink
+                    to="/admin_dashboard/user"
+                    className={({ isActive }) => 
+                      `nav-link orange ${isActive ? 'active' : ''}`
+                    }
+                  >
+                    <FaUsers className="me-2" /> Users
+                  </NavLink>
+                </li>
+              )}
+              
+              {/* Reservations Tab */}
+              {isAuthenticated && (
                 <li className="nav-item">
                   <NavLink
                     to="/admin_dashboard/reservation"
-                    className={({ isActive }) => `nav-link pill ${isActive ? 'active' : ''}`}
+                    className={({ isActive }) => 
+                      `nav-link orange ${isActive ? 'active' : ''}`
+                    }
                   >
-                    Reservations
+                    <FaCalendarAlt className="me-2" /> Reservations
                   </NavLink>
                 </li>
+              )}
+              
+              {/* History Tab */}
+              {isAuthenticated && (
                 <li className="nav-item">
                   <NavLink
                     to="/admin_dashboard/history"
-                    className={({ isActive }) => `nav-link pill ${isActive ? 'active' : ''}`}
+                    className={({ isActive }) => 
+                      `nav-link orange ${isActive ? 'active' : ''}`
+                    }
                   >
-                    History
+                    <FaHistory className="me-2" /> History
                   </NavLink>
                 </li>
-              </>
+              )}
+            </ul>
+            
+            {/* Logout Button - Aligned to the right */}
+            {isAuthenticated && (
+              <div className="d-flex">
+                <a href="http://localhost:3000/auth" className="btn btn-outline-danger">
+                  <FaSignOutAlt className="me-2" /> Logout
+                </a>
+              </div>
             )}
-          </ul>
-
-          {isAuthenticated && (
-            <div className="nav-logout">
-              <a href="http://localhost:3000/auth" className="logout-btn pill">
-                Logout
-              </a>
-            </div>
-          )}
+          </div>
         </div>
       </nav>
 
