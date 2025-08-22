@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'datatables.net-bs5/css/dataTables.bootstrap5.css';
 import 'font-awesome/css/font-awesome.min.css';
 import 'flatpickr/dist/flatpickr.min.css';
-import './UserReservation.css';
+import './AdminReservation.css';
 import '@fortawesome/fontawesome-free';
 import { 
   FaSignOutAlt, 
@@ -22,7 +22,7 @@ import {
   FaBan
 } from 'react-icons/fa';
 
-const UserReservation = () => {
+const AdminReservation = () => {
   const [currentUser, setCurrentUser] = useState({ is_authenticated: true });
   const [messages, setMessages] = useState([]);
   const [userReservations, setUserReservations] = useState([]);
@@ -44,12 +44,11 @@ const UserReservation = () => {
   const [endTime, setEndTime] = useState('');
   const [loading, setLoading] = useState(false);
   const [reservationLoading, setReservationLoading] = useState(false);
-  const [bookedDevicesData, setBookedDevicesData] = useState([]);
-  const [deviceReservationMap, setDeviceReservationMap] = useState({});
 
   // API base URL
   const API_BASE = 'http://localhost:5000'; // Update with your Flask server URL
 
+  
   useEffect(() => {
     document.title = "Device Reservation";
     fetchUserReservations();
@@ -62,82 +61,75 @@ const UserReservation = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Show toast notification
-  const showToast = (text, category = 'info') => {
-    const id = Date.now();
-    setMessages(prev => [...prev, { id, text, category }]);
-    
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-      setMessages(prev => prev.filter(msg => msg.id !== id));
-    }, 5000);
-  };
-
   // Fetch user reservations
-  const fetchUserReservations = async () => {
-    try {
-      setReservationLoading(true);
-      const response = await fetch(`${API_BASE}/api/user-reservations`, {
-        credentials: 'include'
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          const transformedReservations = data.reservations.map(res => ({
-            id: res.reservation_id,
-            device_id: res.device_id,
-            device_name: res.device_name,
-            start_time: new Date(res.start_time),
-            end_time: new Date(res.end_time),
-            status: res.status,
-            device_ips: res.device_ips,
-            user_name: res.user_name,
-            user_ip: res.user_ip,
-            is_active: res.is_active,
-            can_manage: res.can_manage
-          }));
-          setUserReservations(transformedReservations);
-        } else {
-          showToast(data.message, 'danger');
-        }
+// Fetch user reservations
+const fetchUserReservations = async () => {
+  try {
+    setReservationLoading(true);
+    const response = await fetch(`${API_BASE}/api/user-reservations`, {
+      credentials: 'include' // Include cookies for authentication
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success) {
+        // Transform the data to match your frontend structure
+        const transformedReservations = data.reservations.map(res => ({
+          id: res.reservation_id,
+          device_id: res.device_id,
+          device_name: res.device_name,
+          start_time: new Date(res.start_time),
+          end_time: new Date(res.end_time),
+          status: res.status,
+          device_ips: res.device_ips, // Now contains all IP addresses
+          user_name: res.user_name,
+          user_ip: res.user_ip,
+          is_active: res.is_active,
+          can_manage: res.can_manage
+        }));
+        setUserReservations(transformedReservations);
       } else {
-        showToast('Failed to fetch reservations', 'danger');
+        setMessages([{ text: data.message, category: 'danger' }]);
       }
-    } catch (error) {
-      console.error('Error fetching user reservations:', error);
-      showToast('Network error while fetching reservations', 'danger');
-    } finally {
-      setReservationLoading(false);
+    } else {
+      setMessages([{ text: 'Failed to fetch reservations', category: 'danger' }]);
     }
-  };
+  } catch (error) {
+    console.error('Error fetching user reservations:', error);
+    setMessages([{ text: 'Network error while fetching reservations', category: 'danger' }]);
+  } finally {
+    setReservationLoading(false);
+  }
+};
 
   // Fetch available devices based on selected time range
-  const fetchAvailableDevices = async (start, end) => {
-    try {
-      setLoading(true);
-      const response = await fetch(
-        `${API_BASE}/api/devices/availability?start_time=${start.toISOString()}&end_time=${end.toISOString()}`,
-        { credentials: 'include' }
-      );
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          setAvailableDevices(data.devices.filter(device => device.status === 'available'));
-        } else {
-          showToast(data.message, 'danger');
-        }
+// Fetch available devices based on selected time range
+const fetchAvailableDevices = async (start, end) => {
+  try {
+    setLoading(true);
+    const response = await fetch(
+      `${API_BASE}/api/devices/availability?start_time=${start.toISOString()}&end_time=${end.toISOString()}`,
+      { credentials: 'include' }
+    );
+    
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success) {
+        // Make sure to handle the new response format if it changed
+        setAvailableDevices(data.devices.filter(device => device.status === 'available'));
       } else {
-        showToast('Failed to fetch available devices', 'danger');
+        setMessages([{ text: data.message, category: 'danger' }]);
       }
-    } catch (error) {
-      console.error('Error fetching available devices:', error);
-      showToast('Network error while fetching devices', 'danger');
-    } finally {
-      setLoading(false);
+    } else {
+      setMessages([{ text: 'Failed to fetch available devices', category: 'danger' }]);
     }
-  };
+  } catch (error) {
+    console.error('Error fetching available devices:', error);
+    setMessages([{ text: 'Network error while fetching devices', category: 'danger' }]);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Fetch booked devices
   const fetchBookedDevices = async () => {
@@ -152,43 +144,15 @@ const UserReservation = () => {
         const data = await response.json();
         if (data.success) {
           setBookedDevices(data.data.booked_devices);
-          
-          // Create device reservation map
-          const reservationMap = {};
-          data.data.booked_devices.forEach(booking => {
-            if (!booking.device || !booking.device.id || !booking.id) return;
-            
-            const deviceId = booking.device.id;
-            const reservationId = booking.id;
-            
-            if (!reservationMap[deviceId]) {
-              reservationMap[deviceId] = {};
-            }
-            
-            if (!reservationMap[deviceId][reservationId]) {
-              reservationMap[deviceId][reservationId] = {
-                ...booking,
-                drivers: [
-                  { ip_type: 'CT1', ip_address: booking.device.ct1_ip || 'N/A' },
-                  { ip_type: 'PC', ip_address: booking.device.pc_ip || 'N/A' },
-                  { ip_type: 'Pulse1', ip_address: booking.device.pulse1_ip || 'N/A' },
-                  { ip_type: 'Rutomatrix', ip_address: booking.device.rutomatrix_ip || 'N/A' }
-                ]
-              };
-            }
-          });
-          
-          setDeviceReservationMap(reservationMap);
-          setBookedDevicesData(data.data.booked_devices);
         } else {
-          showToast(data.message, 'danger');
+          setMessages([{ text: data.message, category: 'danger' }]);
         }
       } else {
-        showToast('Failed to fetch booked devices', 'danger');
+        setMessages([{ text: 'Failed to fetch booked devices', category: 'danger' }]);
       }
     } catch (error) {
       console.error('Error fetching booked devices:', error);
-      showToast('Network error while fetching booked devices', 'danger');
+      setMessages([{ text: 'Network error while fetching booked devices', category: 'danger' }]);
     } finally {
       setLoading(false);
     }
@@ -197,7 +161,7 @@ const UserReservation = () => {
   // Handle device selection modal opening
   const handleBookReservation = () => {
     if (!startTime || !endTime) {
-      showToast('Please select both start and end times', 'warning');
+      setMessages([{ text: 'Please select both start and end times', category: 'warning' }]);
       return;
     }
     
@@ -205,12 +169,12 @@ const UserReservation = () => {
     const end = new Date(endTime);
     
     if (start >= end) {
-      showToast('End time must be after start time', 'warning');
+      setMessages([{ text: 'End time must be after start time', category: 'warning' }]);
       return;
     }
     
     if (start < new Date()) {
-      showToast('Start time cannot be in the past', 'warning');
+      setMessages([{ text: 'Start time cannot be in the past', category: 'warning' }]);
       return;
     }
     
@@ -224,56 +188,57 @@ const UserReservation = () => {
     setSelectedDevice(device);
   };
 
-  // Handle confirm device selection
-  const handleConfirmDevice = async () => {
-    if (!selectedDevice) {
-      showToast('Please select a device', 'warning');
+
+// Update your handleConfirmDevice function
+const handleConfirmDevice = async () => {
+  if (!selectedDevice) {
+    setMessages([{ text: 'Please select a device', category: 'warning' }]);
+    return;
+  }
+  
+  try {
+    
+    setLoading(true);
+    const response = await fetch(`${API_BASE}/api/reservations`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        device_id: selectedDevice.device_id,
+        start_time: startTime,
+        end_time: endTime,
+        purpose: 'Device reservation'
+      })
+    });
+    
+    if (response.status === 401) {
+      setMessages([{ text: 'Session expired. Please login again', category: 'warning' }]);
+      window.location.href = '/login';
       return;
     }
     
-    try {
-      setLoading(true);
-      const response = await fetch(`${API_BASE}/api/reservations`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          device_id: selectedDevice.device_id,
-          start_time: startTime,
-          end_time: endTime,
-          purpose: 'Device reservation'
-        })
-      });
-      
-      if (response.status === 401) {
-        showToast('Session expired. Please login again', 'warning');
-        window.location.href = '/login';
-        return;
-      }
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          showToast('Reservation created successfully', 'success');
-          fetchUserReservations();
-        } else {
-          showToast(data.message, 'danger');
-        }
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success) {
+        setMessages([{ text: 'Reservation created successfully', category: 'success' }]);
+        fetchUserReservations();
       } else {
-        showToast('Failed to create reservation', 'danger');
+        setMessages([{ text: data.message, category: 'danger' }]);
       }
-    } catch (error) {
-      console.error('Error creating reservation:', error);
-      showToast('Network error while creating reservation', 'danger');
-    } finally {
-      setLoading(false);
-      setShowDeviceSelection(false);
-      setSelectedDevice(null);
+    } else {
+      setMessages([{ text: 'Failed to create reservation', category: 'danger' }]);
     }
-  };
-
+  } catch (error) {
+    console.error('Error creating reservation:', error);
+    setMessages([{ text: 'Network error while creating reservation', category: 'danger' }]);
+  } finally {
+    setLoading(false);
+    setShowDeviceSelection(false);
+    setSelectedDevice(null);
+  }
+};
   // Cancel a reservation
   const handleCancelReservation = async (reservationId) => {
     if (!window.confirm('Are you sure you want to cancel this reservation?')) {
@@ -290,17 +255,17 @@ const UserReservation = () => {
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
-          showToast('Reservation cancelled successfully', 'success');
-          fetchUserReservations();
+          setMessages([{ text: 'Reservation cancelled successfully', category: 'success' }]);
+          fetchUserReservations(); // Refresh the reservations list
         } else {
-          showToast(data.message, 'danger');
+          setMessages([{ text: data.message, category: 'danger' }]);
         }
       } else {
-        showToast('Failed to cancel reservation', 'danger');
+        setMessages([{ text: 'Failed to cancel reservation', category: 'danger' }]);
       }
     } catch (error) {
       console.error('Error cancelling reservation:', error);
-      showToast('Network error while cancelling reservation', 'danger');
+      setMessages([{ text: 'Network error while cancelling reservation', category: 'danger' }]);
     } finally {
       setReservationLoading(false);
     }
@@ -345,10 +310,11 @@ const handleLaunchDevice = (deviceId, reservationId) => {
 };
 
   // Show device details
-  const handleShowDeviceDetails = (device) => {
-    setDeviceDetails(device);
-    setShowDeviceDetails(true);
-  };
+
+const handleShowDeviceDetails = (device) => {
+  setDeviceDetails(device);
+  setShowDeviceDetails(true);
+};
 
   // Handle time input changes
   const handleTimeChange = (field, value) => {
@@ -381,44 +347,6 @@ const handleLaunchDevice = (deviceId, reservationId) => {
     setSortConfig({ key, direction });
   };
 
-  // Get device icon class
-  const getDeviceIconClass = (deviceType) => {
-    const type = (deviceType || '').toLowerCase();
-    if (type.includes('rutomatrix')) return 'fas fa-microchip rutomatrix-icon';
-    if (type.includes('pulse')) return 'fas fa-heartbeat pulse-icon';
-    if (type.includes('ct')) return 'fas fa-camera ct-icon';
-    if (type.includes('pc')) return 'fas fa-desktop pc-icon';
-    return 'fas fa-server other-icon';
-  };
-
-  // Format date time
-  const formatDateTime = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  // Check if time overlaps
-  const isTimeOverlap = (start1, end1, start2, end2) => {
-    const startDate1 = new Date(start1);
-    const endDate1 = new Date(end1);
-    const startDate2 = new Date(start2);
-    const endDate2 = new Date(end2);
-    
-    return startDate1 < endDate2 && endDate1 > startDate2;
-  };
-
-  // Filter booked devices by ID
-  const filterBookedDevicesById = (filterValue) => {
-    return bookedDevicesData.filter(device => 
-      device.device.id.toLowerCase().includes(filterValue.toLowerCase())
-    );
-  };
-
   // Calculate pagination
   const indexOfLastEntry = currentPage * entriesPerPage;
   const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
@@ -443,6 +371,7 @@ const handleLaunchDevice = (deviceId, reservationId) => {
         bValue = b.end_time;
         break;
       case 'status':
+        // Determine status for sorting
         const isExpiredA = a.end_time < now;
         const isActiveA = a.start_time <= now && now <= a.end_time;
         aValue = isExpiredA ? 'expired' : isActiveA ? 'active' : 'upcoming';
@@ -479,12 +408,14 @@ const handleLaunchDevice = (deviceId, reservationId) => {
     device.device_id.toLowerCase().includes(deviceFilter.toLowerCase())
   );
 
-  const filteredBookedDevices = filterBookedDevicesById(bookedDeviceFilter);
+  const filteredBookedDevices = bookedDevices.filter(device => 
+    device.device.id.toLowerCase().includes(bookedDeviceFilter.toLowerCase())
+  );
 
   return (
     <div className="container-fluid py-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1 className="h3 mb-0">User Device Reservation</h1>
+        <h1 className="h3 mb-0">Admin Device Reservation</h1>
         {currentUser.is_authenticated && (
           <a href="http://localhost:3000/auth" className="btn btn-outline-danger">
             <FaSignOutAlt className="me-2" /> Logout
@@ -494,10 +425,10 @@ const handleLaunchDevice = (deviceId, reservationId) => {
 
       {messages.length > 0 && (
         <div className="alert-messages">
-          {messages.map((message) => (
-            <div key={message.id} className={`alert alert-${message.category} alert-dismissible fade show`} role="alert">
+          {messages.map((message, index) => (
+            <div key={index} className={`alert alert-${message.category} alert-dismissible fade show`} role="alert">
               {message.text}
-              <button type="button" className="btn-close" onClick={() => setMessages(messages.filter(m => m.id !== message.id))}></button>
+              <button type="button" className="btn-close" onClick={() => setMessages(messages.filter((_, i) => i !== index))}></button>
             </div>
           ))}
         </div>
@@ -640,14 +571,11 @@ const handleLaunchDevice = (deviceId, reservationId) => {
                         {filteredAvailableDevices.map(device => (
                           <div key={device.device_id} className="col-md-4 mb-3">
                             <div 
-                              className={`card device-card ${selectedDevice?.device_id === device.device_id ? 'border-primary selected' : ''}`}
+                              className={`card device-card ${selectedDevice?.device_id === device.device_id ? 'border-primary' : ''}`}
                               onClick={() => handleDeviceSelection(device)}
                               style={{ cursor: 'pointer' }}
                             >
                               <div className="card-body">
-                                <div className="device-icon">
-                                  <i className={getDeviceIconClass(device.type)}></i>
-                                </div>
                                 <h5 className="card-title">{device.device_id}</h5>
                                 <p className="card-text">
                                   <span className="badge bg-success">Available</span>
@@ -1022,4 +950,4 @@ const handleLaunchDevice = (deviceId, reservationId) => {
   );
 };
 
-export default UserReservation;
+export default AdminReservation;

@@ -1,4 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'datatables.net-bs5/css/dataTables.bootstrap5.css';
+import 'font-awesome/css/font-awesome.min.css';
+import 'flatpickr/dist/flatpickr.min.css';
 import "./LandingPage.css";
 import ThreeDModel from "./ThreeDModel";
 import {
@@ -335,10 +339,10 @@ const LandingPage = ({ setIsAuthenticated }) => {
                 Contact us
               </li>
             }
-            {/* <li className="user-login"> <button className="user-icon-btn" onClick={() => setShowLoginOverlay(true)} > <User size={24} /> </button> </li>  360°*/}
+            {/* <li className="user-login"> <button className="user-icon-Btn" onClick={() => setShowLoginOverlay(true)} > <User size={24} /> </button> </li>  360°*/}
             <li className="3D-login">
               {" "}
-              <button className="threeD-icon-btn" onClick={handle360Click}>
+              <button className="threeD-icon-Btn" onClick={handle360Click}>
                 <Rotate3d size={24} />
                 360°
               </button>{" "}
@@ -349,7 +353,7 @@ const LandingPage = ({ setIsAuthenticated }) => {
 
       {show3DModel && (
         <div className="model-modal">
-          <button className="close-btn" onClick={close3DModel}>
+          <button className="close-Btn" onClick={close3DModel}>
             <X size={24} />
           </button>
 
@@ -405,12 +409,12 @@ const LandingPage = ({ setIsAuthenticated }) => {
             </p>
             <div className="cta-buttons">
               <button
-                className="primary-btn"
+                className="primary-Btn"
                 onClick={() => scrollToSection("features")}
               >
                 Explore Features
               </button>
-        <button className="secondary-btn" onClick={handleLaunchDashboard}>
+        <button className="secondary-Btn" onClick={handleLaunchDashboard}>
                 Launch Dashboard <SquareArrowOutUpRight size={18} marginLeft={16} className="button-icon" />
                 </button>
             </div>
@@ -765,7 +769,7 @@ const LandingPage = ({ setIsAuthenticated }) => {
               requirements.
             </p>
             <button
-              className="contact-btn"
+              className="contact-Btn"
               onClick={() => scrollToSection("hero")}
             >
               Contact us <ArrowRight color="#ffffff" />

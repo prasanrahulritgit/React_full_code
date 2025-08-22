@@ -19,7 +19,7 @@ const Navbar = ({ isDarkTheme, toggleTheme, userData }) => {
   });
 
   const handleBackToReservations = () => {
-    window.location.href = "http://127.0.0.1:5000/reservations";
+    window.location.href = "http://localhost:3000/user_reservation";
   };
 
   const navigateToReservations = () => {
