@@ -1,10 +1,6 @@
 // Device.jsx
 import React, { useState, useEffect } from 'react';
 import DataTable from 'react-data-table-component';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'datatables.net-bs5/css/dataTables.bootstrap5.css';
-import 'font-awesome/css/font-awesome.min.css';
-import 'flatpickr/dist/flatpickr.min.css';
 import './Device.css';
 
 const Device = () => {
@@ -142,19 +138,19 @@ const Device = () => {
       cell: row => (
         <div className="action-buttons">
           <button 
-            className="btn btn-sm view-ip orange-btn"
+            className="D-btn Devicebtn view-ip orange-btn"
             onClick={() => handleViewIps(row)}
           >
             View IPs
           </button>
           <button 
-            className="btn btn-sm edit-device blue-btn"
+            className="D-btn Devicebtn edit-device blue-btn"
             onClick={() => handleEditDevice(row)}
           >
             Edit
           </button>
           <button 
-            className="btn btn-sm delete-device orange-btn"
+            className="D-btn Devicebtn delete-device orange-btn"
             onClick={() => handleDeleteDevice(row)}
           >
             Delete
@@ -197,7 +193,7 @@ const Device = () => {
         <h1 className="h3 mb-0">Device Management</h1>
         <div>
           <button 
-            className="btn btn-primary" 
+            className="D-btn btn-primary" 
             onClick={() => setShowAddModal(true)}
           >
             + Add New Device
@@ -206,7 +202,7 @@ const Device = () => {
       </div>
 
       <div className="filter-container">
-        <form className="row g-3">
+        <form className="Devicerow g-3">
           <div className="col-md-4">
             <label htmlFor="deviceIdFilter" className="form-label">Device ID</label>
             <input 
@@ -221,8 +217,8 @@ const Device = () => {
         </form>
       </div>
 
-      <div className="card">
-        <div className="card-body">
+      <div className="Devicecard">
+        <div className="Devicecard-body">
           <div className="table-responsive">
             <DataTable
               columns={columns}
@@ -252,7 +248,7 @@ const Device = () => {
               </div>
               <form onSubmit={handleAddDevice}>
                 <div className="modal-body">
-                  <div className="row">
+                  <div className="Devicerow">
                     <div className="col-md-12 mb-3">
                       <label htmlFor="device_id" className="form-label">Device ID</label>
                       <input 
@@ -266,7 +262,7 @@ const Device = () => {
                       />
                     </div>
                   </div>
-                  <div className="row">
+                  <div className="Devicerow">
                     <div className="col-md-6 mb-3">
                       <label htmlFor="PC_IP" className="form-label">PC IP Address</label>
                       <input 
@@ -290,7 +286,7 @@ const Device = () => {
                       />
                     </div>
                   </div>
-                  <div className="row">
+                  <div className="DeviceRow">
                     <div className="col-md-4 mb-3">
                       <label htmlFor="Pulse1_Ip" className="form-label">Pulse1 IP Address</label>
                       <input 
@@ -303,7 +299,7 @@ const Device = () => {
                       />
                     </div>
                   </div>
-                  <div className="row">
+                  <div className="DeviceRow">
                     <div className="col-md-4 mb-3">
                       <label htmlFor="CT1_ip" className="form-label">CT1 IP Address</label>
                       <input 
@@ -320,12 +316,12 @@ const Device = () => {
                 <div className="modal-footer">
                   <button 
                     type="button" 
-                    className="btn btn-secondary" 
+                    className="D-btn btn-secondary" 
                     onClick={() => setShowAddModal(false)}
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="btn btn-primary">Add Device</button>
+                  <button type="submit" className="D-btn btn-primary">Add Device</button>
                 </div>
               </form>
             </div>
@@ -348,7 +344,7 @@ const Device = () => {
               </div>
               <form onSubmit={handleUpdateDevice}>
                 <div className="modal-body">
-                  <div className="row">
+                  <div className="DeviceRow">
                     <div className="col-md-12 mb-3">
                       <label htmlFor="edit_device_id" className="form-label">Device ID</label>
                       <input 
@@ -361,7 +357,7 @@ const Device = () => {
                       />
                     </div>
                   </div>
-                  <div className="row">
+                  <div className="DeviceRow">
                     <div className="col-md-6 mb-3">
                       <label htmlFor="edit_PC_IP" className="form-label">PC IP Address</label>
                       <input 
@@ -385,7 +381,7 @@ const Device = () => {
                       />
                     </div>
                   </div>
-                  <div className="row">
+                  <div className="DeviceRow">
                     <div className="col-md-4 mb-3">
                       <label htmlFor="edit_Pulse1_Ip" className="form-label">Pulse1 IP Address</label>
                       <input 
@@ -398,7 +394,7 @@ const Device = () => {
                       />
                     </div>
                   </div>
-                  <div className="row">
+                  <div className="DeviceRow">
                     <div className="col-md-4 mb-3">
                       <label htmlFor="edit_CT1_ip" className="form-label">CT1 IP Address</label>
                       <input 
@@ -415,12 +411,12 @@ const Device = () => {
                 <div className="modal-footer">
                   <button 
                     type="button" 
-                    className="btn btn-secondary" 
+                    className="D-btn btn-secondary" 
                     onClick={() => setShowEditModal(false)}
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="btn btn-primary">Save Changes</button>
+                  <button type="submit" className="D-btn btn-primary">Save Changes</button>
                 </div>
               </form>
             </div>
@@ -472,7 +468,7 @@ const Device = () => {
               <div className="modal-footer">
                 <button 
                   type="button" 
-                  className="btn btn-secondary" 
+                  className="D-btn btn-secondary" 
                   onClick={() => setShowIpModal(false)}
                 >
                   Close

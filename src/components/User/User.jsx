@@ -165,7 +165,7 @@ const User = () => {
         <div className="action-buttons">
           {(currentUser.role === 'admin' || currentUser.id === row.id) && (
             <button 
-              className="btn btn-sm edit-user blue-btn"
+              className="Userbtn Userbtn-sm edit-user blue-btn"
               onClick={() => handleEditUser(row)}
             >
               Edit
@@ -173,7 +173,7 @@ const User = () => {
           )}
           {currentUser.role === 'admin' && row.role !== 'admin' && (
             <button 
-              className="btn btn-sm delete-user orange-btn"
+              className="Userbtn Userbtn-sm delete-user orange-btn"
               onClick={() => handleDeleteUser(row)}
             >
               Delete
@@ -218,7 +218,7 @@ const User = () => {
         {currentUser.role === 'admin' && (
           <div>
             <button 
-              className="btn btn-primary" 
+              className="Userbtn btn-primary" 
               onClick={() => setShowAddModal(true)}
             >
               + Add New User
@@ -228,7 +228,7 @@ const User = () => {
       </div>
 
       <div className="filter-container">
-        <form className="row g-3">
+        <form className="Userrow g-3">
           <div className="col-md-4">
             <label htmlFor="userIdFilter" className="form-label">User ID</label>
             <input 
@@ -267,8 +267,8 @@ const User = () => {
         </form>
       </div>
 
-      <div className="card">
-        <div className="card-body">
+      <div className="Usercard">
+        <div className="Usercard-body">
           <div className="table-responsive">
             <DataTable
               columns={columns}
@@ -351,12 +351,12 @@ const User = () => {
                 <div className="modal-footer">
                   <button 
                     type="button" 
-                    className="btn btn-secondary" 
+                    className="Userbtn btn-secondary" 
                     onClick={() => setShowAddModal(false)}
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="btn btn-primary">Add User</button>
+                  <button type="submit" className="Userbtn btn-primary">Add User</button>
                 </div>
               </form>
             </div>
@@ -433,12 +433,12 @@ const User = () => {
                 <div className="modal-footer">
                   <button 
                     type="button" 
-                    className="btn btn-secondary" 
+                    className="Userbtn btn-secondary" 
                     onClick={() => setShowEditModal(false)}
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="btn btn-primary">Save Changes</button>
+                  <button type="submit" className="Userbtn btn-primary">Save Changes</button>
                 </div>
               </form>
             </div>

@@ -68,7 +68,7 @@ p {
 }
 
 /* Buttons */
-.btn {
+.Btn {
   display: inline-block;
   padding: 12px 24px;
   border-radius: 6px;
@@ -80,7 +80,7 @@ p {
   font-size: 1rem;
 }
 
-.primary-btn {
+.primary-Btn {
   background-color: transparent;
   color: white;
   align-items: center;
@@ -93,13 +93,13 @@ p {
   box-shadow: 0 4px 12px rgba(9, 113, 179, 0.2);
 }
 
-.primary-btn:hover {
+.primary-Btn:hover {
   background-color: #0972b3fb;
   border: 1px solid #ffffff;
   transform: translateY(-2px);
 }
 
-.secondary-btn {
+.secondary-Btn {
   background-color: transparent;
   align-items: center;
   justify-content: center;
@@ -113,7 +113,7 @@ p {
   box-shadow: 0 4px 12px rgba(9, 113, 179, 0.2);
 }
 
-.secondary-btn:hover {
+.secondary-Btn:hover {
   background-color: #0972b3fb;
   transform: translateY(-2px);
   border: 1px solid #ffffff;
@@ -985,7 +985,7 @@ body.showcase-section {
 }
 
 /* User Icon Button */
-.user-icon-btn {
+.user-icon-Btn {
   background: transparent;
   border: none;
   color: var(--text-light);
@@ -998,13 +998,13 @@ body.showcase-section {
   position: absolute;
 }
 
-.user-icon-btn:hover {
+.user-icon-Btn:hover {
   background: rgba(255, 255, 255, 0.1);
   transform: scale(1.1);
 }
 
-/* 3D-icon-btn */
-.threeD-icon-btn {
+/* 3D-icon-Btn */
+.threeD-icon-Btn {
   background: transparent;
   border: none;
   color: var(--text-light);
@@ -1021,7 +1021,7 @@ body.showcase-section {
   font-weight: 550;
 }
 
-.threeD-icon-btn:hover {
+.threeD-icon-Btn:hover {
   background: rgba(255, 255, 255, 0.1);
   transform: scale(1.1);
 }
@@ -1085,7 +1085,7 @@ section#contact {
   height: auto;
   margin-bottom: 20px;
 }
-.contact-btn {
+.contact-Btn {
   display: flex;
   font-size: 18px;
   align-items: center;
@@ -1099,7 +1099,7 @@ section#contact {
   transition: var(--transition);
 }
 
-.contact-btn:hover {
+.contact-Btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(151, 151, 151, 0.2);
 }
@@ -1212,20 +1212,20 @@ section#contact {
     display: none; /* Replace with mobile menu in production */
   }
 
-  .primary-btn {
+  .primary-Btn {
     background-color: #0971b3;
   }
 
-  .primary-btn:hover {
+  .primary-Btn:hover {
     background-color: #0d8ae2;
   }
 
-  .secondary-btn {
+  .secondary-Btn {
     border-color: #0971b3;
     color: #0971b3;
   }
 
-  .secondary-btn:hover {
+  .secondary-Btn:hover {
     background-color: rgba(9, 113, 179, 0.1);
   }
 
@@ -1408,7 +1408,7 @@ section#contact {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
-.close-btn {
+.close-Btn {
   position: absolute;
   top: 50px;
   right: 70px;
@@ -1420,7 +1420,7 @@ section#contact {
   z-index: 1000;
 }
 
-.close-btn:hover {
+.close-Btn:hover {
   color: var(--accent-orange);
   transform: rotate(90deg);
 }

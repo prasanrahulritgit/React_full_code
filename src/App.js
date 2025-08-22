@@ -29,7 +29,7 @@ const App = () => {
           <Route path="user" element={<User />} />
           <Route path="reservation" element={<AdminReservation />} /> {/* Changed to AdminReservation */}
           {/* Use your actual History component if you have one */}
-          <Route path="history" element={<Dashboard />} />
+          <Route path="Launch" element={<Dashboard />} />
         </Route>
 
         {/* (Optional) keep direct pages if you still want them accessible */}

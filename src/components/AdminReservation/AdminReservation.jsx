@@ -5,6 +5,22 @@ import 'font-awesome/css/font-awesome.min.css';
 import 'flatpickr/dist/flatpickr.min.css';
 import './AdminReservation.css';
 import '@fortawesome/fontawesome-free';
+import { 
+  FaSignOutAlt, 
+  FaCalendarPlus, 
+  FaClock, 
+  FaCalendarCheck, 
+  FaInfoCircle, 
+  FaCalendarAlt, 
+  FaSearch, 
+  FaSort, 
+  FaRocket, 
+  FaSpinner, 
+  FaTimes,
+  FaCheck,
+  FaExclamationTriangle,
+  FaBan
+} from 'react-icons/fa';
 
 const AdminReservation = () => {
   const [currentUser, setCurrentUser] = useState({ is_authenticated: true });
@@ -255,29 +271,41 @@ const handleConfirmDevice = async () => {
     }
   };
 
-// Launch device (this would typically redirect to the device)
+// Launch device - redirect to dashboard
 const handleLaunchDevice = (deviceId, reservationId) => {
-  // Find the reservation to get the device IPs
+  // Find the reservation to get the device details
   const reservation = userReservations.find(r => r.id === reservationId);
-  if (reservation && reservation.device_ips) {
-    // For now, just show the IPs in an alert or let user choose
-    const ipList = Object.entries(reservation.device_ips)
-      .map(([type, ip]) => `${type}: ${ip}`)
-      .join('\n');
-    
-    // Show IPs to user and let them choose
-    alert(`Available IP addresses for this device:\n${ipList}`);
-    
-    // Or you could implement a modal to let the user choose which IP to connect to
-    // For example, connect to PC_IP by default if available
-    if (reservation.device_ips.pc_ip) {
-      window.open(`http://${reservation.device_ips.pc_ip}`, '_blank');
-    } else if (reservation.device_ips.rutomatrix_ip) {
-      window.open(`http://${reservation.device_ips.rutomatrix_ip}`, '_blank');
+  
+  if (reservation) {
+    // Determine which IP type to use (prioritize PC_IP if available)
+    let ipType = '';
+    if (reservation.device_ips && reservation.device_ips.pc_ip) {
+      ipType = 'pc_ip';
+    } else if (reservation.device_ips && reservation.device_ips.rutomatrix_ip) {
+      ipType = 'rutomatrix_ip';
+    } else if (reservation.device_ips && reservation.device_ips.pulse1_ip) {
+      ipType = 'pulse1_ip';
+    } else if (reservation.device_ips && reservation.device_ips.ct1_ip) {
+      ipType = 'ct1_ip';
     }
-    // Add other IP types as needed
+    
+    // If we found an IP type, navigate to dashboard
+    if (ipType) {
+      const baseUrl = 'http://localhost:3000/dashboard';
+      const params = new URLSearchParams({
+        device: deviceId,
+        ip_type: ipType,
+        reservation: reservationId
+      });
+      
+      const fullUrl = `${baseUrl}?${params.toString()}`;
+      console.log(`Navigating to: ${fullUrl}`);
+      window.location.href = fullUrl;
+    } else {
+      setMessages([{ text: 'No valid IP address found for this device', category: 'warning' }]);
+    }
   } else {
-    setMessages([{ text: 'Device IP addresses not available', category: 'warning' }]);
+    setMessages([{ text: 'Reservation not found', category: 'warning' }]);
   }
 };
 
@@ -387,10 +415,10 @@ const handleShowDeviceDetails = (device) => {
   return (
     <div className="container-fluid py-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1 className="h3 mb-0">Device Reservation</h1>
+        <h1 className="h3 mb-0">Admin Device Reservation</h1>
         {currentUser.is_authenticated && (
           <a href="http://localhost:3000/auth" className="btn btn-outline-danger">
-            <i className="fas fa-sign-out-alt me-2"></i> Logout
+            <FaSignOutAlt className="me-2" /> Logout
           </a>
         )}
       </div>
@@ -408,7 +436,7 @@ const handleShowDeviceDetails = (device) => {
 
       <div className="card reservation-card mb-4">
         <div className="card-header reservation-header">
-          <h5 className="mb-0"><i className="fas fa-calendar-plus me-2"></i>Create New Reservation</h5>
+          <h5 className="mb-0"><FaCalendarPlus className="me-2" />Create New Reservation</h5>
         </div>
         <div className="card-body">
           <form id="reservationForm" className="reservation-form">
@@ -416,7 +444,7 @@ const handleShowDeviceDetails = (device) => {
               <div className="col-md-6">
                 <label htmlFor="start_time" className="form-label">Start Time</label>
                 <div className="input-icon-group">
-                  <i className="fas fa-clock input-icon"></i>
+                  <FaClock className="input-icon" />
                   <input 
                     type="datetime-local" 
                     className="form-control form-control-lg" 
@@ -440,7 +468,7 @@ const handleShowDeviceDetails = (device) => {
               <div className="col-md-6">
                 <label htmlFor="end_time" className="form-label">End Time</label>
                 <div className="input-icon-group">
-                  <i className="fas fa-clock input-icon"></i>
+                  <FaClock className="input-icon" />
                   <input 
                     type="datetime-local" 
                     className="form-control form-control-lg" 
@@ -472,11 +500,11 @@ const handleShowDeviceDetails = (device) => {
               >
                 {loading ? (
                   <>
-                    <i className="fas fa-spinner fa-spin me-2"></i>Loading...
+                    <FaSpinner className="me-2" />Loading...
                   </>
                 ) : (
                   <>
-                    <i className="fas fa-calendar-check me-2"></i>Book Reservation
+                    <FaCalendarCheck className="me-2" />Book Reservation
                   </>
                 )}
               </button>
@@ -527,7 +555,7 @@ const handleShowDeviceDetails = (device) => {
                             onChange={(e) => setDeviceFilter(e.target.value)}
                           />
                           <button className="btn btn-outline-secondary" type="button" onClick={() => setDeviceFilter('')}>
-                            <i className="fas fa-times"></i>
+                            <FaTimes />
                           </button>
                         </div>
                       </div>
@@ -536,7 +564,7 @@ const handleShowDeviceDetails = (device) => {
                   <div className="server-rack-container">
                     {loading ? (
                       <div className="loading-message">
-                        <i className="fas fa-spinner fa-spin"></i> Loading devices...
+                        <FaSpinner className="fa-spin" /> Loading devices...
                       </div>
                     ) : filteredAvailableDevices.length > 0 ? (
                       <div className="row">
@@ -559,7 +587,7 @@ const handleShowDeviceDetails = (device) => {
                                     handleShowDeviceDetails(device);
                                   }}
                                 >
-                                  <i className="fas fa-info-circle"></i> Details
+                                  <FaInfoCircle className="me-1" /> Details
                                 </button>
                               </div>
                             </div>
@@ -568,7 +596,7 @@ const handleShowDeviceDetails = (device) => {
                       </div>
                     ) : (
                       <div className="text-center py-4 text-muted">
-                        <i className="far fa-calendar-times fa-2x mb-2"></i><br />
+                        <FaCalendarAlt className="fa-2x mb-2" /><br />
                         No available devices found
                       </div>
                     )}
@@ -592,7 +620,7 @@ const handleShowDeviceDetails = (device) => {
                             onChange={(e) => setBookedDeviceFilter(e.target.value)}
                           />
                           <button className="btn btn-outline-secondary" type="button" onClick={() => setBookedDeviceFilter('')}>
-                            <i className="fas fa-times"></i>
+                            <FaTimes />
                           </button>
                         </div>
                       </div>
@@ -602,7 +630,7 @@ const handleShowDeviceDetails = (device) => {
                   <div className="server-rack-container">
                     {loading ? (
                       <div className="loading-message">
-                        <i className="fas fa-spinner fa-spin"></i> Loading booked devices...
+                        <FaSpinner className="fa-spin" /> Loading booked devices...
                       </div>
                     ) : filteredBookedDevices.length > 0 ? (
                       <div className="row">
@@ -623,7 +651,7 @@ const handleShowDeviceDetails = (device) => {
                                   className="btn btn-sm btn-info"
                                   onClick={() => handleShowDeviceDetails(device)}
                                 >
-                                  <i className="fas fa-info-circle"></i> Details
+                                  <FaInfoCircle className="me-1" /> Details
                                 </button>
                               </div>
                             </div>
@@ -632,7 +660,7 @@ const handleShowDeviceDetails = (device) => {
                       </div>
                     ) : (
                       <div className="text-center py-4 text-muted">
-                        <i className="far fa-calendar-times fa-2x mb-2"></i><br />
+                         <FaCalendarAlt className="fa-2x mb-2" />
                         No booked devices found
                       </div>
                     )}
@@ -650,11 +678,11 @@ const handleShowDeviceDetails = (device) => {
               >
                 {loading ? (
                   <>
-                    <i className="fas fa-spinner fa-spin me-2"></i>Processing...
+                     <FaSpinner className="fa-spin me-2" />Processing...  
                   </>
                 ) : (
                   <>
-                    <i className="fas fa-check me-2"></i>Confirm Device Selection
+                    <FaCheck className="me-2" />Confirm Device Selection
                   </>
                 )}
               </button>
@@ -716,7 +744,7 @@ const handleShowDeviceDetails = (device) => {
         <div className="col-lg-12 mb-4">
           <div className="card shadow-sm">
             <div className="card-header d-flex justify-content-between align-items-center" style={{ backgroundColor: '#1e1e1e', color: '#1281d6' }}>
-              <h5 className="mb-0"><i className="fas fa-calendar-alt me-2"></i>Your Reservations</h5>
+               <h5 className="mb-0"><FaCalendarAlt className="me-2" />Your Reservations</h5>
               <div className="d-flex align-items-center">
                 <div className="me-3">
                   <select 
@@ -744,7 +772,7 @@ const handleShowDeviceDetails = (device) => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                   <button className="btn btn-outline-light" type="button">
-                    <i className="fas fa-search"></i>
+                    <FaSearch />
                   </button>
                 </div>
               </div>
@@ -752,7 +780,7 @@ const handleShowDeviceDetails = (device) => {
             <div className="card-body p-0">
               {reservationLoading ? (
                 <div className="text-center py-4">
-                  <i className="fas fa-spinner fa-spin fa-2x"></i>
+                  <FaSpinner className="fa-spin fa-2x" />
                   <p>Loading reservations...</p>
                 </div>
               ) : (
@@ -766,28 +794,28 @@ const handleShowDeviceDetails = (device) => {
                             onClick={() => handleSort('device')}
                             data-sort="device"
                           >
-                            Device <i className="fas fa-sort float-end mt-1"></i>
+                            Device <FaSort className="float-end mt-1" />
                           </th>
                           <th 
                             className={`sortable ${sortConfig.key === 'startTime' ? (sortConfig.direction === 'asc' ? 'sorted-asc' : 'sorted-desc') : ''}`} 
                             onClick={() => handleSort('startTime')}
                             data-sort="startTime"
                           >
-                            Start <i className="fas fa-sort float-end mt-1"></i>
+                            Start <FaSort className="float-end mt-1" />
                           </th>
                           <th 
                             className={`sortable ${sortConfig.key === 'endTime' ? (sortConfig.direction === 'asc' ? 'sorted-asc' : 'sorted-desc') : ''}`} 
                             onClick={() => handleSort('endTime')}
                             data-sort="endTime"
                           >
-                            End <i className="fas fa-sort float-end mt-1"></i>
+                            End <FaSort className="float-end mt-1" />
                           </th>
                           <th 
                             className={`sortable ${sortConfig.key === 'status' ? (sortConfig.direction === 'asc' ? 'sorted-asc' : 'sorted-desc') : ''}`} 
                             onClick={() => handleSort('status')}
                             data-sort="status"
                           >
-                            Status <i className="fas fa-sort float-end mt-1"></i>
+                            Status <FaSort className="float-end mt-1" />
                           </th>
                           <th>Actions</th>
                         </tr>
@@ -831,7 +859,7 @@ const handleShowDeviceDetails = (device) => {
                                       data-device-id={res.device_id}
                                       data-reservation-id={res.id}
                                     >
-                                      <i className="fas fa-rocket"></i> Launch
+                                      <FaRocket className="me-1" /> Launch
                                     </button>
 
                                     <button 
@@ -841,10 +869,10 @@ const handleShowDeviceDetails = (device) => {
                                       disabled={reservationLoading}
                                     >
                                       {reservationLoading ? (
-                                        <i className="fas fa-spinner fa-spin"></i>
+                                        <FaSpinner className="fa-spin" />
                                       ) : (
                                         <>
-                                          <i className="bi bi-x-circle"></i> Cancel
+                                          <FaBan className="me-1" /> Cancel
                                         </>
                                       )}
                                     </button>
@@ -856,7 +884,7 @@ const handleShowDeviceDetails = (device) => {
                         ) : (
                           <tr>
                             <td colSpan="5" className="text-center py-4 text-muted">
-                              <i className="far fa-calendar-times fa-2x mb-2"></i><br />
+                              <FaCalendarAlt className="fa-2x mb-2" /><br />
                               No reservations found
                             </td>
                           </tr>
