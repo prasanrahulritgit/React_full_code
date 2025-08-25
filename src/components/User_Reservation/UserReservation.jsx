@@ -5,6 +5,8 @@ import 'font-awesome/css/font-awesome.min.css';
 import 'flatpickr/dist/flatpickr.min.css';
 import './UserReservation.css';
 import '@fortawesome/fontawesome-free';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
 import { 
   FaSignOutAlt, 
   FaCalendarPlus, 
@@ -18,7 +20,6 @@ import {
   FaSpinner, 
   FaTimes,
   FaCheck,
-  FaExclamationTriangle,
   FaBan
 } from 'react-icons/fa';
 
@@ -38,17 +39,58 @@ const UserReservation = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showDeviceDetails, setShowDeviceDetails] = useState(false);
   const [deviceDetails, setDeviceDetails] = useState(null);
+  const [reservationdetails, setreservationdetails] = useState(null)
   const [availableDevices, setAvailableDevices] = useState([]);
   const [bookedDevices, setBookedDevices] = useState([]);
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [loading, setLoading] = useState(false);
   const [reservationLoading, setReservationLoading] = useState(false);
+  const startTimeRef = useRef(null);
+  const endTimeRef = useRef(null);
+  const [startTimePicker, setStartTimePicker] = useState(null);
+  const [endTimePicker, setEndTimePicker] = useState(null);
 
   // API base URL
   const API_BASE = 'http://localhost:5000'; // Update with your Flask server URL
 
-  
+    useEffect(() => {
+    if (startTimeRef.current && endTimeRef.current) {
+      // Start Time Picker
+      const startPicker = flatpickr(startTimeRef.current, {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        minDate: "today",
+        time_24hr: true,
+        minuteIncrement: 30,
+        onChange: function(selectedDates, dateStr) {
+          setStartTime(dateStr.replace(' ', 'T'));
+        }
+      });
+
+      // End Time Picker
+      const endPicker = flatpickr(endTimeRef.current, {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        minDate: "today",
+        time_24hr: true,
+        minuteIncrement: 30,
+        onChange: function(selectedDates, dateStr) {
+          setEndTime(dateStr.replace(' ', 'T'));
+        }
+      });
+
+      setStartTimePicker(startPicker);
+      setEndTimePicker(endPicker);
+
+      return () => {
+        startPicker.destroy();
+        endPicker.destroy();
+      };
+    }
+  }, []);
+
+
   useEffect(() => {
     document.title = "Device Reservation";
     fetchUserReservations();
@@ -61,7 +103,7 @@ const UserReservation = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Fetch user reservations
+
 // Fetch user reservations
 const fetchUserReservations = async () => {
   try {
@@ -87,7 +129,14 @@ const fetchUserReservations = async () => {
           is_active: res.is_active,
           can_manage: res.can_manage
         }));
-        setUserReservations(transformedReservations);
+        
+        // Filter out expired reservations
+        const currentTime = new Date();
+        const activeReservations = transformedReservations.filter(
+          reservation => new Date(reservation.end_time) >= currentTime
+        );
+        
+        setUserReservations(activeReservations);
       } else {
         setMessages([{ text: data.message, category: 'danger' }]);
       }
@@ -359,16 +408,23 @@ const handleShowDeviceDetails = (device) => {
     }
   };
 
-  // Handle quick select time buttons
   const handleQuickSelectTime = (field, minutes) => {
     const date = new Date();
     date.setMinutes(date.getMinutes() + minutes);
-    const formattedTime = date.toISOString().slice(0, 16);
+    
+    const formattedDate = flatpickr.formatDate(date, "Y-m-d H:i");
+    const formattedValue = formattedDate.replace(' ', 'T');
     
     if (field === 'start_time') {
-      setStartTime(formattedTime);
+      setStartTime(formattedValue);
+      if (startTimePicker) {
+        startTimePicker.setDate(date);
+      }
     } else if (field === 'end_time') {
-      setEndTime(formattedTime);
+      setEndTime(formattedValue);
+      if (endTimePicker) {
+        endPicker.setDate(date);
+      }
     }
   };
 
@@ -427,6 +483,64 @@ const handleShowDeviceDetails = (device) => {
     return 0;
   });
   
+useEffect(() => {
+  const interval = setInterval(() => {
+    // Only refresh user reservations if we're NOT in device selection mode
+    // or if we're looking at booked devices tab (to keep reservation list updated)
+    if (!showDeviceSelection || activeTab === "booked") {
+      fetchUserReservations();
+    }
+    
+    // Refresh the appropriate tab content only when device selection is open
+    if (showDeviceSelection) {
+      if (activeTab === "booked") {
+        fetchBookedDevices();
+      } else if (activeTab === "available" && startTime && endTime) {
+        const start = new Date(startTime);
+        const end = new Date(endTime);
+        fetchAvailableDevices(start, end);
+      }
+    }
+    
+    // Always clean up expired reservations
+    cleanupExpiredReservations();
+  }, 30000);
+
+  return () => clearInterval(interval);
+}, [showDeviceSelection, activeTab, startTime, endTime]);
+
+
+const cleanupExpiredReservations = () => {
+  const currentTime = new Date();
+  setUserReservations(prevReservations => 
+    prevReservations.filter(reservation => new Date(reservation.end_time) >= currentTime)
+  );
+};
+
+// Then call this function in your polling interval:
+useEffect(() => {
+  const interval = setInterval(() => {
+    // Always refresh user reservations
+    fetchUserReservations();
+    
+    // Also clean up any expired reservations in the local state
+    cleanupExpiredReservations();
+    
+    // Refresh the appropriate tab content
+    if (showDeviceSelection) {
+      if (activeTab === "booked") {
+        fetchBookedDevices();
+      } else if (activeTab === "available" && startTime && endTime) {
+        const start = new Date(startTime);
+        const end = new Date(endTime);
+        fetchAvailableDevices(start, end);
+      }
+    }
+  }, 30000);
+
+  return () => clearInterval(interval);
+}, [showDeviceSelection, activeTab, startTime, endTime]);
+
   // Filter reservations based on search term
   const filteredReservations = sortedReservations.filter(reservation => 
     reservation.device_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -470,8 +584,7 @@ const filteredBookedDevices = bookedDevices
           ))}
         </div>
       )}
-
-      <div className="card reservation-card mb-4">
+ <div className="card reservation-card mb-4">
         <div className="card-header reservation-header">
           <h5 className="mb-0"><FaCalendarPlus className="me-2" />Create New Reservation</h5>
         </div>
@@ -483,15 +596,15 @@ const filteredBookedDevices = bookedDevices
                 <div className="input-icon-group">
                   <FaClock className="input-icon" />
                   <input 
-                    type="datetime-local" 
+                    ref={startTimeRef}
+                    type="text" 
                     className="form-control form-control-lg" 
                     id="start_time" 
                     name="start_time" 
                     placeholder="Select start time" 
                     required
-                    value={startTime}
-                    onChange={(e) => handleTimeChange('start_time', e.target.value)}
-                    min={now.toISOString().slice(0, 16)}
+                    value={startTime ? startTime.replace('T', ' ') : ''}
+                    readOnly // Make it readOnly so Flatpickr handles the input
                   />
                 </div>
                 <div className="quick-select-buttons mt-2">
@@ -507,15 +620,15 @@ const filteredBookedDevices = bookedDevices
                 <div className="input-icon-group">
                   <FaClock className="input-icon" />
                   <input 
-                    type="datetime-local" 
+                    ref={endTimeRef}
+                    type="text" 
                     className="form-control form-control-lg" 
                     id="end_time" 
                     name="end_time" 
                     placeholder="Select end time" 
                     required
-                    value={endTime}
-                    onChange={(e) => handleTimeChange('end_time', e.target.value)}
-                    min={now.toISOString().slice(0, 16)}
+                    value={endTime ? endTime.replace('T', ' ') : ''}
+                    readOnly // Make it readOnly so Flatpickr handles the input
                   />
                 </div>
                 <div className="quick-select-buttons mt-2">
@@ -533,7 +646,7 @@ const filteredBookedDevices = bookedDevices
                 id="bookReservationBtn" 
                 className="btn btn-reserve" 
                 onClick={handleBookReservation}
-                disabled={loading}
+                disabled={loading || !startTime || !endTime}
               >
                 {loading ? (
                   <>
@@ -729,7 +842,6 @@ const filteredBookedDevices = bookedDevices
                           const startTime = device.start_time || device.reservation_start || device.time?.start;
                           const endTime = device.end_time || device.reservation_end || device.time?.end;
                           const userName = device.user_name || device.user?.name || device.reserved_by || 'Unknown User';
-                          const userEmail = device.user_email || device.user?.email || '';
                           const status = device.status || 'booked';
                           const purpose = device.purpose || 'Not specified';
 
@@ -750,36 +862,6 @@ const filteredBookedDevices = bookedDevices
                                     }`}>
                                       {status.toUpperCase()}
                                     </span>
-                                  </div>
-                                  
-                                  <div className="device-details">
-                                    <p className="mb-1"><strong>Reserved by:</strong> {userName}</p>
-                                    {userEmail && <p className="mb-1"><strong>Email:</strong> {userEmail}</p>}
-                                    
-                                    {startTime && (
-                                      <p className="mb-1">
-                                        <strong>Start:</strong> {new Date(startTime).toLocaleString()}
-                                      </p>
-                                    )}
-                                    
-                                    {endTime && (
-                                      <p className="mb-1">
-                                        <strong>End:</strong> {new Date(endTime).toLocaleString()}
-                                      </p>
-                                    )}
-                                    
-                                    <p className="mb-1"><strong>Purpose:</strong> {purpose}</p>
-                                    
-                                    {/* Show IP addresses if available */}
-                                    {(device.pc_ip || device.rutomatrix_ip || device.pulse1_ip || device.ct1_ip) && (
-                                      <div className="mt-2">
-                                        <strong>IP Addresses:</strong>
-                                        {device.pc_ip && <div className="small">PC: {device.pc_ip}</div>}
-                                        {device.rutomatrix_ip && <div className="small">Rutomatrix: {device.rutomatrix_ip}</div>}
-                                        {device.pulse1_ip && <div className="small">Pulse1: {device.pulse1_ip}</div>}
-                                        {device.ct1_ip && <div className="small">CT1: {device.ct1_ip}</div>}
-                                      </div>
-                                    )}
                                   </div>
                                 </div>
                                 <div className="card-footer bg-light">
@@ -854,7 +936,6 @@ const filteredBookedDevices = bookedDevices
                   <div className="col-md-6">
                     <h5>Basic Information</h5>
                     <p><strong>Device ID:</strong> {deviceDetails.device_id}</p>
-                    <p><strong>Device Name:</strong> {deviceDetails.device_name}</p>
                     <p><strong>Status:</strong> 
                       <span className={`badge ${
                         deviceDetails.status === 'active' ? 'bg-success' : 
@@ -879,12 +960,12 @@ const filteredBookedDevices = bookedDevices
                     {deviceDetails.end_time && (
                       <p><strong>End Time:</strong> {new Date(deviceDetails.end_time).toLocaleString()}</p>
                     )}
-                    {deviceDetails.user_name && (
-                      <p><strong>Reserved by:</strong> {deviceDetails.user_name} (ID: {deviceDetails.user_id})</p>
-                    )}
                     {deviceDetails.purpose && (
                       <p><strong>Purpose:</strong> {deviceDetails.purpose}</p>
                     )}
+                    {deviceDetails.user_id && (
+                      <p><strong>Booked_by:</strong> {deviceDetails.user_id}</p>
+                    ) }
                   </div>
                 </div>
               </div>
@@ -981,6 +1062,8 @@ const filteredBookedDevices = bookedDevices
                             const statusClass = isExpired ? 'table-secondary' : isActive ? 'table-success' : '';
                             const status = isExpired ? 'expired' : isActive ? 'active' : 'upcoming';
                             
+                            if (isExpired) return null;
+
                             return (
                               <tr 
                                 key={res.id}
@@ -1033,7 +1116,7 @@ const filteredBookedDevices = bookedDevices
                                 </td>
                               </tr>
                             );
-                          })
+                          }).filter(Boolean)
                         ) : (
                           <tr>
                             <td colSpan="5" className="text-center py-4 text-muted">
