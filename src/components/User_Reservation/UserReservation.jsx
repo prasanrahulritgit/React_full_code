@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, use } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'datatables.net-bs5/css/dataTables.bootstrap5.css';
 import 'font-awesome/css/font-awesome.min.css';
@@ -423,7 +423,7 @@ const handleShowDeviceDetails = (device) => {
     } else if (field === 'end_time') {
       setEndTime(formattedValue);
       if (endTimePicker) {
-        endPicker.setDate(date);
+        endTimePicker.setDate(date);
       }
     }
   };
@@ -807,16 +807,6 @@ const filteredBookedDevices = bookedDevices
                         </button>
                       </div>
                     </div>
-                    <div className="col-md-6 d-flex align-items-end">
-                      <button 
-                        className="btn btn-sm btn-outline-primary"
-                        onClick={fetchBookedDevices}
-                        disabled={loading}
-                      >
-                        {loading ? <FaSpinner className="fa-spin" /> : <FaSearch />}
-                        Refresh
-                      </button>
-                    </div>
                   </div>
                 </div>
 
@@ -882,12 +872,6 @@ const filteredBookedDevices = bookedDevices
                       <FaCalendarAlt className="fa-3x mb-3" />
                       <h5>No Booked Devices Found</h5>
                       <p className="mb-3">There are currently no active or upcoming reservations.</p>
-                      <button 
-                        className="btn btn-primary"
-                        onClick={fetchBookedDevices}
-                      >
-                        <FaSearch className="me-2" /> Check Again
-                      </button>
                     </div>
                   )}
                 </div>
