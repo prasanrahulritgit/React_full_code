@@ -5,6 +5,8 @@ import 'font-awesome/css/font-awesome.min.css';
 import 'flatpickr/dist/flatpickr.min.css';
 import './AdminReservation.css';
 import '@fortawesome/fontawesome-free';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
 import { 
   FaSignOutAlt, 
   FaCalendarPlus, 
@@ -18,7 +20,6 @@ import {
   FaSpinner, 
   FaTimes,
   FaCheck,
-  FaExclamationTriangle,
   FaBan
 } from 'react-icons/fa';
 
@@ -38,12 +39,14 @@ const AdminReservation = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showDeviceDetails, setShowDeviceDetails] = useState(false);
   const [deviceDetails, setDeviceDetails] = useState(null);
+  const [reservationdetails, setreservationdetails] = useState(null)
   const [availableDevices, setAvailableDevices] = useState([]);
   const [bookedDevices, setBookedDevices] = useState([]);
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [loading, setLoading] = useState(false);
   const [reservationLoading, setReservationLoading] = useState(false);
+  
 
   // API base URL
   const API_BASE = 'http://localhost:5000'; // Update with your Flask server URL
@@ -61,7 +64,7 @@ const AdminReservation = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Fetch user reservations
+
 // Fetch user reservations
 const fetchUserReservations = async () => {
   try {
@@ -87,7 +90,14 @@ const fetchUserReservations = async () => {
           is_active: res.is_active,
           can_manage: res.can_manage
         }));
-        setUserReservations(transformedReservations);
+        
+        // Filter out expired reservations
+        const currentTime = new Date();
+        const activeReservations = transformedReservations.filter(
+          reservation => new Date(reservation.end_time) >= currentTime
+        );
+        
+        setUserReservations(activeReservations);
       } else {
         setMessages([{ text: data.message, category: 'danger' }]);
       }
@@ -102,7 +112,6 @@ const fetchUserReservations = async () => {
   }
 };
 
-  // Fetch available devices based on selected time range
 // Fetch available devices based on selected time range
 const fetchAvailableDevices = async (start, end) => {
   try {
@@ -115,8 +124,8 @@ const fetchAvailableDevices = async (start, end) => {
     if (response.ok) {
       const data = await response.json();
       if (data.success) {
-        // Make sure to handle the new response format if it changed
-        setAvailableDevices(data.devices.filter(device => device.status === 'available'));
+        // Store both available and booked devices for the time range
+        setAvailableDevices(data.devices || []);
       } else {
         setMessages([{ text: data.message, category: 'danger' }]);
       }
@@ -131,32 +140,51 @@ const fetchAvailableDevices = async (start, end) => {
   }
 };
 
-  // Fetch booked devices
-  const fetchBookedDevices = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(
-        `${API_BASE}/api/booked-devices`,
-        { credentials: 'include' }
-      );
+
+const fetchBookedDevices = async () => {
+  try {
+    setLoading(true);
+    console.log('Fetching booked devices...');
+    
+    const response = await fetch(`${API_BASE}/api/booked-devices`, {
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Booked devices response:', data);
       
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          setBookedDevices(data.data.booked_devices);
-        } else {
-          setMessages([{ text: data.message, category: 'danger' }]);
+      if (data.success) {
+        // Handle different possible response structures
+        let devices = [];
+        
+        if (Array.isArray(data.booked_devices)) {
+          devices = data.booked_devices;
+        } else if (Array.isArray(data.reservations)) {
+          devices = data.reservations;
+        } else if (Array.isArray(data.data)) {
+          devices = data.data;
+        } else if (data.data && Array.isArray(data.data.booked_devices)) {
+          devices = data.data.booked_devices;
+        } else if (Array.isArray(data)) {
+          devices = data; // Direct array response
         }
+        
+        console.log('Processed booked devices:', devices);
+        setBookedDevices(devices);
       } else {
-        setMessages([{ text: 'Failed to fetch booked devices', category: 'danger' }]);
+        setMessages([{ text: data.message || 'Failed to fetch booked devices', category: 'danger' }]);
       }
-    } catch (error) {
-      console.error('Error fetching booked devices:', error);
-      setMessages([{ text: 'Network error while fetching booked devices', category: 'danger' }]);
-    } finally {
-      setLoading(false);
+    } else {
+      setMessages([{ text: `Server error: ${response.status}`, category: 'danger' }]);
     }
-  };
+  } catch (error) {
+    console.error('Error fetching booked devices:', error);
+    setMessages([{ text: 'Network error while fetching booked devices', category: 'danger' }]);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Handle device selection modal opening
   const handleBookReservation = () => {
@@ -312,7 +340,23 @@ const handleLaunchDevice = (deviceId, reservationId) => {
   // Show device details
 
 const handleShowDeviceDetails = (device) => {
-  setDeviceDetails(device);
+  // Extract device information consistently
+  const deviceDetails = {
+    device_id: device.device?.id || device.device_id || 'Unknown',
+    device_name: device.device?.name || 'Unknown',
+    pc_ip: device.device?.pc_ip,
+    rutomatrix_ip: device.device?.rutomatrix_ip,
+    pulse1_ip: device.device?.pulse1_ip,
+    ct1_ip: device.device?.ct1_ip,
+    start_time: device.start_time || device.time?.start,
+    end_time: device.end_time || device.time?.end,
+    user_name: device.user?.name || device.user_name,
+    user_id: device.user?.id || device.user_id,
+    status: device.status,
+    purpose: device.purpose
+  };
+  
+  setDeviceDetails(deviceDetails);
   setShowDeviceDetails(true);
 };
 
@@ -393,6 +437,64 @@ const handleShowDeviceDetails = (device) => {
     return 0;
   });
   
+useEffect(() => {
+  const interval = setInterval(() => {
+    // Only refresh user reservations if we're NOT in device selection mode
+    // or if we're looking at booked devices tab (to keep reservation list updated)
+    if (!showDeviceSelection || activeTab === "booked") {
+      fetchUserReservations();
+    }
+    
+    // Refresh the appropriate tab content only when device selection is open
+    if (showDeviceSelection) {
+      if (activeTab === "booked") {
+        fetchBookedDevices();
+      } else if (activeTab === "available" && startTime && endTime) {
+        const start = new Date(startTime);
+        const end = new Date(endTime);
+        fetchAvailableDevices(start, end);
+      }
+    }
+    
+    // Always clean up expired reservations
+    cleanupExpiredReservations();
+  }, 30000);
+
+  return () => clearInterval(interval);
+}, [showDeviceSelection, activeTab, startTime, endTime]);
+
+
+const cleanupExpiredReservations = () => {
+  const currentTime = new Date();
+  setUserReservations(prevReservations => 
+    prevReservations.filter(reservation => new Date(reservation.end_time) >= currentTime)
+  );
+};
+
+// Then call this function in your polling interval:
+useEffect(() => {
+  const interval = setInterval(() => {
+    // Always refresh user reservations
+    fetchUserReservations();
+    
+    // Also clean up any expired reservations in the local state
+    cleanupExpiredReservations();
+    
+    // Refresh the appropriate tab content
+    if (showDeviceSelection) {
+      if (activeTab === "booked") {
+        fetchBookedDevices();
+      } else if (activeTab === "available" && startTime && endTime) {
+        const start = new Date(startTime);
+        const end = new Date(endTime);
+        fetchAvailableDevices(start, end);
+      }
+    }
+  }, 30000);
+
+  return () => clearInterval(interval);
+}, [showDeviceSelection, activeTab, startTime, endTime]);
+
   // Filter reservations based on search term
   const filteredReservations = sortedReservations.filter(reservation => 
     reservation.device_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -408,14 +510,17 @@ const handleShowDeviceDetails = (device) => {
     device.device_id.toLowerCase().includes(deviceFilter.toLowerCase())
   );
 
-  const filteredBookedDevices = bookedDevices.filter(device => 
-    device.device.id.toLowerCase().includes(bookedDeviceFilter.toLowerCase())
-  );
+const filteredBookedDevices = bookedDevices
+  ? bookedDevices.filter(device => {
+      const deviceId = device.device?.id || device.device_id || '';
+      return deviceId.toLowerCase().includes(bookedDeviceFilter.toLowerCase());
+    })
+  : [];
 
   return (
     <div className="container-fluid py-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1 className="h3 mb-0">Admin Device Reservation</h1>
+        <h1 className="h3 mb-0">User Device Reservation</h1>
         {currentUser.is_authenticated && (
           <a href="http://localhost:3000/auth" className="btn btn-outline-danger">
             <FaSignOutAlt className="me-2" /> Logout
@@ -530,62 +635,95 @@ const handleShowDeviceDetails = (device) => {
                 Available Devices
               </div>
               <div 
-                className={`device-tab ${activeTab === 'booked' ? 'active' : ''}`} 
-                onClick={() => setActiveTab('booked')}
-                data-tab="booked"
-              >
+              className={`device-tab ${activeTab === 'booked' ? 'active' : ''}`} 
+              onClick={() => {
+                setActiveTab('booked');
+                if (bookedDevices.length === 0) {
+                  fetchBookedDevices();
+                }
+              }}
+              data-tab="booked"
+            >
                 Booked Devices
               </div>
             </div>
             
             <div className="tab-content">
               {activeTab === 'available' && (
-                <div id="available-devices" className="tab-pane active">
-                  <div className="filter-container mb-3">
-                    <div className="row">
-                      <div className="col-md-6">
-                        <label htmlFor="deviceFilter" className="form-label">Filter by Device ID</label>
-                        <div className="input-group">
-                          <input 
-                            type="text" 
-                            className="form-control" 
-                            id="deviceFilter" 
-                            placeholder="Enter device ID..." 
-                            value={deviceFilter}
-                            onChange={(e) => setDeviceFilter(e.target.value)}
-                          />
-                          <button className="btn btn-outline-secondary" type="button" onClick={() => setDeviceFilter('')}>
-                            <FaTimes />
-                          </button>
-                        </div>
+              <div id="available-devices" className="tab-pane active">
+                <div className="filter-container mb-3">
+                  <div className="row">
+                    <div className="col-md-6">
+                      <label htmlFor="deviceFilter" className="form-label">Filter by Device ID</label>
+                      <div className="input-group">
+                        <input 
+                          type="text" 
+                          className="form-control" 
+                          id="deviceFilter" 
+                          placeholder="Enter device ID..." 
+                          value={deviceFilter}
+                          onChange={(e) => setDeviceFilter(e.target.value)}
+                        />
+                        <button className="btn btn-outline-secondary" type="button" onClick={() => setDeviceFilter('')}>
+                          <FaTimes />
+                        </button>
                       </div>
                     </div>
                   </div>
-                  <div className="server-rack-container">
-                    {loading ? (
-                      <div className="loading-message">
-                        <FaSpinner className="fa-spin" /> Loading devices...
-                      </div>
-                    ) : filteredAvailableDevices.length > 0 ? (
-                      <div className="row">
-                        {filteredAvailableDevices.map(device => (
+                </div>
+                <div className="server-rack-container">
+                  {loading ? (
+                    <div className="loading-message">
+                      <FaSpinner className="fa-spin" /> Loading devices...
+                    </div>
+                  ) : availableDevices.length > 0 ? (
+                    <div className="row">
+                      {availableDevices
+                        .filter(device => 
+                          device.device_id.toLowerCase().includes(deviceFilter.toLowerCase())
+                        )
+                        .map(device => (
                           <div key={device.device_id} className="col-md-4 mb-3">
                             <div 
-                              className={`card device-card ${selectedDevice?.device_id === device.device_id ? 'border-primary' : ''}`}
-                              onClick={() => handleDeviceSelection(device)}
-                              style={{ cursor: 'pointer' }}
+                              className={`card device-card ${selectedDevice?.device_id === device.device_id ? 'border-primary' : ''} ${
+                                device.status === 'booked' ? 'booked-device' : 'available-device'
+                              }`}
+                              onClick={() => {
+                                if (device.status !== 'booked') {
+                                  handleDeviceSelection(device);
+                                }
+                              }}
+                              style={{ 
+                                cursor: device.status === 'booked' ? 'not-allowed' : 'pointer',
+                                opacity: device.status === 'booked' ? 0.7 : 1
+                              }}
                             >
                               <div className="card-body">
                                 <h5 className="card-title">{device.device_id}</h5>
                                 <p className="card-text">
-                                  <span className="badge bg-success">Available</span>
+                                  <span className={`badge ${
+                                    device.status === 'available' ? 'bg-success' : 
+                                    device.status === 'booked' ? 'bg-danger' : 
+                                    'bg-secondary'
+                                  }`}>
+                                    {device.status === 'available' ? 'Available' : 
+                                    device.status === 'booked' ? 'Booked' : 'Unknown'}
+                                  </span>
                                 </p>
+                                {device.status === 'booked' && (
+                                  <p className="card-text small text-muted">
+                                    Already booked for this time slot
+                                  </p>
+                                )}
                                 <button 
-                                  className="btn btn-sm btn-info"
+                                  className={`btn btn-sm ${
+                                    device.status === 'available' ? 'btn-info' : 'btn-secondary'
+                                  }`}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleShowDeviceDetails(device);
                                   }}
+                                  disabled={device.status === 'booked'}
                                 >
                                   <FaInfoCircle className="me-1" /> Details
                                 </button>
@@ -593,152 +731,203 @@ const handleShowDeviceDetails = (device) => {
                             </div>
                           </div>
                         ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-4 text-muted">
-                        <FaCalendarAlt className="fa-2x mb-2" /><br />
-                        No available devices found
-                      </div>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-4 text-muted">
+                      <FaCalendarAlt className="fa-2x mb-2" /><br />
+                      No devices found
+                    </div>
+                  )}
                 </div>
-              )}
-              
-              {activeTab === 'booked' && (
-                <div id="booked-devices" className="tab-pane">
-                  <div className="filter-container mb-3">
-                    <div className="row">
-                      <div className="col-md-6">
-                        <label htmlFor="bookedDeviceFilter" className="form-label">Filter by Device ID</label>
-                        <div className="input-group">
-                          <input 
-                            type="text" 
-                            className="form-control" 
-                            id="bookedDeviceFilter" 
-                            placeholder="Enter device ID..." 
-                            value={bookedDeviceFilter}
-                            onChange={(e) => setBookedDeviceFilter(e.target.value)}
-                          />
-                          <button className="btn btn-outline-secondary" type="button" onClick={() => setBookedDeviceFilter('')}>
-                            <FaTimes />
-                          </button>
-                        </div>
+              </div>
+            )}
+                                    
+            {activeTab === 'booked' && (
+              <div id="booked-devices" className="tab-pane active">
+                <div className="filter-container mb-3">
+                  <div className="row">
+                    <div className="col-md-6">
+                      <label htmlFor="bookedDeviceFilter" className="form-label">Filter by Device ID</label>
+                      <div className="input-group">
+                        <input 
+                          type="text" 
+                          className="form-control" 
+                          id="bookedDeviceFilter" 
+                          placeholder="Enter device ID..." 
+                          value={bookedDeviceFilter}
+                          onChange={(e) => setBookedDeviceFilter(e.target.value)}
+                        />
+                        <button className="btn btn-outline-secondary" type="button" onClick={() => setBookedDeviceFilter('')}>
+                          <FaTimes />
+                        </button>
                       </div>
                     </div>
+                    <div className="col-md-6 d-flex align-items-end">
+                      <button 
+                        className="btn btn-sm btn-outline-primary"
+                        onClick={fetchBookedDevices}
+                        disabled={loading}
+                      >
+                        {loading ? <FaSpinner className="fa-spin" /> : <FaSearch />}
+                        Refresh
+                      </button>
+                    </div>
                   </div>
+                </div>
 
-                  <div className="server-rack-container">
-                    {loading ? (
-                      <div className="loading-message">
-                        <FaSpinner className="fa-spin" /> Loading booked devices...
-                      </div>
-                    ) : filteredBookedDevices.length > 0 ? (
-                      <div className="row">
-                        {filteredBookedDevices.map(device => (
-                          <div key={device.id} className="col-md-6 mb-3">
-                            <div className="card device-card">
-                              <div className="card-body">
-                                <h5 className="card-title">{device.device.id}</h5>
-                                <p className="card-text">
-                                  <span className="badge bg-warning">Booked</span>
-                                </p>
-                                <p className="card-text">
-                                  <strong>Reserved by:</strong> User #{device.user.id}<br />
-                                  <strong>Start:</strong> {new Date(device.time.start).toLocaleString()}<br />
-                                  <strong>End:</strong> {new Date(device.time.end).toLocaleString()}
-                                </p>
-                                <button 
-                                  className="btn btn-sm btn-info"
-                                  onClick={() => handleShowDeviceDetails(device)}
-                                >
-                                  <FaInfoCircle className="me-1" /> Details
-                                </button>
+                <div className="server-rack-container">
+                  {loading ? (
+                    <div className="text-center py-4">
+                      <FaSpinner className="fa-spin fa-2x mb-2" />
+                      <p>Loading booked devices...</p>
+                    </div>
+                  ) : bookedDevices.length > 0 ? (
+                    <div className="row">
+                      {bookedDevices
+                        .filter(device => {
+                          const deviceId = device.device_id || device.device?.id || device.id || '';
+                          const deviceName = device.device_name || device.device?.name || '';
+                          return deviceId.toLowerCase().includes(bookedDeviceFilter.toLowerCase()) ||
+                                deviceName.toLowerCase().includes(bookedDeviceFilter.toLowerCase());
+                        })
+                        .map((device, index) => {
+                          // Extract all possible data fields with fallbacks
+                          const deviceId = device.device_id || device.device?.id || device.id || `device-${index}`;
+                          const deviceName = device.device_name || device.device?.name || deviceId;
+                          const startTime = device.start_time || device.reservation_start || device.time?.start;
+                          const endTime = device.end_time || device.reservation_end || device.time?.end;
+                          const userName = device.user_name || device.user?.name || device.reserved_by || 'Unknown User';
+                          const status = device.status || 'booked';
+                          const purpose = device.purpose || 'Not specified';
+
+                          return (
+                            <div key={`${deviceId}-${index}`} className="col-md-6 col-lg-4 mb-3">
+                              <div className="card device-card booked-device h-100">
+                                <div className="card-header bg-secondary text-white">
+                                  <h6 className="mb-0">{deviceName}</h6>
+                                  <small>ID: {deviceId}</small>
+                                </div>
+                                <div className="card-body">
+                                  <div className="mb-2">
+                                    <span className={`badge ${
+                                      status === 'active' ? 'bg-success' : 
+                                      status === 'upcoming' ? 'bg-warning' : 
+                                      status === 'completed' ? 'bg-info' : 
+                                      'bg-primary'
+                                    }`}>
+                                      {status.toUpperCase()}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="card-footer bg-light">
+                                  <button 
+                                    className="btn btn-sm btn-info w-100"
+                                    onClick={() => handleShowDeviceDetails(device)}
+                                  >
+                                    <FaInfoCircle className="me-1" /> View Details
+                                  </button>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-4 text-muted">
-                         <FaCalendarAlt className="fa-2x mb-2" />
-                        No booked devices found
-                      </div>
-                    )}
-                  </div>
+                          );
+                        })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-5 text-muted">
+                      <FaCalendarAlt className="fa-3x mb-3" />
+                      <h5>No Booked Devices Found</h5>
+                      <p className="mb-3">There are currently no active or upcoming reservations.</p>
+                      <button 
+                        className="btn btn-primary"
+                        onClick={fetchBookedDevices}
+                      >
+                        <FaSearch className="me-2" /> Check Again
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
+            )}
             </div>
             
-            <div className="confirm-selection mt-3">
-              <button 
-                id="confirmDeviceSelectionBtn" 
-                className="btn btn-reserve" 
-                onClick={handleConfirmDevice}
-                disabled={!selectedDevice || loading}
-              >
-                {loading ? (
-                  <>
-                     <FaSpinner className="fa-spin me-2" />Processing...  
-                  </>
-                ) : (
-                  <>
-                    <FaCheck className="me-2" />Confirm Device Selection
-                  </>
+            {activeTab === 'available' && (
+              <div className="confirm-selection mt-3">
+                <button 
+                  id="confirmDeviceSelectionBtn" 
+                  className="btn btn-reserve" 
+                  onClick={handleConfirmDevice}
+                  disabled={!selectedDevice || loading}
+                >
+                  {loading ? (
+                    <>
+                      <FaSpinner className="fa-spin me-2" />Processing...  
+                    </>
+                  ) : (
+                    <>
+                      <FaCheck className="me-2" />Confirm Device Selection
+                    </>
+                  )}
+                </button>
+                {selectedDevice && (
+                  <div className="mt-2">
+                    <strong>Selected Device:</strong> {selectedDevice.device_id}
+                  </div>
                 )}
-              </button>
-              {selectedDevice && (
-                <div className="mt-2">
-                  <strong>Selected Device:</strong> {selectedDevice.device_id}
-                </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {showDeviceDetails && deviceDetails && (
-        <>
-          <div id="deviceDetailsContainer" className="device-details-container">
-            <div className="device-details-header">
-              <h4 id="deviceDetailsTitle">Device Details - {deviceDetails.device_id || deviceDetails.device?.id}</h4>
-              <span className="close-details" onClick={() => setShowDeviceDetails(false)}>&times;</span>
-            </div>
-            <div className="device-details-content" id="deviceDetailsContent">
-              <div className="row">
-                <div className="col-md-6">
-                  <h5>Basic Information</h5>
-                  <p><strong>Device ID:</strong> {deviceDetails.device_id || deviceDetails.device?.id}</p>
-                  <p><strong>Status:</strong> {deviceDetails.status || 'N/A'}</p>
+        {showDeviceDetails && deviceDetails && (
+          <>
+            <div id="deviceDetailsContainer" className="device-details-container">
+              <div className="device-details-header">
+                <h4 id="deviceDetailsTitle">Device Details - {deviceDetails.device_id}</h4>
+                <span className="close-details" onClick={() => setShowDeviceDetails(false)}>&times;</span>
+              </div>
+              <div className="device-details-content" id="deviceDetailsContent">
+                <div className="row">
+                  <div className="col-md-6">
+                    <h5>Basic Information</h5>
+                    <p><strong>Device ID:</strong> {deviceDetails.device_id}</p>
+                    <p><strong>Status:</strong> 
+                      <span className={`badge ${
+                        deviceDetails.status === 'active' ? 'bg-success' : 
+                        deviceDetails.status === 'upcoming' ? 'bg-warning' : 
+                        'bg-secondary'
+                      } ms-2`}>
+                        {deviceDetails.status?.charAt(0).toUpperCase() + deviceDetails.status?.slice(1)}
+                      </span>
+                    </p>
+                    
+                    {deviceDetails.pc_ip && <p><strong>PC IP:</strong> {deviceDetails.pc_ip}</p>}
+                    {deviceDetails.rutomatrix_ip && <p><strong>Rutomatrix IP:</strong> {deviceDetails.rutomatrix_ip}</p>}
+                    {deviceDetails.pulse1_ip && <p><strong>Pulse1 IP:</strong> {deviceDetails.pulse1_ip}</p>}
+                    {deviceDetails.ct1_ip && <p><strong>CT1 IP:</strong> {deviceDetails.ct1_ip}</p>}
+                  </div>
                   
-                  {deviceDetails.pc_ip && <p><strong>PC IP:</strong> {deviceDetails.pc_ip}</p>}
-                  {deviceDetails.rutomatrix_ip && <p><strong>Rutomatrix IP:</strong> {deviceDetails.rutomatrix_ip}</p>}
-                  {deviceDetails.pulse1_ip && <p><strong>Pulse1 IP:</strong> {deviceDetails.pulse1_ip}</p>}
-                  {deviceDetails.ct1_ip && <p><strong>CT1 IP:</strong> {deviceDetails.ct1_ip}</p>}
-                  
-                  {deviceDetails.device && (
-                    <>
-                      {deviceDetails.device.pc_ip && <p><strong>PC IP:</strong> {deviceDetails.device.pc_ip}</p>}
-                      {deviceDetails.device.rutomatrix_ip && <p><strong>Rutomatrix IP:</strong> {deviceDetails.device.rutomatrix_ip}</p>}
-                      {deviceDetails.device.pulse1_ip && <p><strong>Pulse1 IP:</strong> {deviceDetails.device.pulse1_ip}</p>}
-                      {deviceDetails.device.ct1_ip && <p><strong>CT1 IP:</strong> {deviceDetails.device.ct1_ip}</p>}
-                    </>
-                  )}
-                </div>
-                
-                {deviceDetails.time && (
                   <div className="col-md-6">
                     <h5>Reservation Details</h5>
-                    <p><strong>Start Time:</strong> {new Date(deviceDetails.time.start).toLocaleString()}</p>
-                    <p><strong>End Time:</strong> {new Date(deviceDetails.time.end).toLocaleString()}</p>
-                    <p><strong>Duration:</strong> {deviceDetails.time.duration_minutes} minutes</p>
+                    {deviceDetails.start_time && (
+                      <p><strong>Start Time:</strong> {new Date(deviceDetails.start_time).toLocaleString()}</p>
+                    )}
+                    {deviceDetails.end_time && (
+                      <p><strong>End Time:</strong> {new Date(deviceDetails.end_time).toLocaleString()}</p>
+                    )}
+                    {deviceDetails.purpose && (
+                      <p><strong>Purpose:</strong> {deviceDetails.purpose}</p>
+                    )}
+                    {deviceDetails.user_id && (
+                      <p><strong>Booked_by:</strong> {deviceDetails.user_id}</p>
+                    ) }
                   </div>
-                )}
+                </div>
               </div>
             </div>
-          </div>
-          <div id="detailsOverlay" className="details-overlay" onClick={() => setShowDeviceDetails(false)}></div>
-        </>
-      )}
+            <div id="detailsOverlay" className="details-overlay" onClick={() => setShowDeviceDetails(false)}></div>
+          </>
+        )}
 
       <div className="row">
         <div className="col-lg-12 mb-4">
@@ -828,6 +1017,8 @@ const handleShowDeviceDetails = (device) => {
                             const statusClass = isExpired ? 'table-secondary' : isActive ? 'table-success' : '';
                             const status = isExpired ? 'expired' : isActive ? 'active' : 'upcoming';
                             
+                            if (isExpired) return null;
+
                             return (
                               <tr 
                                 key={res.id}
@@ -880,7 +1071,7 @@ const handleShowDeviceDetails = (device) => {
                                 </td>
                               </tr>
                             );
-                          })
+                          }).filter(Boolean)
                         ) : (
                           <tr>
                             <td colSpan="5" className="text-center py-4 text-muted">

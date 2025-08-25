@@ -10,7 +10,6 @@ import AdminDashboard from "./components/Admin_Dashboard/Admin_Dashboard";
 import UserReservation from "./components/User_Reservation/UserReservation";
 import AdminReservation from "./components/AdminReservation/AdminReservation"; // Import the AdminReservation component
 import Device from "./components/Device/Device";
-import EditDevice from "./components/Device/EditDevice";
 import User from "./components/User/User";
 
 const App = () => {
@@ -37,7 +36,6 @@ const App = () => {
         <Route path="/user_reservation" element={<UserReservation />} />
         <Route path="/admin_reservation" element={<AdminReservation />} /> {/* Added direct route for admin reservation */}
         <Route path="/device" element={<Device />} />
-        <Route path="/device/edit/:deviceId/:field" element={<EditDevice />} />
         <Route path="/user" element={<User />} />
       </Routes>
     </Router>

@@ -1,5 +1,6 @@
 // User.jsx
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import DataTable from 'react-data-table-component';
 import './User.css';
 
@@ -12,6 +13,10 @@ const User = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState({
+    id: null,
+    role: ''
+  });
   const [formData, setFormData] = useState({
     user_name: '',
     user_ip: '',
@@ -25,33 +30,41 @@ const User = () => {
     role: 'user'
   });
 
-  // Mock current user (in a real app, this would come from authentication context)
-  const currentUser = {
-    id: 1,
-    role: 'admin'
-  };
-
-  // Fetch users on component mount
+  // Fetch users and current user info on component mount
   useEffect(() => {
+    fetchCurrentUser();
     fetchUsers();
   }, []);
 
+  const fetchCurrentUser = async () => {
+    try {
+      // This would typically come from your authentication context or an API endpoint
+      // For now, we'll simulate getting the current user
+      const response = await axios.get('/api/current-user');
+      setCurrentUser(response.data);
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+      // Fallback to a default user for demo purposes
+      setCurrentUser({
+        id: 1,
+        role: 'admin'
+      });
+    }
+  };
+
   const fetchUsers = async () => {
     try {
-      // This would be your API endpoint to fetch users
-      // const response = await axios.get('/api/users');
-      // setUsers(response.data);
-      
-      // For demo purposes, using mock data
-      const mockUsers = [
-        { id: 1, user_name: 'admin', user_ip: '192.168.1.100', role: 'admin' },
-        { id: 2, user_name: 'user1', user_ip: '192.168.1.101', role: 'user' },
-        { id: 3, user_name: 'user2', user_ip: '192.168.1.102', role: 'user' },
-      ];
-      setUsers(mockUsers);
+      setLoading(true);
+      const response = await axios.get('/api/users');
+      setUsers(response.data);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching users:', error);
+      if (error.response?.status === 403) {
+        alert('Unauthorized: You need admin privileges to view users');
+      } else {
+        alert('Error fetching users: ' + (error.response?.data?.error || error.message));
+      }
       setLoading(false);
     }
   };
@@ -74,21 +87,50 @@ const User = () => {
     setRoleFilter(e.target.value);
   };
 
-  const handleEditUser = user => {
-    setSelectedUser(user);
-    setEditFormData({
-      user_name: user.user_name,
-      user_ip: user.user_ip || '',
-      password: '',
-      role: user.role
-    });
-    setShowEditModal(true);
+  // Prevent form submission on Enter key in filter
+  const handleFilterKeyDown = e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+    }
   };
 
-  const handleDeleteUser = user => {
+  const handleEditUser = async user => {
+    try {
+      const response = await axios.get(`/users/edit/${user.id}`);
+      setSelectedUser(user);
+      setEditFormData({
+        user_name: response.data.user_name,
+        user_ip: response.data.user_ip || '',
+        password: '',
+        role: response.data.role
+      });
+      setShowEditModal(true);
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+      if (error.response?.status === 403) {
+        alert('Unauthorized: You do not have permission to edit this user');
+      } else {
+        alert('Error fetching user details: ' + (error.response?.data?.error || error.message));
+      }
+    }
+  };
+
+  const handleDeleteUser = async user => {
     if (window.confirm(`Are you sure you want to delete user ${user.user_name}?`)) {
-      // API call to delete user would go here
-      setUsers(users.filter(u => u.id !== user.id));
+      try {
+        const response = await axios.post(`/users/delete/${user.id}`);
+        if (response.data.message) {
+          setUsers(users.filter(u => u.id !== user.id));
+          alert('User deleted successfully');
+        }
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        if (error.response?.status === 403) {
+          alert('Unauthorized: You need admin privileges to delete users');
+        } else {
+          alert('Error deleting user: ' + (error.response?.data?.error || error.message));
+        }
+      }
     }
   };
 
@@ -110,28 +152,50 @@ const User = () => {
 
   const handleAddUser = async e => {
     e.preventDefault();
-    // API call to add user would go here
-    const newUser = {
-      id: Math.max(...users.map(u => u.id)) + 1,
-      ...formData
-    };
-    setUsers([...users, newUser]);
-    setShowAddModal(false);
-    setFormData({
-      user_name: '',
-      user_ip: '',
-      password: '',
-      role: 'user'
-    });
+    try {
+      const response = await axios.post('/users/add', formData);
+      if (response.data.message) {
+        setUsers([...users, response.data.user]);
+        setShowAddModal(false);
+        setFormData({
+          user_name: '',
+          user_ip: '',
+          password: '',
+          role: 'user'
+        });
+        alert('User added successfully');
+      }
+    } catch (error) {
+      console.error('Error adding user:', error);
+      if (error.response?.status === 403) {
+        alert('Unauthorized: You need admin privileges to add users');
+      } else if (error.response?.status === 400) {
+        alert('Error: ' + error.response.data.error);
+      } else {
+        alert('Error adding user: ' + (error.response?.data?.error || error.message));
+      }
+    }
   };
 
   const handleUpdateUser = async e => {
     e.preventDefault();
-    // API call to update user would go here
-    setUsers(users.map(user => 
-      user.id === selectedUser.id ? { ...user, ...editFormData } : user
-    ));
-    setShowEditModal(false);
+    try {
+      const response = await axios.post(`/users/update/${selectedUser.id}`, editFormData);
+      if (response.data.message) {
+        setUsers(users.map(user => 
+          user.id === selectedUser.id ? response.data.user : user
+        ));
+        setShowEditModal(false);
+        alert('User updated successfully');
+      }
+    } catch (error) {
+      console.error('Error updating user:', error);
+      if (error.response?.status === 403) {
+        alert('Unauthorized: You do not have permission to update this user');
+      } else {
+        alert('Error updating user: ' + (error.response?.data?.error || error.message));
+      }
+    }
   };
 
   const columns = [
@@ -225,10 +289,12 @@ const User = () => {
             </button>
           </div>
         )}
+
       </div>
 
+      {/* REMOVED THE FORM WRAPPER AROUND FILTERS - This was causing refresh issues */}
       <div className="filter-container">
-        <form className="Userrow g-3">
+        <div className="Userrow g-3">
           <div className="col-md-4">
             <label htmlFor="userIdFilter" className="form-label">User ID</label>
             <input 
@@ -238,6 +304,7 @@ const User = () => {
               placeholder="Filter by user ID"
               value={filterText}
               onChange={handleFilter}
+              onKeyDown={handleFilterKeyDown}
             />
           </div>
           <div className="col-md-4">
@@ -249,6 +316,7 @@ const User = () => {
               placeholder="Filter by username"
               value={usernameFilter}
               onChange={handleUsernameFilter}
+              onKeyDown={handleFilterKeyDown}
             />
           </div>
           <div className="col-md-4">
@@ -264,7 +332,15 @@ const User = () => {
               <option value="user">User</option>
             </select>
           </div>
-        </form>
+            <div>
+              <button 
+                className="D-btn btn-primary" 
+                onClick={() => setShowAddModal(true)}
+              >
+                + Add New User
+              </button>
+            </div>
+        </div>
       </div>
 
       <div className="Usercard">
