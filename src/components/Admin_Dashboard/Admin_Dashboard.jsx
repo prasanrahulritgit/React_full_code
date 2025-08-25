@@ -1,19 +1,19 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { 
-  FaServer, 
-  FaUsers, 
-  FaCalendarAlt, 
-  FaHistory, 
-  FaSignOutAlt 
+import {
+  FaServer,
+  FaUsers,
+  FaCalendarAlt,
+  FaHistory,
+  FaSignOutAlt
 } from 'react-icons/fa';
 import './Admin_Dashboard.css';
-
+ 
 const AdminDashboard = () => {
   // TODO: connect these to your real auth state if needed
   const isAuthenticated = true;
   const userRole = 'admin';
-
+ 
   return (
     <div className="admin-dashboard">
       <nav className="navbar navbar-expand-lg mb-4">
@@ -27,7 +27,7 @@ const AdminDashboard = () => {
               <li className="nav-item">
                 <NavLink
                   to="/admin_dashboard/device"
-                  className={({ isActive }) => 
+                  className={({ isActive }) =>
                     `nav-link orange ${isActive ? 'active' : ''}`
                   }
                   end
@@ -35,13 +35,13 @@ const AdminDashboard = () => {
                   <FaServer className="me-2" /> Devices
                 </NavLink>
               </li>
-              
+             
               {/* Users Tab (Admin Only) */}
               {isAuthenticated && userRole === 'admin' && (
                 <li className="nav-item">
                   <NavLink
                     to="/admin_dashboard/user"
-                    className={({ isActive }) => 
+                    className={({ isActive }) =>
                       `nav-link orange ${isActive ? 'active' : ''}`
                     }
                   >
@@ -49,13 +49,13 @@ const AdminDashboard = () => {
                   </NavLink>
                 </li>
               )}
-              
+             
               {/* Reservations Tab */}
               {isAuthenticated && (
                 <li className="nav-item">
                   <NavLink
                     to="/admin_dashboard/reservation"
-                    className={({ isActive }) => 
+                    className={({ isActive }) =>
                       `nav-link orange ${isActive ? 'active' : ''}`
                     }
                   >
@@ -63,13 +63,13 @@ const AdminDashboard = () => {
                   </NavLink>
                 </li>
               )}
-              
+             
               {/* History Tab */}
               {isAuthenticated && (
                 <li className="nav-item">
                   <NavLink
                     to="/admin_dashboard/history"
-                    className={({ isActive }) => 
+                    className={({ isActive }) =>
                       `nav-link orange ${isActive ? 'active' : ''}`
                     }
                   >
@@ -78,7 +78,7 @@ const AdminDashboard = () => {
                 </li>
               )}
             </ul>
-            
+           
             {/* Logout Button - Aligned to the right */}
             {isAuthenticated && (
               <div className="d-flex">
@@ -90,7 +90,7 @@ const AdminDashboard = () => {
           </div>
         </div>
       </nav>
-
+ 
       {/* Child pages render here (Device/User/Reservation/History) */}
       <main className="content">
         <Outlet />
@@ -98,5 +98,6 @@ const AdminDashboard = () => {
     </div>
   );
 };
-
+ 
 export default AdminDashboard;
+ 

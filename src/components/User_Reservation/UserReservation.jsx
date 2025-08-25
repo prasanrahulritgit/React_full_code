@@ -872,6 +872,7 @@ const filteredBookedDevices = bookedDevices
                       <FaCalendarAlt className="fa-3x mb-3" />
                       <h5>No Booked Devices Found</h5>
                       <p className="mb-3">There are currently no active or upcoming reservations.</p>
+
                     </div>
                   )}
                 </div>

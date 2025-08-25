@@ -16,7 +16,7 @@
 }
 
 .py-4 {
-  padding-top: 1.5rem !important;
+  padding-top: 5rem !important;
   padding-bottom: 1.5rem !important;
 }
 
@@ -358,7 +358,7 @@
 }
 
 .py-4 {
-  padding-top: 1rem !important;
+  padding-top: 5rem !important;
   padding-bottom: 1.2rem !important;
 }
 
@@ -458,3 +458,4 @@
   color: white !important;
   border: 1px solid #333 !important;
 }
+
