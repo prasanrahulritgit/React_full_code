@@ -1,5 +1,6 @@
 // Device.jsx
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import DataTable from 'react-data-table-component';
 import './Device.css';
 
@@ -13,10 +14,10 @@ const Device = () => {
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     device_id: '',
-    PC_IP: '',
-    Rutomatrix_ip: '',
-    Pulse1_Ip: '',
-    CT1_ip: ''
+    pc_ip: '',
+    rutomatrix_ip: '',
+    pulse1_ip: '',
+    ct1_ip: ''
   });
 
   // Fetch devices on component mount
@@ -26,17 +27,23 @@ const Device = () => {
 
   const fetchDevices = async () => {
     try {
-      // This would be your API endpoint to fetch devices
-      // const response = await axios.get('/api/devices');
-      // setDevices(response.data);
+      setLoading(true);
+      const response = await axios.get('/api/devices');
       
-      // For demo purposes, using mock data
-      const mockDevices = [
-        { device_id: 'DEV001', PC_IP: '192.168.1.10', Rutomatrix_ip: '192.168.1.11', Pulse1_Ip: '192.168.1.12', CT1_ip: '192.168.1.13' },
-        { device_id: 'DEV002', PC_IP: '192.168.1.20', Rutomatrix_ip: '192.168.1.21', Pulse1_Ip: '192.168.1.22', CT1_ip: '192.168.1.23' },
-        { device_id: 'DEV003', PC_IP: '192.168.1.30', Rutomatrix_ip: '192.168.1.31', Pulse1_Ip: '192.168.1.32', CT1_ip: '192.168.1.33' },
-      ];
-      setDevices(mockDevices);
+      if (response.data.success) {
+        // The backend returns lowercase field names, so we need to map them
+        const devicesWithCorrectFields = response.data.devices.map(device => ({
+          device_id: device.device_id,
+          pc_ip: device.pc_ip,
+          rutomatrix_ip: device.rutomatrix_ip,
+          pulse1_ip: device.pulse1_ip,
+          ct1_ip: device.ct1_ip,
+          status: device.status
+        }));
+        setDevices(devicesWithCorrectFields);
+      } else {
+        console.error('Failed to fetch devices:', response.data.message);
+      }
       setLoading(false);
     } catch (error) {
       console.error('Error fetching devices:', error);
@@ -52,6 +59,13 @@ const Device = () => {
     setFilterText(e.target.value);
   };
 
+  // Prevent form submission on Enter key in filter
+  const handleFilterKeyDown = e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+    }
+  };
+
   const handleViewIps = device => {
     setSelectedDevice(device);
     setShowIpModal(true);
@@ -61,18 +75,33 @@ const Device = () => {
     setSelectedDevice(device);
     setFormData({
       device_id: device.device_id,
-      PC_IP: device.PC_IP || '',
-      Rutomatrix_ip: device.Rutomatrix_ip || '',
-      Pulse1_Ip: device.Pulse1_Ip || '',
-      CT1_ip: device.CT1_ip || ''
+      pc_ip: device.pc_ip || '',
+      rutomatrix_ip: device.rutomatrix_ip || '',
+      pulse1_ip: device.pulse1_ip || '',
+      ct1_ip: device.ct1_ip || ''
     });
     setShowEditModal(true);
   };
 
-  const handleDeleteDevice = device => {
+  const handleDeleteDevice = async device => {
     if (window.confirm(`Are you sure you want to delete device ${device.device_id}?`)) {
-      // API call to delete device would go here
-      setDevices(devices.filter(d => d.device_id !== device.device_id));
+      try {
+        const response = await axios.delete(`/delete/${device.device_id}`);
+        if (response.data.status === 'success') {
+          setDevices(devices.filter(d => d.device_id !== device.device_id));
+          alert('Device deleted successfully');
+        } else {
+          console.error('Failed to delete device:', response.data.message);
+          alert('Failed to delete device: ' + response.data.message);
+        }
+      } catch (error) {
+        console.error('Error deleting device:', error);
+        if (error.response?.status === 403) {
+          alert('Unauthorized: You need admin privileges to delete devices');
+        } else {
+          alert('Error deleting device: ' + (error.response?.data?.message || error.message));
+        }
+      }
     }
   };
 
@@ -86,25 +115,79 @@ const Device = () => {
 
   const handleAddDevice = async e => {
     e.preventDefault();
-    // API call to add device would go here
-    setDevices([...devices, formData]);
-    setShowAddModal(false);
-    setFormData({
-      device_id: '',
-      PC_IP: '',
-      Rutomatrix_ip: '',
-      Pulse1_Ip: '',
-      CT1_ip: ''
-    });
+    try {
+      // Map frontend field names to backend field names
+      const formDataToSend = new FormData();
+      formDataToSend.append('device_id', formData.device_id);
+      formDataToSend.append('PC_IP', formData.pc_ip);
+      formDataToSend.append('Rutomatrix_ip', formData.rutomatrix_ip);
+      formDataToSend.append('Pulse1_Ip', formData.pulse1_ip);
+      formDataToSend.append('CT1_ip', formData.ct1_ip);
+
+      const response = await axios.post('/api/devices/add', formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      if (response.data.status === 'success') {
+        fetchDevices();
+        setShowAddModal(false);
+        setFormData({
+          device_id: '',
+          pc_ip: '',
+          rutomatrix_ip: '',
+          pulse1_ip: '',
+          ct1_ip: ''
+        });
+        alert('Device added successfully');
+      } else {
+        console.error('Failed to add device:', response.data.message);
+        alert('Failed to add device: ' + response.data.message);
+      }
+    } catch (error) {
+      console.error('Error adding device:', error);
+      if (error.response?.status === 403) {
+        alert('Unauthorized: You need admin privileges to add devices');
+      } else {
+        alert('Error adding device: ' + (error.response?.data?.message || error.message));
+      }
+    }
   };
 
   const handleUpdateDevice = async e => {
     e.preventDefault();
-    // API call to update device would go here
-    setDevices(devices.map(device => 
-      device.device_id === selectedDevice.device_id ? { ...device, ...formData } : device
-    ));
-    setShowEditModal(false);
+    try {
+      // Map frontend field names to backend field names
+      const formDataToSend = new FormData();
+      formDataToSend.append('device_id', formData.device_id);
+      formDataToSend.append('PC_IP', formData.pc_ip);
+      formDataToSend.append('Rutomatrix_ip', formData.rutomatrix_ip);
+      formDataToSend.append('Pulse1_Ip', formData.pulse1_ip);
+      formDataToSend.append('CT1_ip', formData.ct1_ip);
+
+      const response = await axios.post(`/edit/${selectedDevice.device_id}`, formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      if (response.data.status === 'success') {
+        fetchDevices();
+        setShowEditModal(false);
+        alert('Device updated successfully');
+      } else {
+        console.error('Failed to update device:', response.data.message);
+        alert('Failed to update device: ' + response.data.message);
+      }
+    } catch (error) {
+      console.error('Error updating device:', error);
+      if (error.response?.status === 403) {
+        alert('Unauthorized: You need admin privileges to edit devices');
+      } else {
+        alert('Error updating device: ' + (error.response?.data?.message || error.message));
+      }
+    }
   };
 
   const columns = [
@@ -115,22 +198,22 @@ const Device = () => {
     },
     {
       name: 'PC IP',
-      selector: row => row.PC_IP || '-',
+      selector: row => row.pc_ip || '-',
       sortable: true,
     },
     {
       name: 'Rutomatrix IP',
-      selector: row => row.Rutomatrix_ip || '-',
+      selector: row => row.rutomatrix_ip || '-',
       sortable: true,
     },
     {
       name: 'Pulse1 IP',
-      selector: row => row.Pulse1_Ip || '-',
+      selector: row => row.pulse1_ip || '-',
       sortable: true,
     },
     {
       name: 'CT1 IP',
-      selector: row => row.CT1_ip || '-',
+      selector: row => row.ct1_ip || '-',
       sortable: true,
     },
     {
@@ -158,8 +241,6 @@ const Device = () => {
         </div>
       ),
       ignoreRowClick: true,
-      allowOverflow: true,
-      button: true,
       width: '200px',
     },
   ];
@@ -189,20 +270,9 @@ const Device = () => {
 
   return (
     <div className="container-fluid py-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1 className="h3 mb-0">Device Management</h1>
-        <div>
-          <button 
-            className="D-btn btn-primary" 
-            onClick={() => setShowAddModal(true)}
-          >
-            + Add New Device
-          </button>
-        </div>
-      </div>
-
+      {/* REMOVED THE FORM WRAPPER AROUND FILTER - This was causing the refresh */}
       <div className="filter-container">
-        <form className="Devicerow g-3">
+        <div className="Device-row g-3">
           <div className="col-md-4">
             <label htmlFor="deviceIdFilter" className="form-label">Device ID</label>
             <input 
@@ -212,13 +282,25 @@ const Device = () => {
               placeholder="Filter by device ID"
               value={filterText}
               onChange={handleFilter}
+              onKeyDown={handleFilterKeyDown} // Prevent Enter key submission
             />
           </div>
-        </form>
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <h1 className="h3 mb-0">Device Management</h1>
+            <div>
+              <button 
+                className="D-btn btn-primary" 
+                onClick={() => setShowAddModal(true)}
+              >
+                + Add New Device
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="Devicecard">
-        <div className="Devicecard-body">
+      <div className="Device-card">
+        <div className="Device-card-body">
           <div className="table-responsive">
             <DataTable
               columns={columns}
@@ -248,7 +330,7 @@ const Device = () => {
               </div>
               <form onSubmit={handleAddDevice}>
                 <div className="modal-body">
-                  <div className="Devicerow">
+                  <div className="Device-row">
                     <div className="col-md-12 mb-3">
                       <label htmlFor="device_id" className="form-label">Device ID</label>
                       <input 
@@ -262,52 +344,50 @@ const Device = () => {
                       />
                     </div>
                   </div>
-                  <div className="Devicerow">
+                  <div className="Device-row">
                     <div className="col-md-6 mb-3">
-                      <label htmlFor="PC_IP" className="form-label">PC IP Address</label>
+                      <label htmlFor="pc_ip" className="form-label">PC IP Address</label>
                       <input 
                         type="text" 
                         className="form-control" 
-                        id="PC_IP" 
-                        name="PC_IP" 
-                        value={formData.PC_IP}
+                        id="pc_ip" 
+                        name="pc_ip" 
+                        value={formData.pc_ip}
                         onChange={handleInputChange}
                       />
                     </div>
                     <div className="col-md-6 mb-3">
-                      <label htmlFor="Rutomatrix_ip" className="form-label">Rutomatrix IP Address</label>
+                      <label htmlFor="rutomatrix_ip" className="form-label">Rutomatrix IP Address</label>
                       <input 
                         type="text" 
                         className="form-control" 
-                        id="Rutomatrix_ip" 
-                        name="Rutomatrix_ip" 
-                        value={formData.Rutomatrix_ip}
+                        id="rutomatrix_ip" 
+                        name="rutomatrix_ip" 
+                        value={formData.rutomatrix_ip}
                         onChange={handleInputChange}
                       />
                     </div>
                   </div>
-                  <div className="DeviceRow">
-                    <div className="col-md-4 mb-3">
-                      <label htmlFor="Pulse1_Ip" className="form-label">Pulse1 IP Address</label>
+                  <div className="Device-row">
+                    <div className="col-md-6 mb-3">
+                      <label htmlFor="pulse1_ip" className="form-label">Pulse1 IP Address</label>
                       <input 
                         type="text" 
                         className="form-control" 
-                        id="Pulse1_Ip" 
-                        name="Pulse1_Ip" 
-                        value={formData.Pulse1_Ip}
+                        id="pulse1_ip" 
+                        name="pulse1_ip" 
+                        value={formData.pulse1_ip}
                         onChange={handleInputChange}
                       />
                     </div>
-                  </div>
-                  <div className="DeviceRow">
-                    <div className="col-md-4 mb-3">
-                      <label htmlFor="CT1_ip" className="form-label">CT1 IP Address</label>
+                    <div className="col-md-6 mb-3">
+                      <label htmlFor="ct1_ip" className="form-label">CT1 IP Address</label>
                       <input 
                         type="text" 
                         className="form-control" 
-                        id="CT1_ip" 
-                        name="CT1_ip" 
-                        value={formData.CT1_ip}
+                        id="ct1_ip" 
+                        name="ct1_ip" 
+                        value={formData.ct1_ip}
                         onChange={handleInputChange}
                       />
                     </div>
@@ -344,7 +424,7 @@ const Device = () => {
               </div>
               <form onSubmit={handleUpdateDevice}>
                 <div className="modal-body">
-                  <div className="DeviceRow">
+                  <div className="Device-row">
                     <div className="col-md-12 mb-3">
                       <label htmlFor="edit_device_id" className="form-label">Device ID</label>
                       <input 
@@ -357,52 +437,50 @@ const Device = () => {
                       />
                     </div>
                   </div>
-                  <div className="DeviceRow">
+                  <div className="Device-row">
                     <div className="col-md-6 mb-3">
-                      <label htmlFor="edit_PC_IP" className="form-label">PC IP Address</label>
+                      <label htmlFor="edit_pc_ip" className="form-label">PC IP Address</label>
                       <input 
                         type="text" 
                         className="form-control" 
-                        id="edit_PC_IP"
-                        name="PC_IP" 
-                        value={formData.PC_IP}
+                        id="edit_pc_ip"
+                        name="pc_ip" 
+                        value={formData.pc_ip}
                         onChange={handleInputChange}
                       />
                     </div>
                     <div className="col-md-6 mb-3">
-                      <label htmlFor="edit_Rutomatrix_ip" className="form-label">Rutomatrix IP Address</label>
+                      <label htmlFor="edit_rutomatrix_ip" className="form-label">Rutomatrix IP Address</label>
                       <input 
                         type="text" 
                         className="form-control" 
-                        id="edit_Rutomatrix_ip"
-                        name="Rutomatrix_ip" 
-                        value={formData.Rutomatrix_ip}
+                        id="edit_rutomatrix_ip"
+                        name="rutomatrix_ip" 
+                        value={formData.rutomatrix_ip}
                         onChange={handleInputChange}
                       />
                     </div>
                   </div>
-                  <div className="DeviceRow">
-                    <div className="col-md-4 mb-3">
-                      <label htmlFor="edit_Pulse1_Ip" className="form-label">Pulse1 IP Address</label>
+                  <div className="Device-row">
+                    <div className="col-md-6 mb-3">
+                      <label htmlFor="edit_pulse1_ip" className="form-label">Pulse1 IP Address</label>
                       <input 
                         type="text" 
                         className="form-control" 
-                        id="edit_Pulse1_Ip"
-                        name="Pulse1_Ip" 
-                        value={formData.Pulse1_Ip}
+                        id="edit_pulse1_ip"
+                        name="pulse1_ip" 
+                        value={formData.pulse1_ip}
                         onChange={handleInputChange}
                       />
                     </div>
-                  </div>
-                  <div className="DeviceRow">
-                    <div className="col-md-4 mb-3">
-                      <label htmlFor="edit_CT1_ip" className="form-label">CT1 IP Address</label>
+                    <div className="col-md-6 mb-3">
+                      <label htmlFor="edit_ct1_ip" className="form-label">CT1 IP Address</label>
                       <input 
                         type="text" 
                         className="form-control" 
-                        id="edit_CT1_ip"
-                        name="CT1_ip" 
-                        value={formData.CT1_ip}
+                        id="edit_ct1_ip"
+                        name="ct1_ip" 
+                        value={formData.ct1_ip}
                         onChange={handleInputChange}
                       />
                     </div>
@@ -442,25 +520,33 @@ const Device = () => {
                   <div className="list-group-item">
                     <div className="d-flex justify-content-between align-items-center">
                       <strong>PC IP</strong>
-                      <span className="ip-display">{selectedDevice.PC_IP || 'Not set'}</span>
+                      <span className="ip-display">{selectedDevice.pc_ip || 'Not set'}</span>
                     </div>
                   </div>
                   <div className="list-group-item">
                     <div className="d-flex justify-content-between align-items-center">
                       <strong>Rutomatrix IP</strong>
-                      <span className="ip-display">{selectedDevice.Rutomatrix_ip || 'Not set'}</span>
+                      <span className="ip-display">{selectedDevice.rutomatrix_ip || 'Not set'}</span>
                     </div>
                   </div>
                   <div className="list-group-item">
                     <div className="d-flex justify-content-between align-items-center">
                       <strong>Pulse1 IP</strong>
-                      <span className="ip-display">{selectedDevice.Pulse1_Ip || 'Not set'}</span>
+                      <span className="ip-display">{selectedDevice.pulse1_ip || 'Not set'}</span>
                     </div>
                   </div>
                   <div className="list-group-item">
                     <div className="d-flex justify-content-between align-items-center">
                       <strong>CT1 IP</strong>
-                      <span className="ip-display">{selectedDevice.CT1_ip || 'Not set'}</span>
+                      <span className="ip-display">{selectedDevice.ct1_ip || 'Not set'}</span>
+                    </div>
+                  </div>
+                  <div className="list-group-item">
+                    <div className="d-flex justify-content-between align-items-center">
+                      <strong>Status</strong>
+                      <span className={`status-display ${selectedDevice.status}`}>
+                        {selectedDevice.status || 'unknown'}
+                      </span>
                     </div>
                   </div>
                 </div>

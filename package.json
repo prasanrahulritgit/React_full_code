@@ -2,7 +2,7 @@
   "name": "ruto_dev",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:5000",
+  "proxy": ["http://localhost:5000", "http://127.0.0.1:5000"],
   "dependencies": {
     "@fontsource/poppins": "^5.2.6",
     "@fortawesome/fontawesome-free": "^7.0.0",
