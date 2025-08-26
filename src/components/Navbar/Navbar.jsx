@@ -17,106 +17,100 @@ const Navbar = ({ isDarkTheme, toggleTheme, userData }) => {
     tenMinutes: false,
     expired: false
   });
+  const [role, setRole] = useState(null);  
 
-const handleBackToReservations = () => {
-  const role = localStorage.getItem("role"); // or sessionStorage / context
-  if (role === "admin") {
-    window.location.href = "http://localhost:3000/admin_dashboard/reservation";
-  } else {
-    window.location.href = "http://localhost:3000/user_reservation";
-  }
-};
-
-const navigateToReservations = () => {
-  const role = localStorage.getItem("role");
-  if (role === "admin") {
-    window.location.href = "http://localhost:3000/admin_dashboard/reservation";
-  } else {
-    window.location.href = "http://localhost:3000/user_reservation";
-  }
-};
-
-
-const fetchDeviceData = async (deviceId) => {
-  try {
-    setIsLoading(true);
-    setError(null);
-    
-    if (!deviceId) {
-      throw new Error('No device ID provided');
+  const navigateToReservations = () => {
+    if (role === "admin") {
+      window.location.href = "http://localhost:3000/admin_dashboard/reservation";
+    } else {
+      window.location.href = "http://localhost:3000/user_reservation";
     }
+  };
 
-    // Enhanced debug logging
-    console.log('Making authenticated request to /api/booked-devices');
-    console.log('Current cookies:', document.cookie);
-    console.log('Session storage:', sessionStorage);
-    console.log('Local storage:', localStorage);
+  const fetchDeviceData = async (deviceId) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      if (!deviceId) {
+        throw new Error('No device ID provided');
+      }
 
-    const response = await axios.get('http://127.0.0.1:5000/api/booked-devices', {
-      withCredentials: true,
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      // Ensure axios doesn't try to parse HTML as JSON
-      transformResponse: [(data) => {
-        if (typeof data === 'string' && data.trim().startsWith('<!DOCTYPE html>')) {
-          throw new Error('Received HTML response when expecting JSON');
-        }
-        return data;
-      }]
-    });
+      const response = await axios.get('http://127.0.0.1:5000/api/booked-devices', {
+        withCredentials: true,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        // Ensure axios doesn't try to parse HTML as JSON
+        transformResponse: [(data) => {
+          if (typeof data === 'string' && data.trim().startsWith('<!DOCTYPE html>')) {
+            throw new Error('Received HTML response when expecting JSON');
+          }
+          return data;
+        }]
+      });
 
-    // Debug the actual response before parsing
-    console.log('API response headers:', response.headers);
-    console.log('API response content-type:', response.headers['content-type']);
-    console.log('API response data sample:', String(response.data).slice(0, 100));
+      // Force JSON parsing if needed
+      const responseData = typeof response.data === 'string' 
+        ? JSON.parse(response.data) 
+        : response.data;
 
-    // Force JSON parsing if needed
-    const responseData = typeof response.data === 'string' 
-      ? JSON.parse(response.data) 
-      : response.data;
+      // Always set role if present
+      if (responseData?.data?.role) {
+        console.log("Fetched role:", responseData.data.role);
+        setRole(responseData.data.role.trim().toLowerCase());
+      }
 
-    if (!responseData?.data?.booked_devices) {
-      throw new Error('API returned invalid data structure');
-    }
+      // Skip device lookup if none provided
+      if (!deviceId) {
+        return null;
+      }
 
-    const device = responseData.data.booked_devices.find(d => 
-      d.device?.id === deviceId || 
-      d.id === deviceId.toString() || 
-      d.device_id === deviceId
-    );
+      if (!responseData?.data?.booked_devices) {
+        throw new Error('API returned invalid data structure');
+      }
 
-    if (!device) {
-      throw new Error(`Device ${deviceId} not found in bookings`);
-    }
+      const device = responseData.data.booked_devices.find(d => 
+        d.device?.id === deviceId || 
+        d.id === deviceId.toString() || 
+        d.device_id === deviceId
+      );
 
-    return {
-      name: `Device ${parseInt(device.device?.id || device.id || 'Unknown Device')}`,
-      endTime: new Date(device.time?.end || device.end_time)
-    };
+      if (device && device.user?.role) {
+        setRole(device.user.role.trim().toLowerCase());
+      }
 
-  } catch (error) {
-    console.error('API request failed:', error);
-    
-    // Handle specific error cases
-    if (error.message.includes('Received HTML response')) {
-      console.warn('Authentication required - redirecting to login');
-      window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+      if (!device) {
+        throw new Error(`Device ${deviceId} not found in bookings`);
+      }
+
+      return {
+        name: `Device ${parseInt(device.device?.id || device.id || 'Unknown Device')}`,
+        endTime: new Date(device.time?.end || device.end_time)
+      };
+
+    } catch (error) {
+      console.error('API request failed:', error);
+      
+      // Handle specific error cases
+      if (error.message.includes('Received HTML response')) {
+        console.warn('Authentication required - redirecting to login');
+        window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+        return null;
+      }
+      
+      if (error.response?.status === 401) {
+        window.location.href = '/auth/login';
+        return null;
+      }
+      
+      setError(error.message || 'Failed to load device data');
       return null;
+    } finally {
+      setIsLoading(false);
     }
-    
-    if (error.response?.status === 401) {
-      window.location.href = '/auth/login';
-      return null;
-    }
-    
-    setError(error.message || 'Failed to load device data');
-    return null;
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   const playAlertSound = () => {
     try {
@@ -193,7 +187,7 @@ const fetchDeviceData = async (deviceId) => {
       return;
     }
 
-    const initializeTimer = async () => {
+    const initializeData = async () => {
       const deviceData = await fetchDeviceData(userData.device_id);
       if (deviceData) {
         setDeviceName(deviceData.name);
@@ -203,9 +197,9 @@ const fetchDeviceData = async (deviceId) => {
       }
     };
 
-    initializeTimer();
+    initializeData();
 
-    const refreshInterval = setInterval(initializeTimer, 60000);
+    const refreshInterval = setInterval(initializeData, 60000);
 
     return () => {
       clearInterval(timerRef.current);
@@ -220,33 +214,34 @@ const fetchDeviceData = async (deviceId) => {
           <img src={rutomatrixLogo} alt="Rutomatrix Logo" className="logo" />
         </div>
         <div className="navbar-right">
-          <button 
-            className="back-button" 
-            onClick={handleBackToReservations}
-          >
-            <ChevronLeft 
-              size={24} 
-              className="back-icon"
-            />
-            <span className="back-text">Back</span>
-          </button>
+          {role !== null ? (
+            <button className="back-button" onClick={navigateToReservations}>
+              <ChevronLeft size={24} className="back-icon" />
+              <span className="back-text">
+                Back 
+              </span>
+            </button>
+          ) : (
+            <div style={{color: "gray"}}> {userData?.role ? userData.role : "role not loaded"} </div>
+          )}
 
           {isLoading ? (
             <div className="timer-loading">Loading...</div>
           ) : error ? (
             <div className="timer-error">{error}</div>
           ) : timeLeft ? (
-            <div className={`device-timer`}>
+            <div className="device-timer">
               <span className="Device-name" title={deviceName}>
                 {deviceName.length > 12 ? `${deviceName.substring(0, 10)}...` : deviceName} -
               </span>
-              <span className={`timer ${isLast10Minutes ? 'last-10-minutes' : ''}`}> 
-                <TimerIcon size={20} style={{ marginRight: '4px'}} /> {timeLeft} 
+              <span className={`timer ${isLast10Minutes ? "last-10-minutes" : ""}`}>
+                <TimerIcon size={20} style={{ marginRight: "4px" }} /> {timeLeft}
               </span>
             </div>
           ) : (
             <div className="timer-error">No active booking</div>
           )}
+
           <img src={tessolveLogo} alt="Tessolve Logo" className="logo" />
         </div>
       </header>
