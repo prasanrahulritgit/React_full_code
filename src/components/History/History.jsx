@@ -7,11 +7,17 @@ const History = () => {
   const [devices, setDevices] = useState([]);
   const [filterText, setFilterText] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  const [deviceFilter, setDeviceFilter] = useState('');
+  const [userFilter, setUserFilter] = useState('');
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    per_page: 50,
+    total: 0,
+    pages: 1
+  });
 
   // Fetch data on component mount
   useEffect(() => {
@@ -22,32 +28,31 @@ const History = () => {
   // Refetch data when filters change
   useEffect(() => {
     fetchHistoryData();
-  }, [filterText, statusFilter, dateFrom, dateTo]);
+  }, [filterText, statusFilter, deviceFilter, userFilter, pagination.current_page, pagination.per_page]);
 
   const fetchHistoryData = async () => {
     try {
+      setLoading(true);
+      
       // Build query string with filters
       const params = new URLSearchParams();
-      if (filterText) params.append('device', filterText);
+      params.append('page', pagination.current_page);
+      params.append('per_page', pagination.per_page);
       if (statusFilter) params.append('status', statusFilter);
-      if (dateFrom) params.append('dateFrom', dateFrom);
-      if (dateTo) params.append('dateTo', dateTo);
+      if (deviceFilter) params.append('device_id', deviceFilter);
+      if (userFilter) params.append('user_id', userFilter);
       
-      const response = await fetch(`/history/api/records?${params.toString()}`, {
+      const response = await fetch(`/history/all-records?${params.toString()}`, {
         credentials: 'include'
       });
+      
       if (!response.ok) throw new Error('Failed to fetch history');
       
       const data = await response.json();
       
-      // Convert ISO strings to Date objects
-      const formattedData = data.map(record => ({
-        ...record,
-        actual_start_time: record.actual_start_time ? new Date(record.actual_start_time) : null,
-        actual_end_time: record.actual_end_time ? new Date(record.actual_end_time) : null
-      }));
-      
-      setHistoryRecords(formattedData);
+      // Update records and pagination
+      setHistoryRecords(data.records);
+      setPagination(data.pagination);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching history:', error);
@@ -57,36 +62,48 @@ const History = () => {
 
   const fetchDevices = async () => {
     try {
-      const response = await fetch('/history/api/devices', {
+      // You'll need to add a devices endpoint to your backend
+      // For now, we'll use a placeholder
+      const response = await fetch('/devices', { // This endpoint doesn't exist yet
         credentials: 'include'
       });
-      if (!response.ok) throw new Error('Failed to fetch devices');
       
-      const data = await response.json();
-      setDevices(data);
+      if (response.ok) {
+        const data = await response.json();
+        setDevices(data);
+      }
     } catch (error) {
       console.error('Error fetching devices:', error);
     }
   };
 
-  const handleViewDetails = (record) => {
-    setSelectedRecord(record);
-    setShowDetailsModal(true);
+  const handleViewDetails = async (recordId) => {
+    try {
+      const response = await fetch(`/history/get-usage-record/${recordId}`, {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const recordDetails = await response.json();
+        setSelectedRecord(recordDetails);
+        setShowDetailsModal(true);
+      }
+    } catch (error) {
+      console.error('Error fetching record details:', error);
+    }
   };
 
   const handleDeleteRecord = async (recordId) => {
     if (window.confirm('Are you sure you want to delete this record?')) {
       try {
-        const response = await fetch(`/history/api/record/${recordId}`, {
+        const response = await fetch(`/history/delete-usage-record/${recordId}`, {
           method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-          },
           credentials: 'include'
         });
         
         if (response.ok) {
-          setHistoryRecords(historyRecords.filter(record => record.id !== recordId));
+          // Refresh the data
+          fetchHistoryData();
         } else {
           const errorData = await response.json();
           alert(errorData.error || 'Failed to delete record');
@@ -101,11 +118,8 @@ const History = () => {
   const handleClearHistory = async () => {
     if (window.confirm('Delete all records older than 6 months?')) {
       try {
-        const response = await fetch('/history/api/clear-old', {
+        const response = await fetch('/history/clear-old', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
           credentials: 'include'
         });
         
@@ -124,43 +138,44 @@ const History = () => {
     }
   };
 
+  const handlePageChange = (page) => {
+    setPagination({...pagination, current_page: page});
+  };
+
+  const handlePerRowsChange = (newPerPage, page) => {
+    setPagination({...pagination, per_page: newPerPage, current_page: page});
+  };
+
   const columns = [
     {
-      name: 'Device',
-      selector: row => (
-        <div>
-          <strong>{row.device.device_name}</strong>
-          <div className="text-muted small">{row.device.device_id}</div>
-        </div>
-      ),
+      name: 'Device ID',
+      selector: row => row.device.id,
+      sortable: true,
+    },
+    {
+      name: 'User ID',
+      selector: row => row.user.id,
+      sortable: true,
+    },
+    {
+      name: 'Reservation ID',
+      selector: row => row.reservation.id || 'N/A',
       sortable: true,
     },
     {
       name: 'Start Time',
-      selector: row => row.actual_start_time ? row.actual_start_time.toLocaleString() : 'N/A',
+      selector: row => row.timing.start_time ? new Date(row.timing.start_time).toLocaleString() : 'N/A',
       sortable: true,
     },
     {
       name: 'End Time',
-      selector: row => row.actual_end_time ? row.actual_end_time.toLocaleString() : <em>In Progress</em>,
+      selector: row => row.timing.end_time ? new Date(row.timing.end_time).toLocaleString() : <em>In Progress</em>,
       sortable: true,
     },
     {
       name: 'Duration',
-      selector: row => {
-        if (row.duration) {
-          const hours = Math.floor(row.duration / 3600);
-          const minutes = Math.floor((row.duration % 3600) / 60);
-          return `${hours}h ${minutes}m`;
-        }
-        return '-';
-      },
+      selector: row => row.timing.duration_formatted || '-',
       sortable: true,
-      cell: row => <span className="duration-cell">{
-        row.duration ? 
-        `${Math.floor(row.duration / 3600)}h ${Math.floor((row.duration % 3600) / 60)}m` : 
-        '-'
-      }</span>,
     },
     {
       name: 'Status',
@@ -175,17 +190,12 @@ const History = () => {
       sortable: true,
     },
     {
-      name: 'IP Type',
-      selector: row => row.ip_type,
-      sortable: true,
-    },
-    {
       name: 'Actions',
       cell: row => (
         <div className="action-buttons">
           <button 
             className="btn btn-sm view-details Action-btn" 
-            onClick={() => handleViewDetails(row)}
+            onClick={() => handleViewDetails(row.id)}
           >
             Details
           </button>
@@ -200,6 +210,7 @@ const History = () => {
       ignoreRowClick: true,
       allowOverflow: true,
       button: true,
+      minWidth: '200px',
     },
   ];
 
@@ -244,20 +255,15 @@ const History = () => {
         <div className="filter-container">
           <form className="row g-3">
             <div className="col-md-3">
-              <label htmlFor="deviceFilter" className="form-label">Device</label>
-              <select 
-                id="deviceFilter" 
-                className="form-select"
-                value={filterText}
-                onChange={(e) => setFilterText(e.target.value)}
-              >
-                <option value="">All Devices</option>
-                {devices.map(device => (
-                  <option key={device.device_id} value={device.device_id}>
-                    {device.device_name} ({device.device_id})
-                  </option>
-                ))}
-              </select>
+              <label htmlFor="deviceFilter" className="form-label">Device ID</label>
+              <input
+                type="text"
+                id="deviceFilter"
+                className="form-control"
+                value={deviceFilter}
+                onChange={(e) => setDeviceFilter(e.target.value)}
+                placeholder="Filter by Device ID"
+              />
             </div>
             <div className="col-md-2">
               <label htmlFor="statusFilter" className="form-label">Status</label>
@@ -274,23 +280,14 @@ const History = () => {
               </select>
             </div>
             <div className="col-md-2">
-              <label htmlFor="dateFrom" className="form-label">From Date</label>
-              <input 
-                type="date" 
-                className="form-control" 
-                id="dateFrom"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-              />
-            </div>
-            <div className="col-md-2">
-              <label htmlFor="dateTo" className="form-label">To Date</label>
-              <input 
-                type="date" 
-                className="form-control" 
-                id="dateTo"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
+              <label htmlFor="userFilter" className="form-label">User ID</label>
+              <input
+                type="number"
+                id="userFilter"
+                className="form-control"
+                value={userFilter}
+                onChange={(e) => setUserFilter(e.target.value)}
+                placeholder="Filter by User ID"
               />
             </div>
           </form>
@@ -304,8 +301,12 @@ const History = () => {
                 data={historyRecords}
                 customStyles={customStyles}
                 pagination
-                paginationPerPage={25}
+                paginationServer
+                paginationTotalRows={pagination.total}
+                paginationPerPage={pagination.per_page}
                 paginationRowsPerPageOptions={[10, 25, 50, 100]}
+                onChangePage={handlePageChange}
+                onChangeRowsPerPage={handlePerRowsChange}
                 progressPending={loading}
               />
             </div>
@@ -330,29 +331,44 @@ const History = () => {
                 <div className="row mb-4">
                   <div className="col-md-6">
                     <h5 className="border-bottom pb-2">Device Information</h5>
-                    <p><strong>Device ID:</strong> {selectedRecord.device.device_id}</p>
-                    <p><strong>Device Name:</strong> {selectedRecord.device.device_name}</p>
+                    <p><strong>Device ID:</strong> {selectedRecord.device_id}</p>
                   </div>
                   <div className="col-md-6">
-                    <h5 className="border-bottom pb-2">Timing Information</h5>
-                    <p><strong>Start Time:</strong> {selectedRecord.actual_start_time ? selectedRecord.actual_start_time.toLocaleString() : 'N/A'}</p>
-                    <p><strong>End Time:</strong> {selectedRecord.actual_end_time ? selectedRecord.actual_end_time.toLocaleString() : 'N/A'}</p>
-                    <p><strong>Duration:</strong> {
-                      selectedRecord.duration ? 
-                      `${Math.floor(selectedRecord.duration / 3600)}h ${Math.floor((selectedRecord.duration % 3600) / 60)}m` : 
-                      'N/A'
-                    }</p>
+                    <h5 className="border-bottom pb-2">User Information</h5>
+                    <p><strong>User ID:</strong> {selectedRecord.user_info.user_id}</p>
+                    <p><strong>User Name:</strong> {selectedRecord.user_info.user_name}</p>
+                    <p><strong>User IP:</strong> {selectedRecord.user_info.user_ip}</p>
                   </div>
                 </div>
+                
+                <div className="row mb-4">
+                  <div className="col-md-6">
+                    <h5 className="border-bottom pb-2">Timing Information</h5>
+                    <p><strong>Start Time:</strong> {selectedRecord.timing.start_time ? new Date(selectedRecord.timing.start_time).toLocaleString() : 'N/A'}</p>
+                    <p><strong>End Time:</strong> {selectedRecord.timing.end_time ? new Date(selectedRecord.timing.end_time).toLocaleString() : 'N/A'}</p>
+                    <p><strong>Duration:</strong> {selectedRecord.timing.duration || 'N/A'} seconds</p>
+                  </div>
+                  <div className="col-md-6">
+                    <h5 className="border-bottom pb-2">Network Information</h5>
+                    <p><strong>IP Address:</strong> {selectedRecord.network_info.ip_address || 'N/A'}</p>
+                    <p><strong>IP Type:</strong> {selectedRecord.network_info.ip_type || 'N/A'}</p>
+                  </div>
+                </div>
+                
                 <div className="row">
                   <div className="col-md-6">
                     <h5 className="border-bottom pb-2">Status Information</h5>
                     <p><strong>Status:</strong> 
-                      <span className={`badge ${selectedRecord.status === 'active' ? 'active-badge' : selectedRecord.status === 'completed' ? 'completed-badge' : 'terminated-badge'} status-badge ms-2`}>
-                        {selectedRecord.status}
+                      <span className={`badge ${selectedRecord.status_info.status === 'active' ? 'active-badge' : selectedRecord.status_info.status === 'completed' ? 'completed-badge' : 'terminated-badge'} status-badge ms-2`}>
+                        {selectedRecord.status_info.status}
                       </span>
                     </p>
-                    <p><strong>IP Type:</strong> {selectedRecord.ip_type}</p>
+                    <p><strong>Termination Reason:</strong> {selectedRecord.status_info.termination_reason || 'N/A'}</p>
+                  </div>
+                  <div className="col-md-6">
+                    <h5 className="border-bottom pb-2">Reservation Information</h5>
+                    <p><strong>Reservation ID:</strong> {selectedRecord.reservation_info.reservation_id || 'N/A'}</p>
+                    <p><strong>IP Type:</strong> {selectedRecord.reservation_info.ip_type || 'N/A'}</p>
                   </div>
                 </div>
               </div>

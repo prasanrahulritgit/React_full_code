@@ -241,7 +241,7 @@ const Device = () => {
         </div>
       ),
       ignoreRowClick: true,
-      width: '200px',
+      width: '300px',
     },
   ];
 

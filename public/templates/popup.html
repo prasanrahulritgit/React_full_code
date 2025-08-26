@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Rutomatix</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 40px;
+      background: #f0f0f0;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h2 class="device-name">Welcome to {{device.name}}</h2>
+  <div id="device-timer">--:--:--</div>
+  <div class="ip-container">
+    <h3>Device IP Address:</h3>
+    <div>
+    <div class="ip-item">
+      <span class="ip-type">{{device.ipType}}:</span> 
+      <span class="ip-address">{{ipAddress || "Not available"}}</span>
+    </div>
+  </div>
+
+  <script>
+  window.addEventListener("message", (event) => {
+    const data = event.data;
+    if (data.type === "initPopup") {
+      // Only for initial popup data
+      const { title, device, ipAddress, postMessageScript, timerScript } = data;
+
+      if (title) document.title = title;
+      if (ipAddress) document.querySelector(".ip-address").textContent = ipAddress;
+      if (device){
+        document.querySelector(".device-name").textContent = `Welcome to ` + device.name;
+        document.querySelector(".ip-type").textContent = device.ipType;
+      }
+
+      if (postMessageScript) { 
+        const script = document.createElement("script");
+        script.textContent = postMessageScript;
+        document.head.appendChild(script);
+      }
+
+      if (timerScript) {
+        const script = document.createElement("script");
+        script.textContent = timerScript;
+        document.head.appendChild(script);
+      }
+    } else if (data.type === "updateTimer") {
+      // Handle timer updates here
+      const timerElem = document.getElementById("device-timer");
+      if (timerElem && data.timeLeft) {
+        timerElem.textContent = data.timeLeft;
+      }
+    }
+  });
+</script>
+</body>
+</html>

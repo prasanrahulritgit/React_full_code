@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Rutomatix</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #121212;
+      color: #FFFFFF;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .os-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      padding: 16px;
+      box-sizing: border-box;
+      gap: 16px;
+      max-width: 2000px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: #1E1E1E;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .device-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .device-name-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .device-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: #FF6A00;
+      word-break: break-word;
+      text-align: center;
+    }
+
+    #device-timer {
+      margin-left: 10px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+    }
+
+    .control-btn {
+      background: #2A2A2A;
+      border: none;
+      color: #FFFFFF;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .control-btn:hover {
+      background: #FF6A00;
+    }
+
+    .control-btn.active {
+      background: #FF6A00;
+    }
+
+    .os-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .container {
+      background: #1E1E1E;
+      border: 2px solid #0971b3;
+      border-radius: 12px;
+      padding: 0px 40px 40px 40px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      text-align: center;
+      margin: 40px auto;
+    }
+
+    h1 {
+      color: #FFFFFF;
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #0971b3;
+      padding-bottom: 15px;
+    }
+
+    h2 {
+      color: #FFFFFF;
+      font-size: 20px;
+      font-weight: 500;
+      margin: 30px 0 20px 0;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: #ff6a00;
+      border: none;
+      color: #FFFFFF;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      min-width: 100px;
+    }
+
+    button:hover:not(:disabled) {
+      background: #e55a00;
+    }
+
+    button:disabled {
+      background: #666;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    #unmountBtn {
+      background: #0971b3;
+    }
+
+    #unmountBtn:hover {
+      background: #085a94;
+    }
+
+    .iso-container {
+      background: #2A2A2A;
+      border: 1px solid #444;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      min-height: 200px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      cursor: pointer;
+      padding: 12px 16px;
+      border: 1px solid #444;
+      margin: 8px 0;
+      border-radius: 6px;
+      background: #1A1A1A;
+      transition: all 0.3s ease;
+      text-align: left;
+    }
+
+    li:hover {
+      border-color: #ff6a00;
+      background: #333;
+    }
+
+    li.selected {
+      background: #0971b3;
+      border-color: #0971b3;
+      color: #FFFFFF;
+      font-weight: bold;
+    }
+
+    .status {
+      background: #2A2A2A;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 15px;
+      margin-top: 20px;
+      min-height: 20px;
+      color: #ff6a00;
+      font-weight: 500;
+    }
+
+    .empty-state {
+      color: #888;
+      font-style: italic;
+      padding: 40px 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="os-container">
+    <div class="header">
+      <div class="device-info">
+        <div class="device-name-row">
+          <div class="device-name">${device.name}</div>
+          <div id="device-timer"></div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="control-btn" onclick="fetchList()">List OS</button>
+        <button class="control-btn" onclick="mountSelected()" id="mountBtn" disabled>Mount</button>
+        <button class="control-btn" onclick="unmount()" id="unmountBtn" disabled>Unmount</button>
+      </div>
+    </div>
+
+    <div class="os-content">
+      <div class="container">
+        <h2>Available ISO files:</h2>
+        <div class="iso-container">
+          <ul id="isoList">
+            <div class="empty-state">Click "List OS" to load available ISO files</div>
+          </ul>
+        </div>
+        <div class="status" id="status">Ready</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ip_add = "100.109.50.57";
+
+    window.addEventListener("message", (event) => {
+        const data = event.data;
+        if (data.type === "initPopup") {
+        // Only for initial popup data
+        const { title, device, ipAddress, postMessageScript, timerScript } = data;
+
+        if (title) document.title = title;
+        //   if (ipAddress) document.querySelector(".ip-address").textContent = ipAddress;
+        if (device){
+            document.querySelector(".device-name").textContent = `Welcome to ` + device.name;
+        }
+
+        if (postMessageScript) { 
+            const script = document.createElement("script");
+            script.textContent = postMessageScript;
+            document.head.appendChild(script);
+        }
+
+        if (timerScript) {
+            const script = document.createElement("script");
+            script.textContent = timerScript;
+            document.head.appendChild(script);
+        }
+        } else if (data.type === "updateTimer") {
+        // Handle timer updates here
+        const timerElem = document.getElementById("device-timer");
+        if (timerElem && data.timeLeft) {
+            timerElem.textContent = data.timeLeft;
+        }
+        }
+    });
+
+    let selectedFile = null;
+
+    function fetchList() {
+      document.getElementById("status").textContent = "Loading ISO files...";
+      fetch(`http://${ip_add}:9001/list`)
+        .then(res => res.json())
+        .then(data => {
+          const ul = document.getElementById("isoList");
+          ul.innerHTML = "";
+          selectedFile = null;
+          document.getElementById("mountBtn").disabled = true;
+
+          if (data.available_isos && data.available_isos.length > 0) {
+            data.available_isos.forEach(file => {
+              const li = document.createElement("li");
+              li.textContent = file;
+              li.onclick = () => {
+                [...ul.children].forEach(child => child.classList.remove("selected"));
+                li.classList.add("selected");
+                selectedFile = file;
+                document.getElementById("mountBtn").disabled = false;
+                document.getElementById("status").textContent = `Selected: ${file}`;
+              };
+              ul.appendChild(li);
+            });
+            document.getElementById("status").textContent = `Found ${data.available_isos.length} ISO files`;
+          } else {
+            ul.innerHTML = '<div class="empty-state">No ISO files found</div>';
+            document.getElementById("status").textContent = "No ISO files available";
+          }
+        })
+        .catch(err => {
+          document.getElementById("status").textContent = "Failed to fetch list";
+          document.getElementById("isoList").innerHTML = '<div class="empty-state">Error loading ISO files</div>';
+          console.error(err);
+        });
+    }
+
+    function mountSelected() {
+      if (!selectedFile) {
+        document.getElementById("status").textContent = "No file selected";
+        return;
+      }
+
+      document.getElementById("status").textContent = `Mounting ${selectedFile}...`;
+
+      fetch(`http://${ip_add}:9001/mount?filename=${encodeURIComponent(selectedFile)}`, {
+        method: "POST"
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("status").textContent = `Successfully mounted: ${data.iso}`;
+        document.getElementById("unmountBtn").disabled = false;
+      })
+      .catch(err => {
+        document.getElementById("status").textContent = "Mount operation failed";
+        console.error(err);
+      });
+    }
+
+    function unmount() {
+      document.getElementById("status").textContent = "Unmounting...";
+
+      fetch(`http://${ip_add}:9001/stop`, {
+        method: "POST"
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("status").textContent = "Successfully unmounted";
+        selectedFile = null;
+        document.getElementById("mountBtn").disabled = true;
+        document.getElementById("unmountBtn").disabled = true;
+        [...document.getElementById("isoList").children].forEach(child => {
+          child.classList.remove("selected");
+        });
+      })
+      .catch(err => {
+        document.getElementById("status").textContent = "Unmount operation failed";
+        console.error(err);
+      });
+    }
+  </script>
+</body>
+</html>

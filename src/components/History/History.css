@@ -1,0 +1,278 @@
+
+.container-fluid {
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.d-flex {
+  display: flex !important;
+}
+
+.justify-content-between {
+  justify-content: space-between !important;
+}
+
+.align-items-center {
+  align-items: center !important;
+}
+
+.mb-4 {
+  margin-bottom: 1.5rem !important;
+}
+
+.mb-0 {
+  margin-bottom: 0 !important;
+}
+
+.h3 {
+  font-size: 1.75rem;
+  color: #1281d6;
+}
+
+.status-badge {
+  font-size: 0.8rem;
+  padding: 0.35em 0.65em;
+}
+
+.active-badge {
+  background-color: #ff6a00;
+  color: #000;
+}
+
+.completed-badge {
+  background-color: #28a745;
+}
+
+.terminated-badge {
+  background-color: #dc3545;
+}
+
+.filter-container {
+  background-color: #1e1e1e;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #333333;
+}
+
+.card {
+  background-color: #1e1e1e;
+  border: 1px solid #333333;
+  border-radius: 8px;
+}
+
+.card-body {
+  padding: 1.25rem;
+  color: #cccccc;
+}
+
+.modal-content {
+  background-color: #333333;
+  color: #1281d6;
+  border: 1px solid #333333;
+}
+
+.modal-header, .modal-footer {
+  border-color: #333333;
+}
+
+.modal-title {
+  color: #1281d6;
+}
+
+.form-control, .form-select {
+  background-color: #000;
+  border: 1px solid #333333;
+  color: #1281d6;
+}
+
+.form-control:focus, .form-select:focus {
+  color: #1281d6;
+  background-color: #000;
+  border-color: #ff6a00;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(255, 106, 0, 0.25);
+}
+
+
+
+.btn-primary {
+  color: #000;
+  background-color: #ff6a00;
+  border-color: #ff6a00;
+}
+
+.btn-primary:hover {
+  color: #000;
+  background-color: #e65c00;
+  border-color: #e65c00;
+}
+
+.btn-secondary {
+  color: #fff;
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+.btn-secondary:hover {
+  color: #fff;
+  background-color: #5c636a;
+  border-color: #565e64;
+}
+
+.blue-btn {
+  background-color: #1281d6;
+  color: white;
+  border: 1px solid #1281d6;
+}
+.Delete-btn {
+  background-color: #1281d6;
+  color: white;
+  border: 1px solid #1281d6;
+}
+
+.Delete-btn:hover {
+  background-color: #0f6ab3;
+  border-color: #0f6ab3;
+  color: white;
+}
+
+.blue-btn:hover {
+  background-color: #0f6ab3;
+  border-color: #0f6ab3;
+  color: white;
+}
+
+.orange-btn {
+  background-color: #ff6a00;
+  color: white;
+  border: 1px solid #ff6a00;
+}
+
+.orange-btn:hover {
+  background-color: #e65c00;
+  border-color: #e65c00;
+  color: white;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.duration-cell {
+  font-family: monospace;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.action-buttons .btn {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.text-muted {
+  color: #cccccc !important;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1050;
+  display: none;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  outline: 0;
+}
+
+.modal.show {
+  display: block;
+}
+
+.modal-dialog {
+  position: relative;
+  width: auto;
+  pointer-events: none;
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1040;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+}
+
+.modal-backdrop.show {
+  opacity: 0.5;
+}
+
+.border-bottom {
+  border-bottom: 1px solid #333333 !important;
+}
+
+/* Data table overrides */
+.rdt_Table {
+  border: 1px solid #333333;
+}
+
+.rdt_TableHead {
+  background-color: #ff6a00;
+}
+
+.rdt_TableRow {
+  background-color: #1a1a1a;
+  color: white;
+}
+
+.rdt_TableRow:nth-child(even) {
+  background-color: #222222;
+}
+
+.rdt_TableCol {
+  color: #000;
+  font-weight: bold;
+}
+
+.rdt_Pagination {
+  background-color: #1e1e1e !important;
+  border-top: 1px solid #333 !important;
+  color: white !important;
+}
+
+.rdt_Pagination button {
+  color: white !important;
+}
+
+.rdt_Pagination button:disabled {
+  opacity: 0.5;
+}
+
+.rdt_Pagination select {
+  background-color: #000 !important;
+  color: white !important;
+  border: 1px solid #333 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .action-buttons {
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .action-buttons .btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
