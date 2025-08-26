@@ -11,6 +11,7 @@ import UserReservation from "./components/User_Reservation/UserReservation";
 import AdminReservation from "./components/AdminReservation/AdminReservation"; // Import the AdminReservation component
 import Device from "./components/Device/Device";
 import User from "./components/User/User";
+import History from "./components/History/History";
 
 const App = () => {
   return (
@@ -28,7 +29,7 @@ const App = () => {
           <Route path="user" element={<User />} />
           <Route path="reservation" element={<AdminReservation />} /> {/* Changed to AdminReservation */}
           {/* Use your actual History component if you have one */}
-          <Route path="Launch" element={<Dashboard />} />
+          <Route path="history" element={<History />} />
         </Route>
 
         {/* (Optional) keep direct pages if you still want them accessible */}

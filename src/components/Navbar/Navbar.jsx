@@ -18,13 +18,24 @@ const Navbar = ({ isDarkTheme, toggleTheme, userData }) => {
     expired: false
   });
 
-  const handleBackToReservations = () => {
+const handleBackToReservations = () => {
+  const role = localStorage.getItem("role"); // or sessionStorage / context
+  if (role === "admin") {
+    window.location.href = "http://localhost:3000/admin_dashboard/reservation";
+  } else {
     window.location.href = "http://localhost:3000/user_reservation";
-  };
+  }
+};
 
-  const navigateToReservations = () => {
-    window.location.href = "http://127.0.0.1:5000/reservations";
-  };
+const navigateToReservations = () => {
+  const role = localStorage.getItem("role");
+  if (role === "admin") {
+    window.location.href = "http://localhost:3000/admin_dashboard/reservation";
+  } else {
+    window.location.href = "http://localhost:3000/user_reservation";
+  }
+};
+
 
 const fetchDeviceData = async (deviceId) => {
   try {
@@ -46,7 +57,6 @@ const fetchDeviceData = async (deviceId) => {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
       },
       // Ensure axios doesn't try to parse HTML as JSON
       transformResponse: [(data) => {

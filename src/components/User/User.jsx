@@ -333,12 +333,6 @@ const User = () => {
             </select>
           </div>
             <div>
-              <button 
-                className="D-btn btn-primary" 
-                onClick={() => setShowAddModal(true)}
-              >
-                + Add New User
-              </button>
             </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'datatables.net-bs5/css/dataTables.bootstrap5.css';
 import 'font-awesome/css/font-awesome.min.css';
@@ -6,9 +6,7 @@ import 'flatpickr/dist/flatpickr.min.css';
 import './AdminReservation.css';
 import '@fortawesome/fontawesome-free';
 import flatpickr from 'flatpickr';
-import 'flatpickr/dist/flatpickr.min.css';
 import { 
-  FaSignOutAlt, 
   FaCalendarPlus, 
   FaClock, 
   FaCalendarCheck, 
@@ -24,7 +22,6 @@ import {
 } from 'react-icons/fa';
 
 const AdminReservation = () => {
-  const [currentUser, setCurrentUser] = useState({ is_authenticated: true });
   const [messages, setMessages] = useState([]);
   const [userReservations, setUserReservations] = useState([]);
   const [now, setNow] = useState(new Date());
@@ -39,19 +36,56 @@ const AdminReservation = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showDeviceDetails, setShowDeviceDetails] = useState(false);
   const [deviceDetails, setDeviceDetails] = useState(null);
-  const [reservationdetails, setreservationdetails] = useState(null)
   const [availableDevices, setAvailableDevices] = useState([]);
   const [bookedDevices, setBookedDevices] = useState([]);
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [loading, setLoading] = useState(false);
   const [reservationLoading, setReservationLoading] = useState(false);
-  
+  const startTimeRef = useRef(null);
+  const endTimeRef = useRef(null);
+  const [startTimePicker, setStartTimePicker] = useState(null);
+  const [endTimePicker, setEndTimePicker] = useState(null);
 
   // API base URL
   const API_BASE = 'http://localhost:5000'; // Update with your Flask server URL
 
-  
+  useEffect(() => {
+    if (startTimeRef.current && endTimeRef.current) {
+      // Start Time Picker
+      const startPicker = flatpickr(startTimeRef.current, {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        minDate: "today",
+        time_24hr: true,
+        minuteIncrement: 30,
+        onChange: function(selectedDates, dateStr) {
+          setStartTime(dateStr.replace(' ', 'T'));
+        }
+      });
+
+      // End Time Picker
+      const endPicker = flatpickr(endTimeRef.current, {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        minDate: "today",
+        time_24hr: true,
+        minuteIncrement: 30,
+        onChange: function(selectedDates, dateStr) {
+          setEndTime(dateStr.replace(' ', 'T'));
+        }
+      });
+
+      setStartTimePicker(startPicker);
+      setEndTimePicker(endPicker);
+
+      return () => {
+        startPicker.destroy();
+        endPicker.destroy();
+      };
+    }
+  }, []);
+
   useEffect(() => {
     document.title = "Device Reservation";
     fetchUserReservations();
@@ -64,127 +98,126 @@ const AdminReservation = () => {
     return () => clearInterval(interval);
   }, []);
 
-
-// Fetch user reservations
-const fetchUserReservations = async () => {
-  try {
-    setReservationLoading(true);
-    const response = await fetch(`${API_BASE}/api/user-reservations`, {
-      credentials: 'include' // Include cookies for authentication
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      if (data.success) {
-        // Transform the data to match your frontend structure
-        const transformedReservations = data.reservations.map(res => ({
-          id: res.reservation_id,
-          device_id: res.device_id,
-          device_name: res.device_name,
-          start_time: new Date(res.start_time),
-          end_time: new Date(res.end_time),
-          status: res.status,
-          device_ips: res.device_ips, // Now contains all IP addresses
-          user_name: res.user_name,
-          user_ip: res.user_ip,
-          is_active: res.is_active,
-          can_manage: res.can_manage
-        }));
-        
-        // Filter out expired reservations
-        const currentTime = new Date();
-        const activeReservations = transformedReservations.filter(
-          reservation => new Date(reservation.end_time) >= currentTime
-        );
-        
-        setUserReservations(activeReservations);
-      } else {
-        setMessages([{ text: data.message, category: 'danger' }]);
-      }
-    } else {
-      setMessages([{ text: 'Failed to fetch reservations', category: 'danger' }]);
-    }
-  } catch (error) {
-    console.error('Error fetching user reservations:', error);
-    setMessages([{ text: 'Network error while fetching reservations', category: 'danger' }]);
-  } finally {
-    setReservationLoading(false);
-  }
-};
-
-// Fetch available devices based on selected time range
-const fetchAvailableDevices = async (start, end) => {
-  try {
-    setLoading(true);
-    const response = await fetch(
-      `${API_BASE}/api/devices/availability?start_time=${start.toISOString()}&end_time=${end.toISOString()}`,
-      { credentials: 'include' }
-    );
-    
-    if (response.ok) {
-      const data = await response.json();
-      if (data.success) {
-        // Store both available and booked devices for the time range
-        setAvailableDevices(data.devices || []);
-      } else {
-        setMessages([{ text: data.message, category: 'danger' }]);
-      }
-    } else {
-      setMessages([{ text: 'Failed to fetch available devices', category: 'danger' }]);
-    }
-  } catch (error) {
-    console.error('Error fetching available devices:', error);
-    setMessages([{ text: 'Network error while fetching devices', category: 'danger' }]);
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-const fetchBookedDevices = async () => {
-  try {
-    setLoading(true);
-    console.log('Fetching booked devices...');
-    
-    const response = await fetch(`${API_BASE}/api/booked-devices`, {
-      credentials: 'include'
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      console.log('Booked devices response:', data);
+  // Fetch user reservations
+  const fetchUserReservations = async () => {
+    try {
+      setReservationLoading(true);
+      const response = await fetch(`${API_BASE}/api/user-reservations`, {
+        credentials: 'include' // Include cookies for authentication
+      });
       
-      if (data.success) {
-        // Handle different possible response structures
-        let devices = [];
-        
-        if (Array.isArray(data.booked_devices)) {
-          devices = data.booked_devices;
-        } else if (Array.isArray(data.reservations)) {
-          devices = data.reservations;
-        } else if (Array.isArray(data.data)) {
-          devices = data.data;
-        } else if (data.data && Array.isArray(data.data.booked_devices)) {
-          devices = data.data.booked_devices;
-        } else if (Array.isArray(data)) {
-          devices = data; // Direct array response
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          // Transform the data to match your frontend structure
+          const transformedReservations = data.reservations.map(res => ({
+            id: res.reservation_id,
+            device_id: res.device_id,
+            device_name: res.device_name,
+            start_time: new Date(res.start_time),
+            end_time: new Date(res.end_time),
+            status: res.status,
+            device_ips: res.device_ips, // Now contains all IP addresses
+            user_name: res.user_name,
+            user_ip: res.user_ip,
+            is_active: res.is_active,
+            can_manage: res.can_manage
+          }));
+          
+          // Filter out expired reservations
+          const currentTime = new Date();
+          const activeReservations = transformedReservations.filter(
+            reservation => new Date(reservation.end_time) >= currentTime
+          );
+          
+          setUserReservations(activeReservations);
+        } else {
+          setMessages([{ text: data.message, category: 'danger' }]);
         }
-        
-        console.log('Processed booked devices:', devices);
-        setBookedDevices(devices);
       } else {
-        setMessages([{ text: data.message || 'Failed to fetch booked devices', category: 'danger' }]);
+        setMessages([{ text: 'Failed to fetch reservations', category: 'danger' }]);
       }
-    } else {
-      setMessages([{ text: `Server error: ${response.status}`, category: 'danger' }]);
+    } catch (error) {
+      console.error('Error fetching user reservations:', error);
+      setMessages([{ text: 'Network error while fetching reservations', category: 'danger' }]);
+    } finally {
+      setReservationLoading(false);
     }
-  } catch (error) {
-    console.error('Error fetching booked devices:', error);
-    setMessages([{ text: 'Network error while fetching booked devices', category: 'danger' }]);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
+
+  // Fetch available devices based on selected time range
+  const fetchAvailableDevices = async (start, end) => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `${API_BASE}/api/devices/availability?start_time=${start.toISOString()}&end_time=${end.toISOString()}`,
+        { credentials: 'include' }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          // Store available devices
+          setAvailableDevices(data.devices || []);
+          console.log('Available devices:', data.devices);
+        } else {
+          setMessages([{ text: data.message, category: 'danger' }]);
+        }
+      } else {
+        setMessages([{ text: 'Failed to fetch available devices', category: 'danger' }]);
+      }
+    } catch (error) {
+      console.error('Error fetching available devices:', error);
+      setMessages([{ text: 'Network error while fetching devices', category: 'danger' }]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchBookedDevices = async () => {
+    try {
+      setLoading(true);
+      console.log('Fetching booked devices...');
+      
+      const response = await fetch(`${API_BASE}/api/booked-devices`, {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Booked devices response:', data);
+        
+        if (data.success) {
+          // Handle different possible response structures
+          let devices = [];
+          
+          if (Array.isArray(data.booked_devices)) {
+            devices = data.booked_devices;
+          } else if (Array.isArray(data.reservations)) {
+            devices = data.reservations;
+          } else if (Array.isArray(data.data)) {
+            devices = data.data;
+          } else if (data.data && Array.isArray(data.data.booked_devices)) {
+            devices = data.data.booked_devices;
+          } else if (Array.isArray(data)) {
+            devices = data; // Direct array response
+          }
+          
+          console.log('Processed booked devices:', devices);
+          setBookedDevices(devices);
+        } else {
+          setMessages([{ text: data.message || 'Failed to fetch booked devices', category: 'danger' }]);
+        }
+      } else {
+        setMessages([{ text: `Server error: ${response.status}`, category: 'danger' }]);
+      }
+    } catch (error) {
+      console.error('Error fetching booked devices:', error);
+      setMessages([{ text: 'Network error while fetching booked devices', category: 'danger' }]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Handle device selection modal opening
   const handleBookReservation = () => {
@@ -216,57 +249,57 @@ const fetchBookedDevices = async () => {
     setSelectedDevice(device);
   };
 
-
-// Update your handleConfirmDevice function
-const handleConfirmDevice = async () => {
-  if (!selectedDevice) {
-    setMessages([{ text: 'Please select a device', category: 'warning' }]);
-    return;
-  }
-  
-  try {
-    
-    setLoading(true);
-    const response = await fetch(`${API_BASE}/api/reservations`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        device_id: selectedDevice.device_id,
-        start_time: startTime,
-        end_time: endTime,
-        purpose: 'Device reservation'
-      })
-    });
-    
-    if (response.status === 401) {
-      setMessages([{ text: 'Session expired. Please login again', category: 'warning' }]);
-      window.location.href = '/login';
+  // Update your handleConfirmDevice function
+  const handleConfirmDevice = async () => {
+    if (!selectedDevice) {
+      setMessages([{ text: 'Please select a device', category: 'warning' }]);
       return;
     }
     
-    if (response.ok) {
-      const data = await response.json();
-      if (data.success) {
-        setMessages([{ text: 'Reservation created successfully', category: 'success' }]);
-        fetchUserReservations();
-      } else {
-        setMessages([{ text: data.message, category: 'danger' }]);
+    try {
+      
+      setLoading(true);
+      const response = await fetch(`${API_BASE}/api/reservations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          device_id: selectedDevice.device_id,
+          start_time: startTime,
+          end_time: endTime,
+          purpose: 'Device reservation'
+        })
+      });
+      
+      if (response.status === 401) {
+        setMessages([{ text: 'Session expired. Please login again', category: 'warning' }]);
+        window.location.href = '/login';
+        return;
       }
-    } else {
-      setMessages([{ text: 'Failed to create reservation', category: 'danger' }]);
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setMessages([{ text: 'Reservation created successfully', category: 'success' }]);
+          fetchUserReservations();
+        } else {
+          setMessages([{ text: data.message, category: 'danger' }]);
+        }
+      } else {
+        setMessages([{ text: 'Failed to create reservation', category: 'danger' }]);
+      }
+    } catch (error) {
+      console.error('Error creating reservation:', error);
+      setMessages([{ text: 'Network error while creating reservation', category: 'danger' }]);
+    } finally {
+      setLoading(false);
+      setShowDeviceSelection(false);
+      setSelectedDevice(null);
     }
-  } catch (error) {
-    console.error('Error creating reservation:', error);
-    setMessages([{ text: 'Network error while creating reservation', category: 'danger' }]);
-  } finally {
-    setLoading(false);
-    setShowDeviceSelection(false);
-    setSelectedDevice(null);
-  }
-};
+  };
+
   // Cancel a reservation
   const handleCancelReservation = async (reservationId) => {
     if (!window.confirm('Are you sure you want to cancel this reservation?')) {
@@ -299,86 +332,83 @@ const handleConfirmDevice = async () => {
     }
   };
 
-// Launch device - redirect to dashboard
-const handleLaunchDevice = (deviceId, reservationId) => {
-  // Find the reservation to get the device details
-  const reservation = userReservations.find(r => r.id === reservationId);
-  
-  if (reservation) {
-    // Determine which IP type to use (prioritize PC_IP if available)
-    let ipType = '';
-    if (reservation.device_ips && reservation.device_ips.pc_ip) {
-      ipType = 'pc_ip';
-    } else if (reservation.device_ips && reservation.device_ips.rutomatrix_ip) {
-      ipType = 'rutomatrix_ip';
-    } else if (reservation.device_ips && reservation.device_ips.pulse1_ip) {
-      ipType = 'pulse1_ip';
-    } else if (reservation.device_ips && reservation.device_ips.ct1_ip) {
-      ipType = 'ct1_ip';
-    }
+  // Launch device - redirect to dashboard
+  const handleLaunchDevice = (deviceId, reservationId) => {
+    // Find the reservation to get the device details
+    const reservation = userReservations.find(r => r.id === reservationId);
     
-    // If we found an IP type, navigate to dashboard
-    if (ipType) {
-      const baseUrl = 'http://localhost:3000/dashboard';
-      const params = new URLSearchParams({
-        device: deviceId,
-        ip_type: ipType,
-        reservation: reservationId
-      });
+    if (reservation) {
+      // Determine which IP type to use (prioritize PC_IP if available)
+      let ipType = '';
+      if (reservation.device_ips && reservation.device_ips.pc_ip) {
+        ipType = 'pc_ip';
+      } else if (reservation.device_ips && reservation.device_ips.rutomatrix_ip) {
+        ipType = 'rutomatrix_ip';
+      } else if (reservation.device_ips && reservation.device_ips.pulse1_ip) {
+        ipType = 'pulse1_ip';
+      } else if (reservation.device_ips && reservation.device_ips.ct1_ip) {
+        ipType = 'ct1_ip';
+      }
       
-      const fullUrl = `${baseUrl}?${params.toString()}`;
-      console.log(`Navigating to: ${fullUrl}`);
-      window.location.href = fullUrl;
+      // If we found an IP type, navigate to dashboard
+      if (ipType) {
+        const baseUrl = 'http://localhost:3000/dashboard';
+        const params = new URLSearchParams({
+          device: deviceId,
+          ip_type: ipType,
+          reservation: reservationId
+        });
+        
+        const fullUrl = `${baseUrl}?${params.toString()}`;
+        console.log(`Navigating to: ${fullUrl}`);
+        window.location.href = fullUrl;
+      } else {
+        setMessages([{ text: 'No valid IP address found for this device', category: 'warning' }]);
+      }
     } else {
-      setMessages([{ text: 'No valid IP address found for this device', category: 'warning' }]);
+      setMessages([{ text: 'Reservation not found', category: 'warning' }]);
     }
-  } else {
-    setMessages([{ text: 'Reservation not found', category: 'warning' }]);
-  }
-};
+  };
 
   // Show device details
-
-const handleShowDeviceDetails = (device) => {
-  // Extract device information consistently
-  const deviceDetails = {
-    device_id: device.device?.id || device.device_id || 'Unknown',
-    device_name: device.device?.name || 'Unknown',
-    pc_ip: device.device?.pc_ip,
-    rutomatrix_ip: device.device?.rutomatrix_ip,
-    pulse1_ip: device.device?.pulse1_ip,
-    ct1_ip: device.device?.ct1_ip,
-    start_time: device.start_time || device.time?.start,
-    end_time: device.end_time || device.time?.end,
-    user_name: device.user?.name || device.user_name,
-    user_id: device.user?.id || device.user_id,
-    status: device.status,
-    purpose: device.purpose
-  };
-  
-  setDeviceDetails(deviceDetails);
-  setShowDeviceDetails(true);
-};
-
-  // Handle time input changes
-  const handleTimeChange = (field, value) => {
-    if (field === 'start_time') {
-      setStartTime(value);
-    } else if (field === 'end_time') {
-      setEndTime(value);
-    }
+  const handleShowDeviceDetails = (device) => {
+    // Extract device information consistently
+    const deviceDetails = {
+      device_id: device.device?.id || device.device_id || 'Unknown',
+      device_name: device.device?.name || 'Unknown',
+      pc_ip: device.device?.pc_ip,
+      rutomatrix_ip: device.device?.rutomatrix_ip,
+      pulse1_ip: device.device?.pulse1_ip,
+      ct1_ip: device.device?.ct1_ip,
+      start_time: device.start_time || device.time?.start,
+      end_time: device.end_time || device.time?.end,
+      user_name: device.user?.name || device.user_name,
+      user_id: device.user?.id || device.user_id,
+      status: device.status,
+      purpose: device.purpose
+    };
+    
+    setDeviceDetails(deviceDetails);
+    setShowDeviceDetails(true);
   };
 
-  // Handle quick select time buttons
   const handleQuickSelectTime = (field, minutes) => {
     const date = new Date();
     date.setMinutes(date.getMinutes() + minutes);
-    const formattedTime = date.toISOString().slice(0, 16);
+    
+    const formattedDate = flatpickr.formatDate(date, "Y-m-d H:i");
+    const formattedValue = formattedDate.replace(' ', 'T');
     
     if (field === 'start_time') {
-      setStartTime(formattedTime);
+      setStartTime(formattedValue);
+      if (startTimePicker) {
+        startTimePicker.setDate(date);
+      }
     } else if (field === 'end_time') {
-      setEndTime(formattedTime);
+      setEndTime(formattedValue);
+      if (endTimePicker) {
+        endTimePicker.setDate(date);
+      }
     }
   };
 
@@ -437,63 +467,35 @@ const handleShowDeviceDetails = (device) => {
     return 0;
   });
   
-useEffect(() => {
-  const interval = setInterval(() => {
-    // Only refresh user reservations if we're NOT in device selection mode
-    // or if we're looking at booked devices tab (to keep reservation list updated)
-    if (!showDeviceSelection || activeTab === "booked") {
+  const cleanupExpiredReservations = () => {
+    const currentTime = new Date();
+    setUserReservations(prevReservations => 
+      prevReservations.filter(reservation => new Date(reservation.end_time) >= currentTime)
+    );
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Always refresh user reservations
       fetchUserReservations();
-    }
-    
-    // Refresh the appropriate tab content only when device selection is open
-    if (showDeviceSelection) {
-      if (activeTab === "booked") {
-        fetchBookedDevices();
-      } else if (activeTab === "available" && startTime && endTime) {
-        const start = new Date(startTime);
-        const end = new Date(endTime);
-        fetchAvailableDevices(start, end);
+      
+      // Also clean up any expired reservations in the local state
+      cleanupExpiredReservations();
+      
+      // Refresh the appropriate tab content
+      if (showDeviceSelection) {
+        if (activeTab === "booked") {
+          fetchBookedDevices();
+        } else if (activeTab === "available" && startTime && endTime) {
+          const start = new Date(startTime);
+          const end = new Date(endTime);
+          fetchAvailableDevices(start, end);
+        }
       }
-    }
-    
-    // Always clean up expired reservations
-    cleanupExpiredReservations();
-  }, 30000);
+    }, 30000);
 
-  return () => clearInterval(interval);
-}, [showDeviceSelection, activeTab, startTime, endTime]);
-
-
-const cleanupExpiredReservations = () => {
-  const currentTime = new Date();
-  setUserReservations(prevReservations => 
-    prevReservations.filter(reservation => new Date(reservation.end_time) >= currentTime)
-  );
-};
-
-// Then call this function in your polling interval:
-useEffect(() => {
-  const interval = setInterval(() => {
-    // Always refresh user reservations
-    fetchUserReservations();
-    
-    // Also clean up any expired reservations in the local state
-    cleanupExpiredReservations();
-    
-    // Refresh the appropriate tab content
-    if (showDeviceSelection) {
-      if (activeTab === "booked") {
-        fetchBookedDevices();
-      } else if (activeTab === "available" && startTime && endTime) {
-        const start = new Date(startTime);
-        const end = new Date(endTime);
-        fetchAvailableDevices(start, end);
-      }
-    }
-  }, 30000);
-
-  return () => clearInterval(interval);
-}, [showDeviceSelection, activeTab, startTime, endTime]);
+    return () => clearInterval(interval);
+  }, [showDeviceSelection, activeTab, startTime, endTime]);
 
   // Filter reservations based on search term
   const filteredReservations = sortedReservations.filter(reservation => 
@@ -505,27 +507,10 @@ useEffect(() => {
   const currentEntries = filteredReservations.slice(indexOfFirstEntry, indexOfLastEntry);
   const totalPages = Math.ceil(filteredReservations.length / entriesPerPage);
 
-  // Filter available and booked devices based on search terms
-  const filteredAvailableDevices = availableDevices.filter(device => 
-    device.device_id.toLowerCase().includes(deviceFilter.toLowerCase())
-  );
-
-const filteredBookedDevices = bookedDevices
-  ? bookedDevices.filter(device => {
-      const deviceId = device.device?.id || device.device_id || '';
-      return deviceId.toLowerCase().includes(bookedDeviceFilter.toLowerCase());
-    })
-  : [];
-
   return (
     <div className="container-fluid py-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1 className="h3 mb-0">User Device Reservation</h1>
-        {currentUser.is_authenticated && (
-          <a href="http://localhost:3000/auth" className="btn btn-outline-danger">
-            <FaSignOutAlt className="me-2" /> Logout
-          </a>
-        )}
+        <h1 className="h3 mb-0">Admin Device Reservation</h1>
       </div>
 
       {messages.length > 0 && (
@@ -551,15 +536,15 @@ const filteredBookedDevices = bookedDevices
                 <div className="input-icon-group">
                   <FaClock className="input-icon" />
                   <input 
-                    type="datetime-local" 
+                    ref={startTimeRef}
+                    type="text" 
                     className="form-control form-control-lg" 
                     id="start_time" 
                     name="start_time" 
                     placeholder="Select start time" 
                     required
-                    value={startTime}
-                    onChange={(e) => handleTimeChange('start_time', e.target.value)}
-                    min={now.toISOString().slice(0, 16)}
+                    value={startTime ? startTime.replace('T', ' ') : ''}
+                    readOnly // Make it readOnly so Flatpickr handles the input
                   />
                 </div>
                 <div className="quick-select-buttons mt-2">
@@ -575,15 +560,15 @@ const filteredBookedDevices = bookedDevices
                 <div className="input-icon-group">
                   <FaClock className="input-icon" />
                   <input 
-                    type="datetime-local" 
+                    ref={endTimeRef}
+                    type="text" 
                     className="form-control form-control-lg" 
                     id="end_time" 
                     name="end_time" 
                     placeholder="Select end time" 
                     required
-                    value={endTime}
-                    onChange={(e) => handleTimeChange('end_time', e.target.value)}
-                    min={now.toISOString().slice(0, 16)}
+                    value={endTime ? endTime.replace('T', ' ') : ''}
+                    readOnly // Make it readOnly so Flatpickr handles the input
                   />
                 </div>
                 <div className="quick-select-buttons mt-2">
@@ -601,7 +586,7 @@ const filteredBookedDevices = bookedDevices
                 id="bookReservationBtn" 
                 className="btn btn-reserve" 
                 onClick={handleBookReservation}
-                disabled={loading}
+                disabled={loading || !startTime || !endTime}
               >
                 {loading ? (
                   <>
@@ -762,16 +747,16 @@ const filteredBookedDevices = bookedDevices
                         </button>
                       </div>
                     </div>
-                    <div className="col-md-6 d-flex align-items-end">
-                      <button 
-                        className="btn btn-sm btn-outline-primary"
-                        onClick={fetchBookedDevices}
-                        disabled={loading}
-                      >
-                        {loading ? <FaSpinner className="fa-spin" /> : <FaSearch />}
-                        Refresh
-                      </button>
-                    </div>
+                  </div>
+                  <div className="col-md-6 d-flex align-items-end">
+                    <button 
+                      className="btn btn-sm btn-outline-primary"
+                      onClick={fetchBookedDevices}
+                      disabled={loading}
+                    >
+                      {loading ? <FaSpinner className="fa-spin" /> : <FaSearch />}
+                      Refresh
+                    </button>
                   </div>
                 </div>
 
@@ -837,12 +822,7 @@ const filteredBookedDevices = bookedDevices
                       <FaCalendarAlt className="fa-3x mb-3" />
                       <h5>No Booked Devices Found</h5>
                       <p className="mb-3">There are currently no active or upcoming reservations.</p>
-                      <button 
-                        className="btn btn-primary"
-                        onClick={fetchBookedDevices}
-                      >
-                        <FaSearch className="me-2" /> Check Again
-                      </button>
+
                     </div>
                   )}
                 </div>
@@ -1129,7 +1109,7 @@ const filteredBookedDevices = bookedDevices
                           </button>
                         </li>
                       </ul>
-                    </nav>
+                      </nav>
                   </div>
                 </>
               )}
