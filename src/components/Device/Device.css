@@ -125,25 +125,25 @@
   border-radius: 0.25rem;
 }
 
-.orange-btn {
+.Action-btn {
   background-color: #ff6a00;
   color: white;
   border: 1px solid #ff6a00;
 }
 
-.orange-btn:hover {
+.Action-btn:hover {
   background-color: #e65c00;
   border-color: #e65c00;
   color: white;
 }
 
-.blue-btn {
+.Edit-btn {
   background-color: #1281d6;
   color: white;
   border: 1px solid #1281d6;
 }
 
-.blue-btn:hover {
+.Edit-btn:hover {
   background-color: #0f6ab3;
   border-color: #0f6ab3;
   color: white;
@@ -454,7 +454,7 @@
 }
 
 .rdt_Pagination select {
-  background-color: #000 !important;
+  background-color: rgba(0, 0, 0, 0.125) !important;
   color: white !important;
   border: 1px solid #333 !important;
 }

@@ -221,19 +221,19 @@ const Device = () => {
       cell: row => (
         <div className="action-buttons">
           <button 
-            className="D-btn Devicebtn view-ip orange-btn"
+            className="D-btn Devicebtn view-ip Action-btn"
             onClick={() => handleViewIps(row)}
           >
             View IPs
           </button>
           <button 
-            className="D-btn Devicebtn edit-device blue-btn"
+            className="D-btn Devicebtn edit-device Edit-btn"
             onClick={() => handleEditDevice(row)}
           >
             Edit
           </button>
           <button 
-            className="D-btn Devicebtn delete-device orange-btn"
+            className="D-btn Devicebtn delete-device Action-btn"
             onClick={() => handleDeleteDevice(row)}
           >
             Delete

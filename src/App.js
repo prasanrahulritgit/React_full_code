@@ -10,8 +10,8 @@ import AdminDashboard from "./components/Admin_Dashboard/Admin_Dashboard";
 import UserReservation from "./components/User_Reservation/UserReservation";
 import AdminReservation from "./components/AdminReservation/AdminReservation"; // Import the AdminReservation component
 import Device from "./components/Device/Device";
-import EditDevice from "./components/Device/EditDevice";
 import User from "./components/User/User";
+import History from "./components/History/History";
 
 const App = () => {
   return (
@@ -29,7 +29,7 @@ const App = () => {
           <Route path="user" element={<User />} />
           <Route path="reservation" element={<AdminReservation />} /> {/* Changed to AdminReservation */}
           {/* Use your actual History component if you have one */}
-          <Route path="Launch" element={<Dashboard />} />
+          <Route path="history" element={<History />} />
         </Route>
 
         {/* (Optional) keep direct pages if you still want them accessible */}
@@ -37,7 +37,6 @@ const App = () => {
         <Route path="/user_reservation" element={<UserReservation />} />
         <Route path="/admin_reservation" element={<AdminReservation />} /> {/* Added direct route for admin reservation */}
         <Route path="/device" element={<Device />} />
-        <Route path="/device/edit/:deviceId/:field" element={<EditDevice />} />
         <Route path="/user" element={<User />} />
       </Routes>
     </Router>
