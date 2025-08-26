@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, use } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'datatables.net-bs5/css/dataTables.bootstrap5.css';
 import 'font-awesome/css/font-awesome.min.css';
@@ -46,12 +46,51 @@ const UserReservation = () => {
   const [endTime, setEndTime] = useState('');
   const [loading, setLoading] = useState(false);
   const [reservationLoading, setReservationLoading] = useState(false);
-  
+  const startTimeRef = useRef(null);
+  const endTimeRef = useRef(null);
+  const [startTimePicker, setStartTimePicker] = useState(null);
+  const [endTimePicker, setEndTimePicker] = useState(null);
 
   // API base URL
   const API_BASE = 'http://localhost:5000'; // Update with your Flask server URL
 
-  
+    useEffect(() => {
+    if (startTimeRef.current && endTimeRef.current) {
+      // Start Time Picker
+      const startPicker = flatpickr(startTimeRef.current, {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        minDate: "today",
+        time_24hr: true,
+        minuteIncrement: 30,
+        onChange: function(selectedDates, dateStr) {
+          setStartTime(dateStr.replace(' ', 'T'));
+        }
+      });
+
+      // End Time Picker
+      const endPicker = flatpickr(endTimeRef.current, {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        minDate: "today",
+        time_24hr: true,
+        minuteIncrement: 30,
+        onChange: function(selectedDates, dateStr) {
+          setEndTime(dateStr.replace(' ', 'T'));
+        }
+      });
+
+      setStartTimePicker(startPicker);
+      setEndTimePicker(endPicker);
+
+      return () => {
+        startPicker.destroy();
+        endPicker.destroy();
+      };
+    }
+  }, []);
+
+
   useEffect(() => {
     document.title = "Device Reservation";
     fetchUserReservations();
@@ -369,16 +408,23 @@ const handleShowDeviceDetails = (device) => {
     }
   };
 
-  // Handle quick select time buttons
   const handleQuickSelectTime = (field, minutes) => {
     const date = new Date();
     date.setMinutes(date.getMinutes() + minutes);
-    const formattedTime = date.toISOString().slice(0, 16);
+    
+    const formattedDate = flatpickr.formatDate(date, "Y-m-d H:i");
+    const formattedValue = formattedDate.replace(' ', 'T');
     
     if (field === 'start_time') {
-      setStartTime(formattedTime);
+      setStartTime(formattedValue);
+      if (startTimePicker) {
+        startTimePicker.setDate(date);
+      }
     } else if (field === 'end_time') {
-      setEndTime(formattedTime);
+      setEndTime(formattedValue);
+      if (endTimePicker) {
+        endTimePicker.setDate(date);
+      }
     }
   };
 
@@ -538,8 +584,7 @@ const filteredBookedDevices = bookedDevices
           ))}
         </div>
       )}
-
-      <div className="card reservation-card mb-4">
+ <div className="card reservation-card mb-4">
         <div className="card-header reservation-header">
           <h5 className="mb-0"><FaCalendarPlus className="me-2" />Create New Reservation</h5>
         </div>
@@ -551,15 +596,15 @@ const filteredBookedDevices = bookedDevices
                 <div className="input-icon-group">
                   <FaClock className="input-icon" />
                   <input 
-                    type="datetime-local" 
+                    ref={startTimeRef}
+                    type="text" 
                     className="form-control form-control-lg" 
                     id="start_time" 
                     name="start_time" 
                     placeholder="Select start time" 
                     required
-                    value={startTime}
-                    onChange={(e) => handleTimeChange('start_time', e.target.value)}
-                    min={now.toISOString().slice(0, 16)}
+                    value={startTime ? startTime.replace('T', ' ') : ''}
+                    readOnly // Make it readOnly so Flatpickr handles the input
                   />
                 </div>
                 <div className="quick-select-buttons mt-2">
@@ -575,15 +620,15 @@ const filteredBookedDevices = bookedDevices
                 <div className="input-icon-group">
                   <FaClock className="input-icon" />
                   <input 
-                    type="datetime-local" 
+                    ref={endTimeRef}
+                    type="text" 
                     className="form-control form-control-lg" 
                     id="end_time" 
                     name="end_time" 
                     placeholder="Select end time" 
                     required
-                    value={endTime}
-                    onChange={(e) => handleTimeChange('end_time', e.target.value)}
-                    min={now.toISOString().slice(0, 16)}
+                    value={endTime ? endTime.replace('T', ' ') : ''}
+                    readOnly // Make it readOnly so Flatpickr handles the input
                   />
                 </div>
                 <div className="quick-select-buttons mt-2">
@@ -601,7 +646,7 @@ const filteredBookedDevices = bookedDevices
                 id="bookReservationBtn" 
                 className="btn btn-reserve" 
                 onClick={handleBookReservation}
-                disabled={loading}
+                disabled={loading || !startTime || !endTime}
               >
                 {loading ? (
                   <>
@@ -762,16 +807,6 @@ const filteredBookedDevices = bookedDevices
                         </button>
                       </div>
                     </div>
-                    <div className="col-md-6 d-flex align-items-end">
-                      <button 
-                        className="btn btn-sm btn-outline-primary"
-                        onClick={fetchBookedDevices}
-                        disabled={loading}
-                      >
-                        {loading ? <FaSpinner className="fa-spin" /> : <FaSearch />}
-                        Refresh
-                      </button>
-                    </div>
                   </div>
                 </div>
 
@@ -837,12 +872,7 @@ const filteredBookedDevices = bookedDevices
                       <FaCalendarAlt className="fa-3x mb-3" />
                       <h5>No Booked Devices Found</h5>
                       <p className="mb-3">There are currently no active or upcoming reservations.</p>
-                      <button 
-                        className="btn btn-primary"
-                        onClick={fetchBookedDevices}
-                      >
-                        <FaSearch className="me-2" /> Check Again
-                      </button>
+
                     </div>
                   )}
                 </div>

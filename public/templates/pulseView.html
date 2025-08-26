@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PulseView</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #121212;
+      color: #FFFFFF;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
+    }
+    
+    .pulse-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      padding: 16px;
+      box-sizing: border-box;
+      gap: 16px;
+      max-width: 2000px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: #1E1E1E;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    
+    .controls {
+      display: flex;
+      gap: 12px;
+    }
+ 
+    .device-info {
+      display: flex;
+      flex-direction: column;
+    }
+ 
+     .device-name-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+ 
+    #device-timer {
+      margin-left: 10px;
+    }
+ 
+    .device-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: #FF6A00;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: unset;
+      word-break: break-word;
+      line-height: 1.2;
+      text-align: center;
+    }
+    
+    .control-btn {
+      background: #2A2A2A;
+      border: none;
+      color: #FFFFFF;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    
+    .control-btn:hover {
+      background: #FF6A00;
+    }
+    
+    .control-btn.active {
+      background: #FF6A00;
+    }
+    
+    .pulse-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .pulse-viewer-container {
+      flex: 1;
+      background: #1E1E1E;
+      border: groove 1px #7c7c7c;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    
+    .pulse-viewer-header {
+      padding: 8px 12px;
+      background: rgba(0,0,0,0.3);
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .pulse-viewer-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    
+    .pulse-viewer-placeholder {
+      color: #BBBBBB;
+      font-size: 16px;
+    }
+    
+    .pulse-viewer-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    
+    .viewer-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .viewer-action-btn {
+      background: transparent;
+      border: none;
+      color: #BBBBBB;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      transition: all 0.2s;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .viewer-action-btn:hover {
+      color: #FFFFFF;
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .fullscreen-icon {
+      width: 16px;
+      height: 16px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+ 
+    .alert {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 12px 16px;
+      background: #2A2A2A;
+      color: white;
+      border-radius: 4px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+ 
+    .alert-success {
+      border-left: 4px solid #4CAF50;
+    }
+ 
+    .alert-error {
+      border-left: 4px solid #F44336;
+    }
+ 
+    .alert-info {
+      border-left: 4px solid #2196F3;
+    }
+ 
+    .fade-out {
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+    
+    /* Fullscreen styles */
+    .pulse-viewer-container.fullscreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 9999;
+      border-radius: 0;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .pulse-viewer-container.fullscreen .pulse-viewer-content {
+      height: calc(100% - 36px); /* Account for header height */
+    }
+  </style>
+</head>
+<body>
+   <div class="pulse-container">
+    <div class="header">
+      <div class="device-info">
+        <div class="device-name-row">
+          <div class="device-name">${device.name}</div>
+          <div id="device-timer">--:--:--</div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="control-btn" id="launch-btn">
+          <svg viewBox="0 0 24 24" width="16" height="16">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          Launch PulseView
+        </button>
+      </div>
+    </div>
+ 
+    <div class="pulse-content">
+      <div class="pulse-viewer-container" id="pulse-viewer-container">
+        <div class="pulse-viewer-header">
+          <span>PulseView</span>
+          <div class="viewer-actions">
+            <button class="viewer-action-btn" id="fullscreen-btn" title="Toggle fullscreen">
+              <svg class="fullscreen-icon" viewBox="0 0 24 24" id="fullscreen-icon">
+                <path d="M7 7h4V5H5v6h2V7zm10 0h-4V5h6v6h-2V7zm-10 10h4v2H5v-6h2v4zm10 0h-4v2h6v-6h-2v4z" 
+                      stroke="currentColor" fill="none" stroke-width="1.5"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="pulse-viewer-content">
+          <div class="pulse-viewer-placeholder" id="pulse-viewer-feed">PulseView not launched</div>
+          <iframe
+            id="pulse-viewer-iframe"
+            class="pulse-viewer-iframe"
+            allow="fullscreen"
+            style="display: none;"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  window.addEventListener("message", (event) => {
+    const data = event.data;
+    if (data.type === "initPopup") {
+      // Only for initial popup data
+      const { title, device, ipAddress, postMessageScript, timerScript } = data;
+
+      if (title) document.title = title;
+      if (device){
+        document.querySelector(".device-name").textContent = device.name;
+      }
+
+      if (postMessageScript) { 
+        const script = document.createElement("script");
+        script.textContent = postMessageScript;
+        document.head.appendChild(script);
+      }
+
+      if (timerScript) {
+        const script = document.createElement("script");
+        script.textContent = timerScript;
+        document.head.appendChild(script);
+      }
+    } else if (data.type === "updateTimer") {
+      // Handle timer updates here
+      const timerElem = document.getElementById("device-timer");
+      if (timerElem && data.timeLeft) {
+        timerElem.textContent = data.timeLeft;
+      }
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+      const launchBtn = document.getElementById('launch-btn');
+      const pulseViewerFeed = document.getElementById('pulse-viewer-feed');
+      const pulseViewerIframe = document.getElementById('pulse-viewer-iframe');
+      const fullscreenBtn = document.getElementById('fullscreen-btn');
+      const fullscreenIcon = document.getElementById('fullscreen-icon');
+      const pulseViewerContainer = document.getElementById('pulse-viewer-container');
+      const ipAddress = "${ipAddress}";
+ 
+      function showAlert(type, message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type}`;
+        alertDiv.innerHTML = `
+          <div>${message}</div>
+        `;
+        
+        document.body.appendChild(alertDiv);
+        
+        setTimeout(() => {
+          alertDiv.classList.add('fade-out');
+          setTimeout(() => document.body.removeChild(alertDiv), 500);
+        }, 3000);
+      }
+      
+      // Fullscreen functionality
+      function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+          pulseViewerContainer.requestFullscreen().catch(err => {
+            console.error('Error attempting to enable fullscreen:', err);
+            showAlert('error', 'Fullscreen failed: ' + err.message);
+          });
+        } else {
+          document.exitFullscreen();
+        }
+      }
+      
+      // Update fullscreen button icon based on state
+      function updateFullscreenButton() {
+        if (document.fullscreenElement) {
+          fullscreenIcon.innerHTML = '<path d="M5 16h4v4h2v-6H5v2zm10-10h-4V2h-2v6h6V6zm-10 8h4v4h2v-6H5v2zm10-8h-4V2h-2v6h6V6z" stroke="currentColor" fill="none" stroke-width="1.5"/>';
+          fullscreenBtn.setAttribute('title', 'Exit fullscreen');
+        } else {
+          fullscreenIcon.innerHTML = '<path d="M7 7h4V5H5v6h2V7zm10 0h-4V5h6v6h-2V7zm-10 10h4v2H5v-6h2v4zm10 0h-4v2h6v-6h-2v4z" stroke="currentColor" fill="none" stroke-width="1.5"/>';
+          fullscreenBtn.setAttribute('title', 'Enter fullscreen');
+        }
+      }
+      
+      // Event listeners for fullscreen changes
+      document.addEventListener('fullscreenchange', updateFullscreenButton);
+      fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+      // Launch PulseView control
+      launchBtn.addEventListener('click', async () => {
+        if (launchBtn.textContent.includes('Launch')) {
+          // Show loading state
+          pulseViewerFeed.innerHTML = '<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">' +
+            '<div style="border: 4px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top: 4px solid #FF6A00; width: 40px; height: 40px; animation: spin 1s linear infinite;"></div>' +
+            '<p style="margin-top: 10px;">Launching PulseView...</p>' +
+            '</div>';
+            
+          try {
+            pulseViewerIframe.src = 'http://100.120.49.21/pulseview/';
+            pulseViewerIframe.onload = () => {
+              pulseViewerFeed.style.display = 'none';
+              pulseViewerIframe.style.display = 'block';
+              launchBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Close PulseView';
+              launchBtn.classList.add('active');
+              showAlert('success', 'PulseView launched successfully');
+            };
+            
+            pulseViewerIframe.onerror = () => {
+              pulseViewerFeed.innerHTML = '<div style="color: #ff4d4d;">Failed to load PulseView interface</div>';
+              launchBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Retry';
+              launchBtn.classList.remove('active');
+            };
+          } catch (error) {
+            console.error('PulseView launch error:', error);
+            pulseViewerFeed.innerHTML = `<div style="color: #ff4d4d;">${error.message || 'Failed to launch PulseView'}</div>`;
+            launchBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Retry';
+            showAlert('error', error.message || 'Failed to launch PulseView');
+          }
+        } else {
+          pulseViewerIframe.style.display = 'none';
+          pulseViewerFeed.style.display = 'block';
+          pulseViewerFeed.innerHTML = '<div class="pulse-viewer-placeholder">PulseView is not started</div>';
+          launchBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Launch PulseView';
+          launchBtn.classList.remove('active');
+          showAlert('success', 'PulseView stopped successfully');
+        }
+      });
+    });
+</script>
+</body>
+</html>

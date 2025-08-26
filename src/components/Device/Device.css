@@ -2,9 +2,6 @@
 .device-container {
   background-color: #121212;
   color: #1281d6;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   padding: 1.5rem;
@@ -19,24 +16,8 @@
 }
 
 .py-4 {
-  padding-top: 1.5rem !important;
+  padding-top: 5rem !important;
   padding-bottom: 1.5rem !important;
-}
-
-.d-flex {
-  display: flex !important;
-}
-
-.justify-content-between {
-  justify-content: space-between !important;
-}
-
-.align-items-center {
-  align-items: center !important;
-}
-
-.mb-4 {
-  margin-bottom: 1.5rem !important;
 }
 
 .mb-0 {
@@ -144,25 +125,25 @@
   border-radius: 0.25rem;
 }
 
-.orange-btn {
+.Action-btn {
   background-color: #ff6a00;
   color: white;
   border: 1px solid #ff6a00;
 }
 
-.orange-btn:hover {
+.Action-btn:hover {
   background-color: #e65c00;
   border-color: #e65c00;
   color: white;
 }
 
-.blue-btn {
+.Edit-btn {
   background-color: #1281d6;
   color: white;
   border: 1px solid #1281d6;
 }
 
-.blue-btn:hover {
+.Edit-btn:hover {
   background-color: #0f6ab3;
   border-color: #0f6ab3;
   color: white;
@@ -377,7 +358,7 @@
 }
 
 .py-4 {
-  padding-top: 1rem !important;
+  padding-top: 5rem !important;
   padding-bottom: 1.2rem !important;
 }
 
@@ -473,7 +454,7 @@
 }
 
 .rdt_Pagination select {
-  background-color: #000 !important;
+  background-color: rgba(0, 0, 0, 0.125) !important;
   color: white !important;
   border: 1px solid #333 !important;
 }

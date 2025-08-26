@@ -121,7 +121,7 @@ p {
 }
 
 /* Navigation */
-.navbar {
+.Navbar {
   position: fixed;
   top: 0;
   left: 0;
@@ -133,20 +133,20 @@ p {
   padding: 1.5rem 0;
 }
 
-.navbar.scrolled {
+.Navbar.scrolled {
   background-color: rgba(27, 38, 37, 0.98);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   height: 12%;
 }
 
-.navbar.scrolled .nav-links li,
-.navbar.scrolled .logo_r {
+.Navbar.scrolled .nav-links li,
+.Navbar.scrolled .logo_r {
   color: white;
   align-items: center;
   justify-content: center;
 }
 
-.navbar .container {
+.Navbar .container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -864,6 +864,7 @@ section#distinctive-edge {
 
 .feature-list {
   list-style: none;
+  padding-left: 0;
 }
 
 .feature-list li {
@@ -1301,7 +1302,7 @@ section#contact {
 
 .input-group {
   position: relative;
-  margin-bottom: 1rem;
+  /* margin-bottom: 1rem; */
 }
 
 .input-icon {

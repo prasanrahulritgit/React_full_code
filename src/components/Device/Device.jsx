@@ -221,19 +221,19 @@ const Device = () => {
       cell: row => (
         <div className="action-buttons">
           <button 
-            className="D-btn Devicebtn view-ip orange-btn"
+            className="D-btn Devicebtn view-ip Action-btn"
             onClick={() => handleViewIps(row)}
           >
             View IPs
           </button>
           <button 
-            className="D-btn Devicebtn edit-device blue-btn"
+            className="D-btn Devicebtn edit-device Edit-btn"
             onClick={() => handleEditDevice(row)}
           >
             Edit
           </button>
           <button 
-            className="D-btn Devicebtn delete-device orange-btn"
+            className="D-btn Devicebtn delete-device Action-btn"
             onClick={() => handleDeleteDevice(row)}
           >
             Delete
@@ -270,6 +270,17 @@ const Device = () => {
 
   return (
     <div className="container-fluid py-4">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h1 className="h3 mb-0">Device Management</h1>
+        <div>
+          <button 
+            className="D-btn btn-primary" 
+            onClick={() => setShowAddModal(true)}
+          >
+            + Add New Device
+          </button>
+        </div>
+      </div>
       {/* REMOVED THE FORM WRAPPER AROUND FILTER - This was causing the refresh */}
       <div className="filter-container">
         <div className="Device-row g-3">
@@ -284,17 +295,6 @@ const Device = () => {
               onChange={handleFilter}
               onKeyDown={handleFilterKeyDown} // Prevent Enter key submission
             />
-          </div>
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <h1 className="h3 mb-0">Device Management</h1>
-            <div>
-              <button 
-                className="D-btn btn-primary" 
-                onClick={() => setShowAddModal(true)}
-              >
-                + Add New Device
-              </button>
-            </div>
           </div>
         </div>
       </div>
