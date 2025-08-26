@@ -44,7 +44,7 @@ const DeviceCard = ({ device, isActive, onClick, renderIcon, isDarkTheme }) => {
         {renderIcon(device.iconType, isDarkTheme ? "#ff6a00" : "#0971B3")}
       </div>
 
-      <div className="device-name">{device.name}</div>
+      <div className="device-name">{device.name }</div>
       <div className="device-status">{isActive ? "Running" : "Ready"}</div>
 
       {!isActive && (
