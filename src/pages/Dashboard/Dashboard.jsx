@@ -36,7 +36,7 @@ const DeviceCard = ({ device, isActive, onClick, renderIcon, isDarkTheme }) => {
 
   return (
     <div
-      className={`device-card ${isActive ? "active" : ""}`}
+      className={`Device-card ${isActive ? "active" : ""}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >

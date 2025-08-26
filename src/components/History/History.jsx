@@ -293,8 +293,8 @@ const History = () => {
           </form>
         </div>
 
-        <div className="card">
-          <div className="card-body">
+        <div className="Card">
+          <div className="Card-body">
             <div className="table-responsive">
               <DataTable
                 columns={columns}

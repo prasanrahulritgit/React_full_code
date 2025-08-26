@@ -1,23 +1,7 @@
 /* User.css */
-:root {
-  --primary-bg: #121212;
-  --secondary-bg: #1e1e1e;
-  --accent-orange: #ff6a00;
-  --accent-blue: #1281d6;
-  --text-primary: #1281d6;
-  --text-secondary: #cccccc;
-  --border-color: #333333;
-  --table-header-bg: #ff6a00;
-  --table-row-odd: #1a1a1a;
-  --table-row-even: #222222;
-}
-
 .user-container {
-  background-color: var(--primary-bg);
-  color: var(--text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  background-color: #121212;
+  color:  #1281d6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   padding: 1.5rem;
@@ -50,12 +34,12 @@
 
 .h3 {
   font-size: 1.75rem;
-  color: var(--text-primary);
+  color:  #1281d6;
 }
 
 .Usercard {
-  background-color: var(--secondary-bg);
-  border: 1px solid var(--border-color);
+  background-color: #1e1e1e;
+  border: 1px solid #333333;
   border-radius: 8px;
   margin-bottom: 1.5rem;
 }
@@ -70,11 +54,11 @@
 }
 
 .filter-container {
-  background-color: var(--secondary-bg);
+  background-color: #1e1e1e;
   padding: 15px;
   border-radius: 8px;
   margin-bottom: 20px;
-  border: 1px solid var(--border-color);
+  border: 1px solid #333333;
 }
 
 .Userbtn {
@@ -97,8 +81,8 @@
 
 .btn-primary {
   color: #000;
-  background-color: var(--accent-orange);
-  border-color: var(--accent-orange);
+  background-color: #ff6a00;
+  border-color: #ff6a00;
 }
 
 .btn-primary:hover {
@@ -161,12 +145,12 @@
 }
 
 .badge-admin {
-  background-color: var(--accent-orange);
+  background-color: #ff6a00;
   color: #000;
 }
 
 .badge-user {
-  background-color: var(--accent-blue);
+  background-color: #1281d6;
   color: #fff;
 }
 
@@ -219,7 +203,7 @@
 .modal-title {
   margin-bottom: 0;
   line-height: 1.5;
-  color: var(--text-primary);
+  color:  #1281d6;
 }
 
 .modal-body {
@@ -310,7 +294,7 @@
 
 /* Data table overrides */
 .rdt_Table {
-  border: 1px solid var(--border-color);
+  border: 1px solid #333333;
 }
 
 .rdt_TableHead {
