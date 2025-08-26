@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Rutomatix</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #121212;
+      color: #FFFFFF;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .postcode-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      padding: 16px;
+      box-sizing: border-box;
+      gap: 16px;
+      max-width: 2000px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: #1E1E1E;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .device-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+     .device-name-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #device-timer {
+      margin-left: 10px;
+    }
+
+    .device-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: #FF6A00;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: unset;
+      word-break: break-word;
+      line-height: 1.2;
+      text-align: center;
+    }
+
+    .title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #FFFFFF;
+    }
+
+    .launch-btn {
+      background: #ff6a00;
+      border: none;
+      color: #FFFFFF;
+      padding: 12px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background 0.3s ease;
+    }
+
+    .launch-btn:hover {
+      background: #e55a00;
+    }
+
+    .launch-btn:disabled {
+      background: #666;
+      cursor: not-allowed;
+    }
+
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      margin-top: 80px;
+      width: 100%;
+    }
+
+    .postcode-display {
+      background: #1E1E1E;
+      border: 2px solid #0971b3;
+      border-radius: 12px;
+      padding: 40px;
+      margin: 20px;
+      min-width: 300px;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .postcode-label {
+      font-size: 18px;
+      color: #BBBBBB;
+      margin-bottom: 15px;
+    }
+
+    .postcode-value {
+      font-size: 36px;
+      font-weight: bold;
+      color: #ff6a00;
+      letter-spacing: 2px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .status-message {
+      font-size: 16px;
+      color: #BBBBBB;
+      margin-top: 20px;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: #ff6a00;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 10px;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 12px;
+    }
+
+  .refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #2A2A2A;
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.refresh-btn:hover {
+  background: #FF6A00;
+}
+
+.refresh-btn.loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.refresh-spinner, .loading-spinner {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+}
+
+.loading-spinner {
+  margin: 20px auto;
+  display: block;
+  width: 40px;
+  height: 40px;
+  border-width: 4px;
+}
+
+.feed-Placeholder {
+  color: #aaa;
+  text-align: center;
+  font-size: 14px;
+}
+
+.alert {
+  position: fixed;
+  top: 80px;
+  right: 30px;
+  padding: 12px 16px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  z-index: 1000;
+  max-width: 300px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.alert-success {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.alert-error {
+  background-color: #F44336;
+  color: white;
+}
+
+.alert-info {
+  background-color: #2196F3;
+  color: white;
+}
+
+.alert-warning {
+  background-color: #FF9800;
+  color: white;
+}
+
+.alert-icon {
+  margin-right: 8px;
+  font-weight: bold;
+}
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        padding: 15px 20px;
+      }
+      
+      .title {
+        font-size: 20px;
+      }
+      
+      .launch-btn {
+        padding: 10px 20px;
+        font-size: 14px;
+      }
+      
+      .postcode-display {
+        margin: 10px;
+        padding: 30px;
+        min-width: 250px;
+      }
+      
+      .postcode-value {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="postcode-container">
+    <div class="header">
+        <div class="device-info">
+          <div class="device-name-row">
+            <div class="device-name">${device.name}</div>
+            <div id="device-timer">--:--:--</div>
+          </div>
+        </div>
+        <div class="controls">
+            <button class="refresh-btn" id="refresh-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16">
+                <path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" fill="currentColor"/>
+            </svg>
+            </button>
+            <button class="launch-btn" id="launch-btn">Launch</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="postcode-display">
+        <div class="postcode-label">Post Code</div>
+        <div class="postcode-value" id="postcode-value">---</div>
+        <div class="status-message" id="status-message">Click Launch to read post code</div>
+    </div>
+</div>
+</div>
+
+  <script>
+    window.addEventListener("message", (event) => {
+        const data = event.data;
+        if (data.type === "initPopup") {
+        // Only for initial popup data
+        const { title, device, ipAddress, postMessageScript, timerScript } = data;
+
+        if (title) document.title = title;
+        // if (ipAddress) document.querySelector(".ip-address").textContent = ipAddress;
+        if (device){
+            document.querySelector(".device-name").textContent = device.name;
+        }
+
+        if (postMessageScript) { 
+            const script = document.createElement("script");
+            script.textContent = postMessageScript;
+            document.head.appendChild(script);
+        }
+
+        if (timerScript) {
+            const script = document.createElement("script");
+            script.textContent = timerScript;
+            document.head.appendChild(script);
+        }
+        } else if (data.type === "updateTimer") {
+        // Handle timer updates here
+        const timerElem = document.getElementById("device-timer");
+        if (timerElem && data.timeLeft) {
+            timerElem.textContent = data.timeLeft;
+        }
+        }
+    });
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        const launchBtn = document.getElementById('launch-btn');
+        const refreshBtn = document.getElementById('refresh-btn');
+        const postcodeValue = document.getElementById('postcode-value');
+        const statusMessage = document.getElementById('status-message');
+
+        // LAUNCH BUTTON FUNCTIONALITY
+        launchBtn.addEventListener('click', async () => {
+        launchBtn.disabled = true;
+        launchBtn.innerHTML = '<span class="loading"></span>Reading...';
+        statusMessage.textContent = 'Reading post code...';
+        postcodeValue.textContent = '---';
+
+        try {
+            const response = await fetch('http://100.109.50.57:5010/get_data', {
+            method: 'GET',
+            });
+
+            if (!response.ok) {
+            throw new Error("HTTP error! Status: " + response.status);
+            }
+
+            const data = await response.text(); // Assuming it returns raw text like 'SW1A 1AA'
+            postcodeValue.textContent = data || 'N/A';
+            statusMessage.textContent = 'Post code read successfully';
+        } catch (error) {
+            console.error('Error reading post code:', error);
+            postcodeValue.textContent = 'ERROR';
+            statusMessage.textContent = 'Failed to read post code';
+        } finally {
+            launchBtn.disabled = false;
+            launchBtn.textContent = 'Launch';
+        }
+        });
+
+        // REFRESH BUTTON FUNCTIONALITY
+        refreshBtn.addEventListener('click', async () => {
+        refreshBtn.disabled = true;
+        refreshBtn.classList.add('loading');
+
+        try {
+            const response = await fetch('http://100.109.50.57:8001/power/reset', {
+            method: 'GET',
+            });
+
+            if (!response.ok) {
+            throw new Error("HTTP error! Status: " + response.status);
+            }
+
+            // Optionally show confirmation message
+            showAlert('Device power reset successfully.', 'success');
+        } catch (error) {
+            console.error('Error refreshing device:', error);
+            showAlert('Failed to reset power.', 'error');
+        } finally {
+            refreshBtn.disabled = false;
+            refreshBtn.classList.remove('loading');
+        }
+        });
+
+        // Alert helper function
+        function showAlert(message, type = 'info') {
+        const alertBox = document.createElement('div');
+        alertBox.className = "alert alert-" + type;
+        alertBox.innerHTML = '<span class="alert-icon">!</span>' + message;
+
+        document.body.appendChild(alertBox);
+
+        setTimeout(function() {
+            alertBox.remove();
+        }, 4000);
+        }
+    });
+  </script>
+</body>
+</html>

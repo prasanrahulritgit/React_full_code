@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Rutomatix</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #121212;
+      color: #FFFFFF;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .three-drivers-container {
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      box-sizing: border-box;
+      max-width: 2000px;
+      margin: 80px auto 0 auto; /* adds top margin to push content below fixed header */
+      align-items: center;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: #1E1E1E;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      right: 15px;
+    }
+
+    .device-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+     .device-name-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #device-timer {
+      margin-left: 10px;
+    }
+
+    .device-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: #FF6A00;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: unset;
+      word-break: break-word;
+      line-height: 1.2;
+      text-align: center;
+    }
+
+    .message {
+      font-size: 1.5rem;
+      color: #f44336;
+    }
+    iframe {
+      width: 100%;
+      height: calc(105vh - 150px);
+      border: none;
+      max-width: 2000px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="three-drivers-container">
+      <div class="header">
+        <div class="device-info">
+          <div class="device-name-row">
+            <div class="device-name">${device.name}</div>
+            <div id="device-timer">--:--:--</div>
+          </div>
+        </div>
+      </div>
+    <div id="message" class="message"></div>
+    <iframe id="content-frame" src=""></iframe>
+  </div>
+
+  <script>
+    let isSystemInfo = false;
+    let isUsbSharing = false;
+    let isFirmware = false;
+    let deviceIp = '';
+    let iframeURL = '';
+    window.addEventListener("message", (event) => {
+    const data = event.data;
+    if (data.type === "initPopup") {
+      // Only for initial popup data
+      const { title, device, ipAddress, postMessageScript, timerScript } = data;
+
+      if (title) document.title = title;
+    //   if (ipAddress) document.querySelector(".ip-address").textContent = ipAddress;
+      if (device){
+        document.querySelector(".device-name").textContent = device.name;
+        isSystemInfo = device.name.includes("System");
+        isUsbSharing = device.name.includes("USB");
+        isFirmware = device.name.includes("Firmware");
+        deviceIp = device.ipAddress.split("/")[0];
+
+        if (isSystemInfo) {
+            iframeURL = `http://${deviceIp}:8001/`;
+        } else if (isUsbSharing) {
+            iframeURL = `http://100.112.10.66:8081/`;
+        } else if (isFirmware) {
+            iframeURL = `http://${deviceIp}:5002/`;
+        }
+      }
+
+      if (postMessageScript) { 
+        const script = document.createElement("script");
+        script.textContent = postMessageScript;
+        document.head.appendChild(script);
+      }
+
+      if (timerScript) {
+        const script = document.createElement("script");
+        script.textContent = timerScript;
+        document.head.appendChild(script);
+      }
+
+      const iframe = document.getElementById('content-frame');
+      const messageDiv = document.getElementById('message');
+      const url = `${iframeURL}`;
+
+      if (!url) {
+        messageDiv.textContent = 'Unable to get response from the API';
+      } else {
+        iframe.src = url;
+
+        let timeout = setTimeout(() => {
+        messageDiv.textContent = 'No response';
+        iframe.style.display = 'none';
+        }, 5000); // wait 5 seconds for content to load
+
+        iframe.onload = () => {
+        clearTimeout(timeout);
+        iframe.style.display = 'block';
+        messageDiv.style.display = 'none';
+        };
+
+        iframe.onerror = () => {
+        clearTimeout(timeout);
+        messageDiv.textContent = 'No response';
+        };
+     }
+    
+    } else if (data.type === "updateTimer") {
+      // Handle timer updates here
+      const timerElem = document.getElementById("device-timer");
+      if (timerElem && data.timeLeft) {
+        timerElem.textContent = data.timeLeft;
+      }
+    }
+  });
+  </script>
+</body>
+</html>
