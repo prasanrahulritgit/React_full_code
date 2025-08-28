@@ -155,30 +155,63 @@ const fetchUserReservations = async () => {
 const fetchAvailableDevices = async (start, end) => {
   try {
     setLoading(true);
+    
+    // Format dates consistently for backend
+    const formatForBackend = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      
+      return `${year}-${month}-${day} ${hours}:${minutes}`;
+    };
+    
+    const startFormatted = formatForBackend(start);
+    const endFormatted = formatForBackend(end);
+    
+    console.log('Sending to backend:', {
+      start: startFormatted,
+      end: endFormatted
+    });
+    
     const response = await fetch(
-      `${API_BASE}/api/devices/availability?start_time=${start.toISOString()}&end_time=${end.toISOString()}`,
-      { credentials: 'include' }
+      `${API_BASE}/api/devices/availability?start_time=${encodeURIComponent(startFormatted)}&end_time=${encodeURIComponent(endFormatted)}`,
+      {
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+        }
+      }
     );
     
     if (response.ok) {
       const data = await response.json();
       if (data.success) {
-        // Store both available and booked devices for the time range
         setAvailableDevices(data.devices || []);
+        console.log('Received devices:', data.devices);
       } else {
         setMessages([{ text: data.message, category: 'danger' }]);
+        console.error('Backend success false:', data.message);
       }
     } else {
-      setMessages([{ text: 'Failed to fetch available devices', category: 'danger' }]);
+      try {
+        const errorData = await response.json();
+        setMessages([{ text: errorData.message || `Server error: ${response.status}`, category: 'danger' }]);
+        console.error('Backend error response:', errorData);
+      } catch (jsonError) {
+        const errorText = await response.text();
+        setMessages([{ text: `Server error: ${response.status} - ${errorText}`, category: 'danger' }]);
+        console.error('Backend text response:', errorText);
+      }
     }
   } catch (error) {
-    console.error('Error fetching available devices:', error);
-    setMessages([{ text: 'Network error while fetching devices', category: 'danger' }]);
+    console.error('Network error fetching available devices:', error);
+    setMessages([{ text: `Network error: ${error.message}`, category: 'danger' }]);
   } finally {
     setLoading(false);
   }
 };
-
 
 const fetchBookedDevices = async () => {
   try {

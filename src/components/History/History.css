@@ -258,7 +258,6 @@
 }
 
 .rdt_Pagination select {
-  background-color: #000 !important;
   color: white !important;
   border: 1px solid #333 !important;
 }
@@ -274,5 +273,17 @@
     width: 100%;
     text-align: center;
   }
+}
+
+/* In History.css */
+.upcoming-badge {
+  background-color: #ffc107; /* Yellow for upcoming */
+  color: #000;
+}
+
+.status-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
 }
 
