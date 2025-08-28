@@ -1027,3 +1027,39 @@
   flex-direction: column;
   justify-content: center;
 }
+
+/* Cancelling overlay styles */
+.cancelling-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(30, 30, 30, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: 8px;
+}
+
+.cancelling-spinner {
+  text-align: center;
+  color: #1281d6;
+}
+
+.cancelling-spinner p {
+  margin-top: 10px;
+  margin-bottom: 0;
+}
+
+/* Ensure the card has relative positioning for the overlay */
+.booked-device-card {
+  position: relative;
+}
+
+/* Disable interactions when cancelling */
+.booked-device-card .btn-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

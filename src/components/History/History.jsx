@@ -19,6 +19,34 @@ const History = () => {
     pages: 1
   });
 
+  // Function to calculate status based on current time
+  const calculateStatus = (record) => {
+    // If status is already terminated, keep it as terminated
+    if (record.status === 'terminated') {
+      return 'terminated';
+    }
+    
+    const now = new Date();
+    const startTime = new Date(record.timing.start_time);
+    const endTime = record.timing.end_time ? new Date(record.timing.end_time) : null;
+    
+    // If current time is equal to or after start time and before end time
+    if (now >= startTime && (!endTime || now < endTime)) {
+      return 'active';
+    }
+    // If current time is before start time
+    else if (now < startTime) {
+      return 'upcoming';
+    }
+    // If current time is after end time
+    else if (endTime && now >= endTime) {
+      return 'completed';
+    }
+    
+    // Default case
+    return record.status || 'unknown';
+  };
+
   // Fetch data on component mount
   useEffect(() => {
     fetchHistoryData();
@@ -47,8 +75,14 @@ const History = () => {
       
       const data = await response.json();
       
+      // Update records with calculated status
+      const recordsWithCalculatedStatus = data.records.map(record => ({
+        ...record,
+        calculatedStatus: calculateStatus(record)
+      }));
+      
       // Update records and pagination
-      setHistoryRecords(data.records);
+      setHistoryRecords(recordsWithCalculatedStatus);
       setPagination(data.pagination);
       setLoading(false);
     } catch (error) {
@@ -80,7 +114,7 @@ const History = () => {
       (record.device && record.device.id && record.device.id.toString().toLowerCase().includes(deviceFilter.toLowerCase()));
     const matchesUserFilter = !userFilter || 
       (record.user && record.user.id && record.user.id.toString().includes(userFilter));
-    const matchesStatusFilter = !statusFilter || record.status === statusFilter;
+    const matchesStatusFilter = !statusFilter || record.calculatedStatus === statusFilter;
     
     return matchesDeviceFilter && matchesUserFilter && matchesStatusFilter;
   });
@@ -104,7 +138,14 @@ const History = () => {
       
       if (response.ok) {
         const recordDetails = await response.json();
-        setSelectedRecord(recordDetails);
+        
+        // Calculate status for the detailed record as well
+        const recordWithCalculatedStatus = {
+          ...recordDetails,
+          calculatedStatus: calculateStatus(recordDetails)
+        };
+        
+        setSelectedRecord(recordWithCalculatedStatus);
         setShowDetailsModal(true);
       }
     } catch (error) {
@@ -207,13 +248,15 @@ const History = () => {
     {
       name: 'Status',
       selector: row => {
+        // Use calculatedStatus instead of the stored status
+        const status = row.calculatedStatus;
         let badgeClass = '';
-        if (row.status === 'active') badgeClass = 'active-badge';
-        else if (row.status === 'completed') badgeClass = 'completed-badge';
-        else if (row.status === 'upcoming') badgeClass = 'upcoming-badge';
+        if (status === 'active') badgeClass = 'active-badge';
+        else if (status === 'completed') badgeClass = 'completed-badge';
+        else if (status === 'upcoming') badgeClass = 'upcoming-badge';
         else badgeClass = 'terminated-badge';
         
-        return <span className={`badge ${badgeClass} status-badge`}>{row.status}</span>;
+        return <span className={`badge ${badgeClass} status-badge`}>{status}</span>;
       },
       sortable: true,
     },
@@ -305,6 +348,7 @@ const History = () => {
                 <option value="">All Status</option>
                 <option value="active">Active</option>
                 <option value="completed">Completed</option>
+                <option value="upcoming">Upcoming</option>
                 <option value="terminated">Terminated</option>
               </select>
             </div>
@@ -393,8 +437,8 @@ const History = () => {
                   <div className="col-md-6">
                     <h5 className="border-bottom pb-2">Status Information</h5>
                     <p><strong>Status:</strong> 
-                      <span className={`badge ${selectedRecord.status_info.status === 'active' ? 'active-badge' : selectedRecord.status_info.status === 'completed' ? 'completed-badge' : 'terminated-badge'} status-badge ms-2`}>
-                        {selectedRecord.status_info.status}
+                      <span className={`badge ${selectedRecord.calculatedStatus === 'active' ? 'active-badge' : selectedRecord.calculatedStatus === 'completed' ? 'completed-badge' : selectedRecord.calculatedStatus === 'upcoming' ? 'upcoming-badge' : 'terminated-badge'} status-badge ms-2`}>
+                        {selectedRecord.calculatedStatus}
                       </span>
                     </p>
                     <p><strong>Termination Reason:</strong> {selectedRecord.status_info.termination_reason || 'N/A'}</p>

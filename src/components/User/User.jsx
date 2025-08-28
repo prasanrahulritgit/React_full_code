@@ -94,26 +94,26 @@ const User = () => {
     }
   };
 
-  const handleEditUser = async user => {
-    try {
-      const response = await axios.get(`/users/edit/${user.id}`);
-      setSelectedUser(user);
-      setEditFormData({
-        user_name: response.data.user_name,
-        user_ip: response.data.user_ip || '',
-        password: '',
-        role: response.data.role
-      });
-      setShowEditModal(true);
-    } catch (error) {
-      console.error('Error fetching user details:', error);
-      if (error.response?.status === 403) {
-        alert('Unauthorized: You do not have permission to edit this user');
-      } else {
-        alert('Error fetching user details: ' + (error.response?.data?.error || error.message));
-      }
+const handleEditUser = async user => {
+  try {
+    const response = await axios.get(`/users/update/${user.id}`);
+    setSelectedUser(user);
+    setEditFormData({
+      user_name: response.data.user_name,
+      user_ip: response.data.user_ip || '',
+      password: '',
+      role: response.data.role
+    });
+    setShowEditModal(true);
+  } catch (error) {
+    console.error('Error fetching user details:', error);
+    if (error.response?.status === 403) {
+      alert('Unauthorized: You do not have permission to edit this user');
+    } else {
+      alert('Error fetching user details: ' + (error.response?.data?.error || error.message));
     }
-  };
+  }
+};
 
   const handleDeleteUser = async user => {
     if (window.confirm(`Are you sure you want to delete user ${user.user_name}?`)) {
