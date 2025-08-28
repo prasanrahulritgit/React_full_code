@@ -162,14 +162,14 @@ const History = () => {
       selector: row => row.reservation.id || 'N/A',
       sortable: true,
     },
-     {
+    {
       name: 'Start Time',
-      selector: row => row.timing.end_time ? new Date(row.timing.end_time).toLocaleString() : <em>In Progress</em>,
+      selector: row => row.timing.start_time ? new Date(row.timing.start_time).toLocaleString() : 'N/A',
       sortable: true,
     },
     {
       name: 'End Time',
-      selector: row => row.timing.start_time ? new Date(row.timing.start_time).toLocaleString() : 'N/A',
+      selector: row => row.timing.end_time ? new Date(row.timing.end_time).toLocaleString() : <em>In Progress</em>,
       sortable: true,
     },
     {
