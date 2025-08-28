@@ -7,11 +7,9 @@ import "./AdminReservation.css";
 import "@fortawesome/fontawesome-free";
 import flatpickr from "flatpickr";
 import {
-  FaSignOutAlt,
   FaCalendarPlus,
   FaClock,
   FaCalendarCheck,
-  FaInfoCircle,
   FaCalendarAlt,
   FaSearch,
   FaSort,
@@ -23,7 +21,6 @@ import {
 } from "react-icons/fa";
 
 const AdminReservation = () => {
-  const [currentUser, setCurrentUser] = useState({ is_authenticated: true });
   const [messages, setMessages] = useState([]);
   const [userReservations, setUserReservations] = useState([]);
   const [now, setNow] = useState(new Date());
@@ -38,7 +35,6 @@ const AdminReservation = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showDeviceDetails, setShowDeviceDetails] = useState(false);
   const [deviceDetails, setDeviceDetails] = useState(null);
-  const [reservationdetails, setreservationdetails] = useState(null);
   const [availableDevices, setAvailableDevices] = useState([]);
   const [bookedDevices, setBookedDevices] = useState([]);
   const [startTime, setStartTime] = useState("");
@@ -390,14 +386,25 @@ const AdminReservation = () => {
       setSelectedDevice(null);
     }
   };
+
   // Cancel a reservation
-  const handleCancelReservation = async (reservationId) => {
+  const handleCancelReservation = async (deviceId, reservationId) => {
+    // Handle case where only reservationId is passed (from reservations table)
+    if (reservationId === undefined && typeof deviceId === 'string') {
+      reservationId = deviceId;
+      deviceId = null; // deviceId might not be available from reservations table
+    }
+
     if (!window.confirm("Are you sure you want to cancel this reservation?")) {
       return;
     }
 
     try {
+      if (deviceId) {
+        setCancellingDeviceId(deviceId); // Set the device ID that's being cancelled (for booked devices)
+      }
       setReservationLoading(true);
+      
       const response = await fetch(
         `${API_BASE}/reservation/cancel/${reservationId}`,
         {
@@ -412,25 +419,58 @@ const AdminReservation = () => {
           setMessages([
             { text: "Reservation cancelled successfully", category: "success" },
           ]);
-          fetchUserReservations(); // Refresh the reservations list
+          
+          // Refresh both reservations and booked devices
+          fetchUserReservations();
+          
+          // If we have a deviceId, remove it from booked devices
+          if (deviceId) {
+            setBookedDevices(prevDevices => 
+              prevDevices.filter(device => {
+                const id = device.device_id || device.device?.id || device.id;
+                return id !== deviceId;
+              })
+            );
+          } else {
+            // If no deviceId, refetch booked devices to ensure consistency
+            fetchBookedDevices();
+          }
+
+          // Refresh available devices if we're in the device selection modal
+          if (showDeviceSelection && startTime && endTime) {
+            const start = new Date(startTime);
+            const end = new Date(endTime);
+            fetchAvailableDevices(start, end);
+          }
         } else {
           setMessages([{ text: data.message, category: "danger" }]);
         }
       } else {
-        setMessages([
-          { text: "Failed to cancel reservation", category: "danger" },
-        ]);
+        // Try to get more detailed error information
+        let errorMessage = "Failed to cancel reservation";
+        try {
+          const errorData = await response.json();
+          if (errorData.message) {
+            errorMessage = errorData.message;
+          }
+        } catch (e) {
+          // If we can't parse JSON, use the status text
+          errorMessage = `${response.status} ${response.statusText}`;
+        }
+        
+        setMessages([{ text: errorMessage, category: "danger" }]);
       }
     } catch (error) {
       console.error("Error cancelling reservation:", error);
       setMessages([
         {
-          text: "Network error while cancelling reservation",
+          text: `Network error: ${error.message}`,
           category: "danger",
         },
       ]);
     } finally {
       setReservationLoading(false);
+      setCancellingDeviceId(null);
     }
   };
 
@@ -581,6 +621,20 @@ const AdminReservation = () => {
     return () => clearInterval(interval);
   }, [showDeviceSelection, activeTab, startTime, endTime]);
 
+  // Auto-refresh devices when time range changes and modal is open
+  useEffect(() => {
+    if (showDeviceSelection && startTime && endTime) {
+      const start = new Date(startTime);
+      const end = new Date(endTime);
+      
+      // Only refresh if we have valid dates
+      if (start instanceof Date && !isNaN(start) && end instanceof Date && !isNaN(end)) {
+        fetchAvailableDevices(start, end);
+        fetchBookedDevices();
+      }
+    }
+  }, [startTime, endTime, showDeviceSelection]);
+
   const cleanupExpiredReservations = () => {
     const currentTime = new Date();
     setUserReservations((prevReservations) =>
@@ -645,20 +699,6 @@ const AdminReservation = () => {
     indexOfLastEntry
   );
   const totalPages = Math.ceil(filteredReservations.length / entriesPerPage);
-
-  // Filter available and booked devices based on search terms
-  const filteredAvailableDevices = availableDevices.filter((device) =>
-    device.device_id.toLowerCase().includes(deviceFilter.toLowerCase())
-  );
-
-  const filteredBookedDevices = bookedDevices
-    ? bookedDevices.filter((device) => {
-        const deviceId = device.device?.id || device.device_id || "";
-        return deviceId
-          .toLowerCase()
-          .includes(bookedDeviceFilter.toLowerCase());
-      })
-    : [];
 
   // Function to calculate device status based on current time
   const calculateDeviceStatus = (device) => {
@@ -1029,7 +1069,6 @@ const AdminReservation = () => {
                       </div>
                     </div>
                   </div>
-
                   <div className="server-rack-container">
                     {loading ? (
                       <div className="text-center py-4">
@@ -1039,51 +1078,23 @@ const AdminReservation = () => {
                     ) : bookedDevices.length > 0 ? (
                       <div className="booked-devices-cards">
                         {bookedDevices
-                          .filter((device) => {
-                            const deviceId =
-                              device.device_id ||
-                              device.device?.id ||
-                              device.id ||
-                              "";
-                            const deviceName =
-                              device.device_name || device.device?.name || "";
-                            return (
-                              deviceId
-                                .toLowerCase()
-                                .includes(bookedDeviceFilter.toLowerCase()) ||
-                              deviceName
-                                .toLowerCase()
-                                .includes(bookedDeviceFilter.toLowerCase())
-                            );
+                          .filter(device => {
+                            const deviceId = device.device_id || device.device?.id || device.id || '';
+                            const deviceName = device.device_name || device.device?.name || '';
+                            return deviceId.toLowerCase().includes(bookedDeviceFilter.toLowerCase()) ||
+                                  deviceName.toLowerCase().includes(bookedDeviceFilter.toLowerCase());
                           })
                           .map((device, index) => {
                             // Extract all possible data fields with fallbacks
-                            const deviceId =
-                              device.device_id ||
-                              device.device?.id ||
-                              device.id ||
-                              `device-${index}`;
-                            const deviceName =
-                              device.device_name ||
-                              device.device?.name ||
-                              deviceId;
-                            const startTime =
-                              device.start_time ||
-                              device.reservation_start ||
-                              device.time?.start;
-                            const endTime =
-                              device.end_time ||
-                              device.reservation_end ||
-                              device.time?.end;
-                            const userName =
-                              device.user_name ||
-                              device.user?.name ||
-                              device.reserved_by ||
-                              "Unknown User";
-                            const userId =
-                              device.user_id || device.user?.id || "N/A";
-                            const status = device.status || "booked";
-
+                            const deviceId = device.device_id || device.device?.id || device.id || `device-${index}`;
+                            const deviceName = device.device_name || device.device?.name || deviceId;
+                            const startTime = device.start_time || device.reservation_start || device.time?.start;
+                            const endTime = device.end_time || device.reservation_end || device.time?.end;
+                            const userName = device.user_name || device.user?.name || device.reserved_by || 'Unknown User';
+                            const userId = device.user_id || device.user?.id || 'N/A';
+                            const reservationId = device.reservation_id || device.id; // Get reservation ID
+                            const status = device.status || 'booked';
+                            
                             // Calculate duration if not provided
                             let duration = device.duration;
                             if (!duration && startTime && endTime) {
@@ -1094,91 +1105,78 @@ const AdminReservation = () => {
                               duration = `${minutes} minutes`;
                             }
 
+                            // Check if this device is currently being cancelled
+                            const isCancelling = cancellingDeviceId === deviceId;
+
                             return (
-                              <div
-                                key={`${deviceId}-${index}`}
-                                className="booked-device-card"
-                              >
+                              <div key={`${deviceId}-${index}`} className="booked-device-card">
+                                {isCancelling && (
+                                  <div className="cancelling-overlay">
+                                    <div className="cancelling-spinner">
+                                      <FaSpinner className="fa-spin fa-2x" />
+                                      <p>Cancelling...</p>
+                                    </div>
+                                  </div>
+                                )}
+                                
                                 <div className="booked-device-card-header">
-                                  <h5 className="booked-device-card-title">
-                                    {deviceName}
-                                  </h5>
-                                  <span
-                                    className={`badge ${
-                                      status === "active"
-                                        ? "badge-active"
-                                        : status === "upcoming"
-                                        ? "badge-upcoming"
-                                        : status === "completed"
-                                        ? "badge-expired"
-                                        : "bg-primary"
-                                    }`}
-                                  >
+                                  <h5 className="booked-device-card-title">{deviceName}</h5>
+                                  <span className={`badge ${
+                                    status === 'active' ? 'badge-active' : 
+                                    status === 'upcoming' ? 'badge-upcoming' : 
+                                    status === 'completed' ? 'badge-expired' : 
+                                    'bg-primary'
+                                  }`}>
                                     {status.toUpperCase()}
                                   </span>
                                 </div>
-
+                                
                                 <div className="booked-device-card-body">
                                   <div className="booked-device-card-row">
-                                    <div className="booked-device-card-label">
-                                      Device ID:
-                                    </div>
+                                    <div className="booked-device-card-label">Device ID:</div>
+                                    <div className="booked-device-card-value">{deviceId}</div>
+                                  </div>
+                                  
+                                  <div className="booked-device-card-row">
+                                    <div className="booked-device-card-label">User ID:</div>
+                                    <div className="booked-device-card-value">{userId}</div>
+                                  </div>
+                                  
+                                  <div className="booked-device-card-row">
+                                    <div className="booked-device-card-label">Start:</div>
                                     <div className="booked-device-card-value">
-                                      {deviceId}
+                                      {startTime ? new Date(startTime).toLocaleString() : 'N/A'}
                                     </div>
                                   </div>
-
+                                  
                                   <div className="booked-device-card-row">
-                                    <div className="booked-device-card-label">
-                                      User ID:
-                                    </div>
+                                    <div className="booked-device-card-label">End:</div>
                                     <div className="booked-device-card-value">
-                                      {userId}
+                                      {endTime ? new Date(endTime).toLocaleString() : 'N/A'}
                                     </div>
                                   </div>
-
+                                  
                                   <div className="booked-device-card-row">
-                                    <div className="booked-device-card-label">
-                                      Start:
-                                    </div>
-                                    <div className="booked-device-card-value">
-                                      {startTime
-                                        ? new Date(startTime).toLocaleString()
-                                        : "N/A"}
-                                    </div>
-                                  </div>
-
-                                  <div className="booked-device-card-row">
-                                    <div className="booked-device-card-label">
-                                      End:
-                                    </div>
-                                    <div className="booked-device-card-value">
-                                      {endTime
-                                        ? new Date(endTime).toLocaleString()
-                                        : "N/A"}
-                                    </div>
-                                  </div>
-
-                                  <div className="booked-device-card-row">
-                                    <div className="booked-device-card-label">
-                                      Duration:
-                                    </div>
-                                    <div className="booked-device-card-value">
-                                      {duration || "N/A"}
-                                    </div>
+                                    <div className="booked-device-card-label">Duration:</div>
+                                    <div className="booked-device-card-value">{duration || 'N/A'}</div>
                                   </div>
                                 </div>
-
+                                
                                 <div className="booked-device-card-footer">
-                                  <button
-                                    className="btn btn-sm btn-danger btn-cancel"
-                                    onClick={() =>
-                                      handleCancelReservation(
-                                        device.id || device.device_id
-                                      )
-                                    }
+                                  <button 
+                                    className="btn btn-sm btn-danger btn-cancel" 
+                                    onClick={() => handleCancelReservation(deviceId, reservationId)}
+                                    disabled={isCancelling}
                                   >
-                                    <FaTimes className="me-1" /> Cancel
+                                    {isCancelling ? (
+                                      <>
+                                        <FaSpinner className="fa-spin me-1" /> Cancelling...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <FaTimes className="me-1" /> Cancel
+                                      </>
+                                    )}
                                   </button>
                                 </div>
                               </div>
@@ -1189,10 +1187,7 @@ const AdminReservation = () => {
                       <div className="text-center py-5 text-muted">
                         <FaCalendarAlt className="fa-3x mb-3" />
                         <h5>No Booked Devices Found</h5>
-                        <p className="mb-3">
-                          There are currently no active or upcoming
-                          reservations.
-                        </p>
+                        <p className="mb-3">There are currently no active or upcoming reservations.</p>
                       </div>
                     )}
                   </div>
@@ -1520,13 +1515,10 @@ const AdminReservation = () => {
                                       >
                                         <FaRocket className="me-1" /> Launch
                                       </button>
-
                                       <button
                                         type="button"
                                         className="btn btn-sm btn-danger cancel-btn"
-                                        onClick={() =>
-                                          handleCancelReservation(res.id)
-                                        }
+                                        onClick={() => handleCancelReservation(res.device_id, res.id)}
                                         disabled={reservationLoading}
                                       >
                                         {reservationLoading ? (
