@@ -750,73 +750,61 @@ const filteredBookedDevices = bookedDevices
                   </div>
                 </div>
                 <div className="server-rack-container">
-                  {loading ? (
-                    <div className="loading-message">
-                      <FaSpinner className="fa-spin" /> Loading devices...
-                    </div>
-                  ) : availableDevices.length > 0 ? (
-                    <div className="row">
-                      {availableDevices
-                        .filter(device => 
-                          device.device_id.toLowerCase().includes(deviceFilter.toLowerCase())
-                        )
-                        .map(device => (
-                          <div key={device.device_id} className="col-md-4 mb-3">
-                            <div 
-                              className={`card device-card ${selectedDevice?.device_id === device.device_id ? 'border-primary' : ''} ${
-                                device.status === 'booked' ? 'booked-device' : 'available-device'
-                              }`}
-                              onClick={() => {
-                                if (device.status !== 'booked') {
-                                  handleDeviceSelection(device);
-                                }
-                              }}
-                              style={{ 
-                                cursor: device.status === 'booked' ? 'not-allowed' : 'pointer',
-                                opacity: device.status === 'booked' ? 0.7 : 1
-                              }}
-                            >
-                              <div className="card-body">
-                                <h5 className="card-title">{device.device_id}</h5>
-                                <p className="card-text">
-                                  <span className={`badge ${
-                                    device.status === 'available' ? 'bg-success' : 
-                                    device.status === 'booked' ? 'bg-danger' : 
-                                    'bg-secondary'
-                                  }`}>
-                                    {device.status === 'available' ? 'Available' : 
-                                    device.status === 'booked' ? 'Booked' : 'Unknown'}
-                                  </span>
-                                </p>
-                                {device.status === 'booked' && (
-                                  <p className="card-text small text-muted">
-                                    Already booked for this time slot
+                    {loading ? (
+                      <div className="loading-message">
+                        <FaSpinner className="fa-spin" /> Loading devices...
+                      </div>
+                    ) : availableDevices.length > 0 ? (
+                      <div className="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3">
+                        {availableDevices
+                          .filter(device => 
+                            device.device_id.toLowerCase().includes(deviceFilter.toLowerCase())
+                          )
+                          .map(device => (
+                            <div key={device.device_id} className="col">
+                              <div 
+                                className={`card device-card h-100 ${selectedDevice?.device_id === device.device_id ? 'selected-device' : ''} ${
+                                  device.status === 'booked' ? 'booked-device' : 'available-device'
+                                }`}
+                                onClick={() => {
+                                  if (device.status !== 'booked') {
+                                    handleDeviceSelection(device);
+                                  }
+                                }}
+                                style={{ 
+                                  cursor: device.status === 'booked' ? 'not-allowed' : 'pointer',
+                                  opacity: device.status === 'booked' ? 0.7 : 1
+                                }}
+                              >
+                                <div className="card-body text-center p-2">
+                                  <h5 className="card-title mb-2">{device.device_id}</h5>
+                                  <p className="card-text mb-2">
+                                    <span className={`badge ${
+                                      device.status === 'available' ? 'bg-success' : 
+                                      device.status === 'booked' ? 'bg-danger' : 
+                                      'bg-secondary'
+                                    }`}>
+                                      {device.status === 'available' ? 'Available' : 
+                                      device.status === 'booked' ? 'Booked' : 'Unknown'}
+                                    </span>
                                   </p>
-                                )}
-                                <button 
-                                  className={`btn btn-sm ${
-                                    device.status === 'available' ? 'btn-info' : 'btn-secondary'
-                                  }`}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleShowDeviceDetails(device);
-                                  }}
-                                  disabled={device.status === 'booked'}
-                                >
-                                  <FaInfoCircle className="me-1" /> Details
-                                </button>
+                                  {device.status === 'booked' && (
+                                    <p className="card-text small text-muted mb-0">
+                                      Already booked 
+                                    </p>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-4 text-muted">
-                      <FaCalendarAlt className="fa-2x mb-2" /><br />
-                      No devices found
-                    </div>
-                  )}
-                </div>
+                          ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-4 text-muted">
+                        <FaCalendarAlt className="fa-2x mb-2" /><br />
+                        No devices found
+                      </div>
+                    )}
+                  </div>
               </div>
             )}
                                     
@@ -869,11 +857,10 @@ const filteredBookedDevices = bookedDevices
                           const purpose = device.purpose || 'Not specified';
 
                           return (
-                            <div key={`${deviceId}-${index}`} className="col-md-6 col-lg-4 mb-3">
-                              <div className="card device-card booked-device h-100">
+                            <div key={`${deviceId}-${index}`} className="col-md-4 mb-3">
+                              <div className="card device-card Booked-device h-100">
                                 <div className="card-header bg-secondary text-white">
-                                  <h6 className="mb-0">{deviceName}</h6>
-                                  <small>ID: {deviceId}</small>
+                                  <h6>Device ID: {deviceId}</h6>
                                 </div>
                                 <div className="card-body">
                                   <div className="mb-2">
@@ -898,9 +885,9 @@ const filteredBookedDevices = bookedDevices
                               </div>
                             </div>
                           );
-                        })}
-                    </div>
-                  ) : (
+                          })}
+                          </div>
+                          ) : (
                     <div className="text-center py-5 text-muted">
                       <FaCalendarAlt className="fa-3x mb-3" />
                       <h5>No Booked Devices Found</h5>

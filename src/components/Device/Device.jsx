@@ -299,7 +299,7 @@ const Device = () => {
         </div>
       </div>
 
-      <div className="Device-card">
+      <div className="Device-details">
         <div className="Device-card-body">
           <div className="table-responsive">
             <DataTable

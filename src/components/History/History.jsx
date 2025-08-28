@@ -12,7 +12,6 @@ const History = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [now, setNow] = useState(new Date()); // Add current time state
   const [pagination, setPagination] = useState({
     current_page: 1,
     per_page: 50,
@@ -20,71 +19,10 @@ const History = () => {
     pages: 1
   });
 
-  // Function to calculate dynamic status based on timestamps
-  const calculateStatus = (record) => {
-    const currentTime = now;
-    const startTime = record.timing?.start_time ? new Date(record.timing.start_time) : null;
-    const endTime = record.timing?.end_time ? new Date(record.timing.end_time) : null;
-
-    // If we have a stored status of 'terminated', prioritize that
-    if (record.status === 'terminated') {
-      return 'terminated';
-    }
-
-    // If no start time, return the original status
-    if (!startTime) {
-      return record.status || 'unknown';
-    }
-
-    // If there's no end time, check if it should be active or upcoming
-    if (!endTime) {
-      if (startTime <= currentTime) {
-        return 'active';
-      } else {
-        return 'upcoming';
-      }
-    }
-
-    // Calculate status based on time comparison
-    if (currentTime < startTime) {
-      return 'upcoming';
-    } else if (currentTime >= startTime && currentTime <= endTime) {
-      return 'active';
-    } else if (currentTime > endTime) {
-      return 'completed';
-    }
-
-    // Fallback to original status
-    return record.status || 'unknown';
-  };
-
-  // Function to get status badge class
-  const getStatusBadgeClass = (status) => {
-    switch (status) {
-      case 'active':
-        return 'active-badge';
-      case 'completed':
-        return 'completed-badge';
-      case 'upcoming':
-        return 'upcoming-badge';
-      case 'terminated':
-        return 'terminated-badge';
-      default:
-        return 'terminated-badge';
-    }
-  };
-
   // Fetch data on component mount
   useEffect(() => {
     fetchHistoryData();
     fetchDevices();
-    
-    // Update current time every minute to recalculate statuses
-    const interval = setInterval(() => {
-      setNow(new Date());
-    }, 60000);
-    
-    return () => clearInterval(interval);
   }, []);
 
   // Refetch data when pagination changes
@@ -136,15 +74,13 @@ const History = () => {
     }
   };
 
-  // Client-side filtering with dynamic status calculation
+  // Client-side filtering similar to Device.jsx
   const filteredRecords = historyRecords.filter(record => {
-    const dynamicStatus = calculateStatus(record);
-    
     const matchesDeviceFilter = !deviceFilter || 
       (record.device && record.device.id && record.device.id.toString().toLowerCase().includes(deviceFilter.toLowerCase()));
     const matchesUserFilter = !userFilter || 
       (record.user && record.user.id && record.user.id.toString().includes(userFilter));
-    const matchesStatusFilter = !statusFilter || dynamicStatus === statusFilter;
+    const matchesStatusFilter = !statusFilter || record.status === statusFilter;
     
     return matchesDeviceFilter && matchesUserFilter && matchesStatusFilter;
   });
@@ -271,10 +207,13 @@ const History = () => {
     {
       name: 'Status',
       selector: row => {
-        const dynamicStatus = calculateStatus(row);
-        const badgeClass = getStatusBadgeClass(dynamicStatus);
+        let badgeClass = '';
+        if (row.status === 'active') badgeClass = 'active-badge';
+        else if (row.status === 'completed') badgeClass = 'completed-badge';
+        else if (row.status === 'upcoming') badgeClass = 'upcoming-badge';
+        else badgeClass = 'terminated-badge';
         
-        return <span className={`badge ${badgeClass} status-badge`}>{dynamicStatus}</span>;
+        return <span className={`badge ${badgeClass} status-badge`}>{row.status}</span>;
       },
       sortable: true,
     },
@@ -366,7 +305,6 @@ const History = () => {
                 <option value="">All Status</option>
                 <option value="active">Active</option>
                 <option value="completed">Completed</option>
-                <option value="upcoming">Upcoming</option>
                 <option value="terminated">Terminated</option>
               </select>
             </div>
@@ -455,12 +393,7 @@ const History = () => {
                   <div className="col-md-6">
                     <h5 className="border-bottom pb-2">Status Information</h5>
                     <p><strong>Status:</strong> 
-                      <span className={`badge ${
-                        selectedRecord.status_info.status === 'active' ? 'active-badge' : 
-                        selectedRecord.status_info.status === 'completed' ? 'completed-badge' : 
-                        selectedRecord.status_info.status === 'upcoming' ? 'upcoming-badge' : 
-                        'terminated-badge'
-                      } status-badge ms-2`}>
+                      <span className={`badge ${selectedRecord.status_info.status === 'active' ? 'active-badge' : selectedRecord.status_info.status === 'completed' ? 'completed-badge' : 'terminated-badge'} status-badge ms-2`}>
                         {selectedRecord.status_info.status}
                       </span>
                     </p>

@@ -56,7 +56,7 @@ body {
   width: 100%;
 }
 
-.device-card {
+.Device-card {
   width: 240px; /* Slightly smaller */
   height: 240px;
   padding: 30px;
@@ -75,13 +75,13 @@ body {
   overflow: hidden;
 }
 
-.device-card:hover {
+.Device-card:hover {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   border: 1px solid #ff6a00;
   transform: scale(1.05);
 }
 
-.device-card.active {
+.Device-card.active {
   border-color: #0971b3;
   background-color: #f0f8ff;
   box-shadow: 0 4px 12px rgba(9, 113, 179, 0.2);
@@ -106,20 +106,20 @@ body {
   font-weight: 600;
 }
 
-.device-card.active .device-status {
+.Device-card.active .device-status {
   color: #0971b3;
   font-weight: 600;
 }
 
 /* Dark theme styles */
-.dark-theme .device-card {
+.dark-theme .Device-card {
   background-color: #1e1e1e;
   border: 2px solid #ff6a00;
   box-shadow: 0 4px 10px #0006;
   color: white;
 }
 
-.dark-theme .device-card:hover {
+.dark-theme .Device-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   border: 1px solid #0971b3;
@@ -140,7 +140,7 @@ body {
   margin: 0 auto;
 }
 
-.dark-theme .device-card.active {
+.dark-theme .Device-card.active {
   background-color: #1a2a3a;
   border-color: #0a80d1;
 }
@@ -149,7 +149,7 @@ body {
   color: #aaa;
 }
 
-.dark-theme .device-card.active .device-status {
+.dark-theme .Device-card.active .device-status {
   color: #0a80d1;
 }
 
@@ -165,7 +165,7 @@ body {
     gap: 15px;
   }
 
-  .device-card {
+  .Device-card {
     width: 100%;
     max-width: 200px;
     padding: 20px;
@@ -427,11 +427,11 @@ input:checked + .slider:before {
   color: #ccc;
 }
 
-.device-card.active {
+.Device-card.active {
   border-color: #0971b3;
   box-shadow: 0 0 15px rgba(9, 113, 179, 0.6);
 }
-.dark-theme .device-card.active {
+.dark-theme .Device-card.active {
   border-color: #ff6a00;
   box-shadow: 0 0 15px rgba(255, 106, 0, 0.6);
 }
@@ -465,8 +465,8 @@ input:checked + .slider:before {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   padding: 40px 30px;
   margin: 40px auto;
-  max-width: 1200px;
-  width: 90%;
+  width: 100%;
+  max-width: 1300px;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
   position: relative;
   z-index: 1;
@@ -501,12 +501,6 @@ input:checked + .slider:before {
   padding: 20px;
 }
 
-.dashboard-content-wrapper {
-  width: 100%;
-  max-width: 1300px;
-  padding: 30px;
-}
-
 /* Responsive adjustments */
 @media (max-width: 1200px) {
   .devices-grid {
@@ -528,7 +522,7 @@ input:checked + .slider:before {
     max-width: 300px;
   }
 
-  .device-card {
+  .Device-card {
     width: 100%;
     max-width: 260px;
   }

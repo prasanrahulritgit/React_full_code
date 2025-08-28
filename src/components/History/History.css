@@ -57,13 +57,13 @@
   border: 1px solid #333333;
 }
 
-.card {
+.Card {
   background-color: #1e1e1e;
   border: 1px solid #333333;
   border-radius: 8px;
 }
 
-.card-body {
+.Card-body {
   padding: 1.25rem;
   color: #cccccc;
 }
