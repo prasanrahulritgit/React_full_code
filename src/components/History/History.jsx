@@ -19,45 +19,118 @@ const History = () => {
     pages: 1,
   });
 
+  // Function to determine the current status based on timing
+  const determineCurrentStatus = (record) => {
+    const now = new Date();
+    const startTime = record.timing.start_time ? new Date(record.timing.start_time) : null;
+    const endTime = record.timing.end_time ? new Date(record.timing.end_time) : null;
+    
+    // If the record is terminated, always keep it as terminated
+    if (record.status === 'terminated') {
+      return 'terminated';
+    }
+
+    // If there's no start time, return the original status
+    if (!startTime) {
+      return record.status;
+    }
+
+    // If current time is before start time, it's upcoming (only if not terminated)
+    if (now < startTime) {
+      return 'upcoming';
+    }
+
+    // If current time is between start time and end time (or no end time), it's active
+    if (now >= startTime && (!endTime || now <= endTime)) {
+      return 'active';
+    }
+
+    // For all other cases, return the original status from the database
+    // This preserves active, completed, and any other statuses as determined by the backend
+    return record.status;
+  };
+
+  // Function to get badge class based on status
+  const getBadgeClass = (status) => {
+    switch (status) {
+      case 'active':
+        return 'active-badge';
+      case 'completed':
+        return 'completed-badge';
+      case 'upcoming':
+        return 'upcoming-badge';
+      case 'terminated':
+        return 'terminated-badge';
+      default:
+        return 'terminated-badge';
+    }
+  };
+
   // Fetch data on component mount
   useEffect(() => {
     fetchHistoryData();
     fetchDevices();
   }, []);
 
-  // Refetch data when filters change
+  // Refetch data when pagination changes
   useEffect(() => {
     fetchHistoryData();
-  }, [
-    filterText,
-    statusFilter,
-    deviceFilter,
-    userFilter,
-    pagination.current_page,
-    pagination.per_page,
-  ]);
+  }, [pagination.current_page, pagination.per_page]);
+
+  // Set up interval to update status and auto refresh data
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      let shouldRefresh = false;
+
+      // Check if any record's start time or end time matches current time (within 1 minute)
+      historyRecords.forEach(record => {
+        const startTime = record.timing.start_time ? new Date(record.timing.start_time) : null;
+        const endTime = record.timing.end_time ? new Date(record.timing.end_time) : null;
+
+        // Check if current time is within 1 minute of start time or end time
+        if (startTime) {
+          const timeDiffStart = Math.abs(now - startTime);
+          if (timeDiffStart <= 60000) { // Within 1 minute (60000 ms)
+            shouldRefresh = true;
+          }
+        }
+
+        if (endTime) {
+          const timeDiffEnd = Math.abs(now - endTime);
+          if (timeDiffEnd <= 60000) { // Within 1 minute (60000 ms)
+            shouldRefresh = true;
+          }
+        }
+      });
+
+      if (shouldRefresh) {
+        console.log('Auto refreshing data due to start/end time match');
+        fetchHistoryData(); // Refresh data from server
+      } else {
+        // Just force re-render for status updates
+        setHistoryRecords(prev => [...prev]);
+      }
+    }, 30000); // Check every 30 seconds for more responsive updates
+
+    return () => clearInterval(interval);
+  }, [historyRecords]); // Dependency on historyRecords to check against latest data
 
   const fetchHistoryData = async () => {
     try {
       setLoading(true);
-
-      // Build query string with filters
+      
+      // Build query string with pagination only (filters handled client-side)
       const params = new URLSearchParams();
-      params.append("page", pagination.current_page);
-      params.append("per_page", pagination.per_page);
-      if (statusFilter) params.append("status", statusFilter);
-      if (deviceFilter) params.append("device_id", deviceFilter);
-      if (userFilter) params.append("user_id", userFilter);
-
-      const response = await fetch(
-        `/history/all-records?${params.toString()}`,
-        {
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to fetch history");
-
+      params.append('page', pagination.current_page);
+      params.append('per_page', pagination.per_page);
+      
+      const response = await fetch(`/history/all-records?${params.toString()}`, {
+        credentials: 'include'
+      });
+      
+      if (!response.ok) throw new Error('Failed to fetch history');
+      
       const data = await response.json();
 
       // Update records and pagination
@@ -88,19 +161,86 @@ const History = () => {
     }
   };
 
-  const handleViewDetails = async (recordId) => {
-    try {
-      const response = await fetch(`/history/get-usage-record/${recordId}`, {
-        credentials: "include",
-      });
+  // Client-side filtering similar to Device.jsx
+  const filteredRecords = historyRecords.filter(record => {
+    const currentStatus = determineCurrentStatus(record);
+    
+    const matchesDeviceFilter = !deviceFilter || 
+      (record.device && record.device.id && record.device.id.toString().toLowerCase().includes(deviceFilter.toLowerCase()));
+    const matchesUserFilter = !userFilter || 
+      (record.user && record.user.id && record.user.id.toString().includes(userFilter));
+    const matchesStatusFilter = !statusFilter || currentStatus === statusFilter;
+    
+    return matchesDeviceFilter && matchesUserFilter && matchesStatusFilter;
+  });
 
+  const handleFilter = e => {
+    setDeviceFilter(e.target.value);
+  };
+
+  // Prevent form submission on Enter key in filter
+  const handleFilterKeyDown = e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+    }
+  };
+
+  // Updated handleViewDetails with fallback functionality
+  const handleViewDetails = async (record) => {
+    try {
+      console.log('Fetching details for record ID:', record.id);
+      
+      const response = await fetch(`/history/get-usage-record/${record.id}`, {
+        credentials: 'include'
+      });
+      
+      console.log('Response status:', response.status);
+      
       if (response.ok) {
         const recordDetails = await response.json();
-        setSelectedRecord(recordDetails);
-        setShowDetailsModal(true);
+        console.log('Record details received:', recordDetails);
+        
+        if (recordDetails) {
+          setSelectedRecord(recordDetails);
+          setShowDetailsModal(true);
+          return;
+        }
       }
+      
+      // Fallback: Use the data we already have from the main list
+      console.log('Using fallback data for record:', record);
+      const fallbackRecord = {
+        device_id: record.device?.id || 'N/A',
+        user_info: {
+          user_id: record.user?.id || 'N/A',
+          user_name: record.user?.name || 'N/A',
+          user_ip: record.user?.ip || 'N/A'
+        },
+        timing: {
+          start_time: record.timing?.start_time || null,
+          end_time: record.timing?.end_time || null,
+          duration: record.timing?.duration || null
+        },
+        network_info: {
+          ip_address: record.network_info?.ip_address || 'N/A',
+          ip_type: record.network_info?.ip_type || 'N/A'
+        },
+        status_info: {
+          status: determineCurrentStatus(record),
+          termination_reason: record.termination_reason || 'N/A'
+        },
+        reservation_info: {
+          reservation_id: record.reservation?.id || 'N/A',
+          ip_type: record.reservation?.ip_type || 'N/A'
+        }
+      };
+      
+      setSelectedRecord(fallbackRecord);
+      setShowDetailsModal(true);
+      
     } catch (error) {
-      console.error("Error fetching record details:", error);
+      console.error('Error fetching record details:', error);
+      alert('Failed to fetch record details');
     }
   };
 
@@ -160,6 +300,14 @@ const History = () => {
     setPagination({ ...pagination, per_page: newPerPage, current_page: page });
   };
 
+  // Clear all filters
+  const handleClearFilters = () => {
+    setDeviceFilter('');
+    setUserFilter('');
+    setStatusFilter('');
+    setFilterText('');
+  };
+
   const columns = [
     {
       name: "Device ID",
@@ -200,18 +348,12 @@ const History = () => {
       sortable: true,
     },
     {
-      name: "Status",
-      selector: (row) => {
-        let badgeClass = "";
-        if (row.status === "active") badgeClass = "active-badge";
-        else if (row.status === "completed") badgeClass = "completed-badge";
-        else badgeClass = "terminated-badge";
-
-        return (
-          <span className={`badge ${badgeClass} status-badge`}>
-            {row.status}
-          </span>
-        );
+      name: 'Status',
+      selector: row => {
+        const currentStatus = determineCurrentStatus(row);
+        const badgeClass = getBadgeClass(currentStatus);
+        
+        return <span className={`badge ${badgeClass} status-badge`}>{currentStatus}</span>;
       },
       sortable: true,
     },
@@ -219,9 +361,9 @@ const History = () => {
       name: "Actions",
       cell: (row) => (
         <div className="action-buttons">
-          <button
-            className="btn btn-sm view-details Action-btn"
-            onClick={() => handleViewDetails(row.id)}
+          <button 
+            className="btn btn-sm view-details Action-btn" 
+            onClick={() => handleViewDetails(row)}
           >
             Details
           </button>
@@ -282,7 +424,7 @@ const History = () => {
         </div>
 
         <div className="filter-container">
-          <form className="row g-3">
+          <div className="row g-3">
             <div className="col-md-3">
               <label htmlFor="deviceFilter" className="form-label">
                 Device ID
@@ -291,9 +433,10 @@ const History = () => {
                 type="text"
                 id="deviceFilter"
                 className="form-control"
+                placeholder="Filter by device ID"
                 value={deviceFilter}
-                onChange={(e) => setDeviceFilter(e.target.value)}
-                placeholder="Filter by Device ID"
+                onChange={handleFilter}
+                onKeyDown={handleFilterKeyDown}
               />
             </div>
             <div className="col-md-2">
@@ -309,6 +452,7 @@ const History = () => {
                 <option value="">All Status</option>
                 <option value="active">Active</option>
                 <option value="completed">Completed</option>
+                <option value="upcoming">Upcoming</option>
                 <option value="terminated">Terminated</option>
               </select>
             </div>
@@ -325,23 +469,28 @@ const History = () => {
                 placeholder="Filter by User ID"
               />
             </div>
-          </form>
+            <div className="col-md-2 d-flex align-items-end">
+              <button 
+                type="button" 
+                className="btn btn-outline-secondary"
+                onClick={handleClearFilters}
+              >
+                Clear Filters
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div className="Card">
-          <div className="Card-body">
+        <div className="card">
+          <div className="card-body">
             <div className="table-responsive">
               <DataTable
                 columns={columns}
-                data={historyRecords}
+                data={filteredRecords}
                 customStyles={customStyles}
                 pagination
-                paginationServer
-                paginationTotalRows={pagination.total}
-                paginationPerPage={pagination.per_page}
+                paginationPerPage={25}
                 paginationRowsPerPageOptions={[10, 25, 50, 100]}
-                onChangePage={handlePageChange}
-                onChangeRowsPerPage={handlePerRowsChange}
                 progressPending={loading}
               />
             </div>
@@ -372,92 +521,30 @@ const History = () => {
                   </div>
                   <div className="col-md-6">
                     <h5 className="border-bottom pb-2">User Information</h5>
-                    <p>
-                      <strong>User ID:</strong>{" "}
-                      {selectedRecord.user_info.user_id}
-                    </p>
-                    <p>
-                      <strong>User Name:</strong>{" "}
-                      {selectedRecord.user_info.user_name}
-                    </p>
-                    <p>
-                      <strong>User IP:</strong>{" "}
-                      {selectedRecord.user_info.user_ip}
-                    </p>
+                    <p><strong>User ID:</strong> {selectedRecord.user_info.user_id}</p>
                   </div>
                 </div>
 
                 <div className="row mb-4">
                   <div className="col-md-6">
                     <h5 className="border-bottom pb-2">Timing Information</h5>
-                    <p>
-                      <strong>Start Time:</strong>{" "}
-                      {selectedRecord.timing.start_time
-                        ? new Date(
-                            selectedRecord.timing.start_time
-                          ).toLocaleString()
-                        : "N/A"}
-                    </p>
-                    <p>
-                      <strong>End Time:</strong>{" "}
-                      {selectedRecord.timing.end_time
-                        ? new Date(
-                            selectedRecord.timing.end_time
-                          ).toLocaleString()
-                        : "N/A"}
-                    </p>
-                    <p>
-                      <strong>Duration:</strong>{" "}
-                      {selectedRecord.timing.duration || "N/A"} seconds
-                    </p>
-                  </div>
-                  <div className="col-md-6">
-                    <h5 className="border-bottom pb-2">Network Information</h5>
-                    <p>
-                      <strong>IP Address:</strong>{" "}
-                      {selectedRecord.network_info.ip_address || "N/A"}
-                    </p>
-                    <p>
-                      <strong>IP Type:</strong>{" "}
-                      {selectedRecord.network_info.ip_type || "N/A"}
-                    </p>
+                    <p><strong>Start Time:</strong> {selectedRecord.timing.start_time ? new Date(selectedRecord.timing.start_time).toLocaleString() : 'N/A'}</p>
+                    <p><strong>End Time:</strong> {selectedRecord.timing.end_time ? new Date(selectedRecord.timing.end_time).toLocaleString() : 'N/A'}</p>
                   </div>
                 </div>
 
                 <div className="row">
                   <div className="col-md-6">
                     <h5 className="border-bottom pb-2">Status Information</h5>
-                    <p>
-                      <strong>Status:</strong>
-                      <span
-                        className={`badge ${
-                          selectedRecord.status_info.status === "active"
-                            ? "active-badge"
-                            : selectedRecord.status_info.status === "completed"
-                            ? "completed-badge"
-                            : "terminated-badge"
-                        } status-badge ms-2`}
-                      >
+                    <p><strong>Status:</strong> 
+                      <span className={`badge ${getBadgeClass(selectedRecord.status_info.status)} status-badge ms-2`}>
                         {selectedRecord.status_info.status}
                       </span>
                     </p>
-                    <p>
-                      <strong>Termination Reason:</strong>{" "}
-                      {selectedRecord.status_info.termination_reason || "N/A"}
-                    </p>
                   </div>
                   <div className="col-md-6">
-                    <h5 className="border-bottom pb-2">
-                      Reservation Information
-                    </h5>
-                    <p>
-                      <strong>Reservation ID:</strong>{" "}
-                      {selectedRecord.reservation_info.reservation_id || "N/A"}
-                    </p>
-                    <p>
-                      <strong>IP Type:</strong>{" "}
-                      {selectedRecord.reservation_info.ip_type || "N/A"}
-                    </p>
+                    <h5 className="border-bottom pb-2">Reservation Information</h5>
+                    <p><strong>Reservation ID:</strong> {selectedRecord.reservation_info.reservation_id || 'N/A'}</p>
                   </div>
                 </div>
               </div>

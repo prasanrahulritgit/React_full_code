@@ -314,3 +314,22 @@
   color: #000;
   font-weight: bold;
 }
+
+
+.form-label-user {
+  color: #ff6a00;
+  font-weight:600;
+}
+
+
+.delete-user-btn {
+  background-color: #dc3545;
+  color: white;
+  border: 1px solid #dc3545;
+}
+
+.delete-user-btn:hover {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
