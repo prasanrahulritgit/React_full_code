@@ -44,7 +44,7 @@ const DeviceCard = ({ device, isActive, onClick, renderIcon, isDarkTheme }) => {
         {renderIcon(device.iconType, isDarkTheme ? "#ff6a00" : "#0971B3")}
       </div>
 
-      <div className="device-name">{device.name }</div>
+      <div className="device-name">{device.name}</div>
       <div className="device-status">{isActive ? "Running" : "Ready"}</div>
 
       {!isActive && (
@@ -462,31 +462,31 @@ const Dashboard = () => {
     let popupHTML = "";
 
     if (isCT) {
-      let response = await fetch('/templates/thermalCamera.html');
+      let response = await fetch("/templates/thermalCamera.html");
       popupHTML = await response.text();
     } else if (isPulse) {
-      let response = await fetch('/templates/pulseView.html');
+      let response = await fetch("/templates/pulseView.html");
       popupHTML = await response.text();
     } else if (isPC) {
-      let response = await fetch('/templates/virtualDesk.html');
+      let response = await fetch("/templates/virtualDesk.html");
       popupHTML = await response.text();
     } else if (isStream1 || isStream2) {
-      let response = await fetch('/templates/stream.html');
+      let response = await fetch("/templates/stream.html");
       popupHTML = await response.text();
     } else if (isOs) {
-      let response = await fetch('/templates/osFlashing.html');
+      let response = await fetch("/templates/osFlashing.html");
       popupHTML = await response.text();
     } else if (isAudio) {
-      let response = await fetch('/templates/audio.html');
+      let response = await fetch("/templates/audio.html");
       popupHTML = await response.text();
     } else if (isSystemInfo || isUsbSharing || isFirmware) {
-      let response = await fetch('/templates/commonTemplate.html');
+      let response = await fetch("/templates/commonTemplate.html");
       popupHTML = await response.text();
     } else if (isPostcode) {
-      let response = await fetch('/templates/postCode.html');
+      let response = await fetch("/templates/postCode.html");
       popupHTML = await response.text();
     } else {
-      let response = await fetch('/templates/popup.html');
+      let response = await fetch("/templates/popup.html");
       popupHTML = await response.text();
     }
 
@@ -507,12 +507,11 @@ const Dashboard = () => {
           device: device,
           ipAddress,
           postMessageScript,
-          timerScript
+          timerScript,
         },
         "*"
       );
     };
-
 
     // After creating the popup, add it to tracked windows
     setPopupWindows((prev) => [

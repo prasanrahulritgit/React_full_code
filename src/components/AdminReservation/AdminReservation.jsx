@@ -18,6 +18,7 @@ import {
   FaTimes,
   FaCheck,
   FaBan,
+  FaServer,
 } from "react-icons/fa";
 
 const AdminReservation = () => {
@@ -46,6 +47,8 @@ const AdminReservation = () => {
   const [startTimePicker, setStartTimePicker] = useState(null);
   const [endTimePicker, setEndTimePicker] = useState(null);
   const [cancellingDeviceId, setCancellingDeviceId] = useState(null);
+  const itemsPerPage = 10;
+  const [current_Page, setCurrent_Page] = useState(1);
 
   // API base URL
   const API_BASE = "http://localhost:5000"; // Update with your Flask server URL
@@ -228,6 +231,22 @@ const AdminReservation = () => {
     }
   };
 
+  // Filter devices first
+  const filteredDevices = availableDevices.filter((device) =>
+    device.device_id.toLowerCase().includes(deviceFilter.toLowerCase())
+  );
+
+  // Pagination logic
+  const indexOfLastDevice = current_Page * itemsPerPage;
+  const indexOfFirstDevice = indexOfLastDevice - itemsPerPage;
+  const current_Devices = filteredDevices.slice(
+    indexOfFirstDevice,
+    indexOfLastDevice
+  );
+
+  // Total pages
+  const totalDevicePages = Math.ceil(filteredDevices.length / itemsPerPage);
+
   const fetchBookedDevices = async () => {
     try {
       setLoading(true);
@@ -288,8 +307,6 @@ const AdminReservation = () => {
       setLoading(false);
     }
   };
-
-  
 
   // Handle device selection modal opening
   const handleBookReservation = () => {
@@ -390,7 +407,7 @@ const AdminReservation = () => {
   // Cancel a reservation
   const handleCancelReservation = async (deviceId, reservationId) => {
     // Handle case where only reservationId is passed (from reservations table)
-    if (reservationId === undefined && typeof deviceId === 'string') {
+    if (reservationId === undefined && typeof deviceId === "string") {
       reservationId = deviceId;
       deviceId = null; // deviceId might not be available from reservations table
     }
@@ -404,7 +421,7 @@ const AdminReservation = () => {
         setCancellingDeviceId(deviceId); // Set the device ID that's being cancelled (for booked devices)
       }
       setReservationLoading(true);
-      
+
       const response = await fetch(
         `${API_BASE}/reservation/cancel/${reservationId}`,
         {
@@ -419,14 +436,14 @@ const AdminReservation = () => {
           setMessages([
             { text: "Reservation cancelled successfully", category: "success" },
           ]);
-          
+
           // Refresh both reservations and booked devices
           fetchUserReservations();
-          
+
           // If we have a deviceId, remove it from booked devices
           if (deviceId) {
-            setBookedDevices(prevDevices => 
-              prevDevices.filter(device => {
+            setBookedDevices((prevDevices) =>
+              prevDevices.filter((device) => {
                 const id = device.device_id || device.device?.id || device.id;
                 return id !== deviceId;
               })
@@ -457,7 +474,7 @@ const AdminReservation = () => {
           // If we can't parse JSON, use the status text
           errorMessage = `${response.status} ${response.statusText}`;
         }
-        
+
         setMessages([{ text: errorMessage, category: "danger" }]);
       }
     } catch (error) {
@@ -626,9 +643,14 @@ const AdminReservation = () => {
     if (showDeviceSelection && startTime && endTime) {
       const start = new Date(startTime);
       const end = new Date(endTime);
-      
+
       // Only refresh if we have valid dates
-      if (start instanceof Date && !isNaN(start) && end instanceof Date && !isNaN(end)) {
+      if (
+        start instanceof Date &&
+        !isNaN(start) &&
+        end instanceof Date &&
+        !isNaN(end)
+      ) {
         fetchAvailableDevices(start, end);
         fetchBookedDevices();
       }
@@ -958,73 +980,118 @@ const AdminReservation = () => {
                     </div>
                   </div>
                   <div className="server-rack-container">
+                    <div className="pagination-container">
+                      <ul className="pagination">
+                        <li
+                          className={`page-item ${
+                            current_Page === 1 ? "disabled" : ""
+                          }`}
+                        >
+                          <button
+                            type="button"
+                            className="page-link"
+                            onClick={() => setCurrent_Page(current_Page - 1)}
+                            disabled={current_Page === 1}
+                          >
+                            «
+                          </button>
+                        </li>
+
+                        {[...Array(totalDevicePages)].map((_, index) => (
+                          <li
+                            key={index}
+                            className={`page-item ${
+                              current_Page === index + 1 ? "active" : ""
+                            }`}
+                          >
+                            <button
+                              type="button"
+                              className="page-link"
+                              onClick={() => setCurrent_Page(index + 1)}
+                            >
+                              {index + 1}
+                            </button>
+                          </li>
+                        ))}
+
+                        <li
+                          className={`page-item ${
+                            current_Page === totalDevicePages ? "disabled" : ""
+                          }`}
+                        >
+                          <button
+                            type="button"
+                            className="page-link"
+                            onClick={() => setCurrent_Page(current_Page + 1)}
+                            disabled={current_Page === totalDevicePages}
+                          >
+                            »
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
                     {loading ? (
                       <div className="loading-message">
                         <FaSpinner className="fa-spin" /> Loading devices...
                       </div>
                     ) : availableDevices.length > 0 ? (
                       <div className="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3">
-                        {availableDevices
-                          .filter((device) =>
-                            device.device_id
-                              .toLowerCase()
-                              .includes(deviceFilter.toLowerCase())
-                          )
-                          .map((device) => (
-                            <div key={device.device_id} className="col">
-                              <div
-                                className={`card device-card h-100 ${
-                                  selectedDevice?.device_id === device.device_id
-                                    ? "selected-device"
-                                    : ""
-                                } ${
+                        {current_Devices.map((device) => (
+                          <div key={device.device_id} className="col">
+                            <div
+                              className={`card device-card h-100 ${
+                                selectedDevice?.device_id === device.device_id
+                                  ? "selected-device"
+                                  : ""
+                              } ${
+                                device.status === "booked"
+                                  ? "booked-device"
+                                  : "available-device"
+                              }`}
+                              onClick={() => {
+                                if (device.status !== "booked") {
+                                  handleDeviceSelection(device);
+                                }
+                              }}
+                              style={{
+                                cursor:
                                   device.status === "booked"
-                                    ? "booked-device"
-                                    : "available-device"
-                                }`}
-                                onClick={() => {
-                                  if (device.status !== "booked") {
-                                    handleDeviceSelection(device);
-                                  }
-                                }}
-                                style={{
-                                  cursor:
-                                    device.status === "booked"
-                                      ? "not-allowed"
-                                      : "pointer",
-                                  opacity: device.status === "booked" ? 0.7 : 1,
-                                }}
-                              >
-                                <div className="card-body text-center p-2">
-                                  <h5 className="card-title mb-2">
-                                    {device.device_id}
-                                  </h5>
-                                  <p className="card-text mb-2">
-                                    <span
-                                      className={`badge ${
-                                        device.status === "available"
-                                          ? "bg-success"
-                                          : device.status === "booked"
-                                          ? "bg-danger"
-                                          : "bg-secondary"
-                                      }`}
-                                    >
-                                      {device.status === "available"
-                                        ? "Available"
+                                    ? "not-allowed"
+                                    : "pointer",
+                                opacity: device.status === "booked" ? 0.7 : 1,
+                              }}
+                            >
+                              <div className="card-body text-center p-2">
+                                <FaServer className="fa-2x d-block mx-auto mb-2" />
+                                <h5 className="card-title mb-2">
+                                  {device.device_id}
+                                </h5>
+                                <p className="card-text mb-2">
+                                  <span
+                                    className={`badge ${
+                                      device.status === "available"
+                                        ? "bg-success"
                                         : device.status === "booked"
-                                        ? "Booked"
-                                        : "Unknown"}
-                                    </span>
+                                        ? "bg-danger"
+                                        : "bg-secondary"
+                                    }`}
+                                  >
+                                    {device.status === "available"
+                                      ? "Available"
+                                      : device.status === "booked"
+                                      ? "Booked"
+                                      : "Unknown"}
+                                  </span>
+                                </p>
+                                {device.status === "booked" && (
+                                  <p className="card-text small text-muted mb-0">
+                                    Already booked
                                   </p>
-                                  {device.status === "booked" && (
-                                    <p className="card-text small text-muted mb-0">
-                                      Already booked
-                                    </p>
-                                  )}
-                                </div>
+                                )}
                               </div>
                             </div>
-                          ))}
+                          </div>
+                        ))}
                       </div>
                     ) : (
                       <div className="text-center py-4 text-muted">
@@ -1078,23 +1145,53 @@ const AdminReservation = () => {
                     ) : bookedDevices.length > 0 ? (
                       <div className="booked-devices-cards">
                         {bookedDevices
-                          .filter(device => {
-                            const deviceId = device.device_id || device.device?.id || device.id || '';
-                            const deviceName = device.device_name || device.device?.name || '';
-                            return deviceId.toLowerCase().includes(bookedDeviceFilter.toLowerCase()) ||
-                                  deviceName.toLowerCase().includes(bookedDeviceFilter.toLowerCase());
+                          .filter((device) => {
+                            const deviceId =
+                              device.device_id ||
+                              device.device?.id ||
+                              device.id ||
+                              "";
+                            const deviceName =
+                              device.device_name || device.device?.name || "";
+                            return (
+                              deviceId
+                                .toLowerCase()
+                                .includes(bookedDeviceFilter.toLowerCase()) ||
+                              deviceName
+                                .toLowerCase()
+                                .includes(bookedDeviceFilter.toLowerCase())
+                            );
                           })
                           .map((device, index) => {
                             // Extract all possible data fields with fallbacks
-                            const deviceId = device.device_id || device.device?.id || device.id || `device-${index}`;
-                            const deviceName = device.device_name || device.device?.name || deviceId;
-                            const startTime = device.start_time || device.reservation_start || device.time?.start;
-                            const endTime = device.end_time || device.reservation_end || device.time?.end;
-                            const userName = device.user_name || device.user?.name || device.reserved_by || 'Unknown User';
-                            const userId = device.user_id || device.user?.id || 'N/A';
-                            const reservationId = device.reservation_id || device.id; // Get reservation ID
-                            const status = device.status || 'booked';
-                            
+                            const deviceId =
+                              device.device_id ||
+                              device.device?.id ||
+                              device.id ||
+                              `device-${index}`;
+                            const deviceName =
+                              device.device_name ||
+                              device.device?.name ||
+                              deviceId;
+                            const startTime =
+                              device.start_time ||
+                              device.reservation_start ||
+                              device.time?.start;
+                            const endTime =
+                              device.end_time ||
+                              device.reservation_end ||
+                              device.time?.end;
+                            const userName =
+                              device.user_name ||
+                              device.user?.name ||
+                              device.reserved_by ||
+                              "Unknown User";
+                            const userId =
+                              device.user_id || device.user?.id || "N/A";
+                            const reservationId =
+                              device.reservation_id || device.id; // Get reservation ID
+                            const status = device.status || "booked";
+
                             // Calculate duration if not provided
                             let duration = device.duration;
                             if (!duration && startTime && endTime) {
@@ -1106,10 +1203,14 @@ const AdminReservation = () => {
                             }
 
                             // Check if this device is currently being cancelled
-                            const isCancelling = cancellingDeviceId === deviceId;
+                            const isCancelling =
+                              cancellingDeviceId === deviceId;
 
                             return (
-                              <div key={`${deviceId}-${index}`} className="booked-device-card">
+                              <div
+                                key={`${deviceId}-${index}`}
+                                className="booked-device-card"
+                              >
                                 {isCancelling && (
                                   <div className="cancelling-overlay">
                                     <div className="cancelling-spinner">
@@ -1118,59 +1219,92 @@ const AdminReservation = () => {
                                     </div>
                                   </div>
                                 )}
-                                
+
                                 <div className="booked-device-card-header">
-                                  <h5 className="booked-device-card-title">{deviceName}</h5>
-                                  <span className={`badge ${
-                                    status === 'active' ? 'badge-active' : 
-                                    status === 'upcoming' ? 'badge-upcoming' : 
-                                    status === 'completed' ? 'badge-expired' : 
-                                    'bg-primary'
-                                  }`}>
+                                  <h5 className="booked-device-card-title">
+                                    {deviceName}
+                                  </h5>
+                                  <span
+                                    className={`badge ${
+                                      status === "active"
+                                        ? "badge-active"
+                                        : status === "upcoming"
+                                        ? "badge-upcoming"
+                                        : status === "completed"
+                                        ? "badge-expired"
+                                        : "bg-primary"
+                                    }`}
+                                  >
                                     {status.toUpperCase()}
                                   </span>
                                 </div>
-                                
+
                                 <div className="booked-device-card-body">
                                   <div className="booked-device-card-row">
-                                    <div className="booked-device-card-label">Device ID:</div>
-                                    <div className="booked-device-card-value">{deviceId}</div>
-                                  </div>
-                                  
-                                  <div className="booked-device-card-row">
-                                    <div className="booked-device-card-label">User ID:</div>
-                                    <div className="booked-device-card-value">{userId}</div>
-                                  </div>
-                                  
-                                  <div className="booked-device-card-row">
-                                    <div className="booked-device-card-label">Start:</div>
+                                    <div className="booked-device-card-label">
+                                      Device ID:
+                                    </div>
                                     <div className="booked-device-card-value">
-                                      {startTime ? new Date(startTime).toLocaleString() : 'N/A'}
+                                      {deviceId}
                                     </div>
                                   </div>
-                                  
+
                                   <div className="booked-device-card-row">
-                                    <div className="booked-device-card-label">End:</div>
+                                    <div className="booked-device-card-label">
+                                      User ID:
+                                    </div>
                                     <div className="booked-device-card-value">
-                                      {endTime ? new Date(endTime).toLocaleString() : 'N/A'}
+                                      {userId}
                                     </div>
                                   </div>
-                                  
+
                                   <div className="booked-device-card-row">
-                                    <div className="booked-device-card-label">Duration:</div>
-                                    <div className="booked-device-card-value">{duration || 'N/A'}</div>
+                                    <div className="booked-device-card-label">
+                                      Start:
+                                    </div>
+                                    <div className="booked-device-card-value">
+                                      {startTime
+                                        ? new Date(startTime).toLocaleString()
+                                        : "N/A"}
+                                    </div>
+                                  </div>
+
+                                  <div className="booked-device-card-row">
+                                    <div className="booked-device-card-label">
+                                      End:
+                                    </div>
+                                    <div className="booked-device-card-value">
+                                      {endTime
+                                        ? new Date(endTime).toLocaleString()
+                                        : "N/A"}
+                                    </div>
+                                  </div>
+
+                                  <div className="booked-device-card-row">
+                                    <div className="booked-device-card-label">
+                                      Duration:
+                                    </div>
+                                    <div className="booked-device-card-value">
+                                      {duration || "N/A"}
+                                    </div>
                                   </div>
                                 </div>
-                                
+
                                 <div className="booked-device-card-footer">
-                                  <button 
-                                    className="btn btn-sm btn-danger btn-cancel" 
-                                    onClick={() => handleCancelReservation(deviceId, reservationId)}
+                                  <button
+                                    className="btn btn-sm btn-danger btn-cancel"
+                                    onClick={() =>
+                                      handleCancelReservation(
+                                        deviceId,
+                                        reservationId
+                                      )
+                                    }
                                     disabled={isCancelling}
                                   >
                                     {isCancelling ? (
                                       <>
-                                        <FaSpinner className="fa-spin me-1" /> Cancelling...
+                                        <FaSpinner className="fa-spin me-1" />{" "}
+                                        Cancelling...
                                       </>
                                     ) : (
                                       <>
@@ -1187,7 +1321,10 @@ const AdminReservation = () => {
                       <div className="text-center py-5 text-muted">
                         <FaCalendarAlt className="fa-3x mb-3" />
                         <h5>No Booked Devices Found</h5>
-                        <p className="mb-3">There are currently no active or upcoming reservations.</p>
+                        <p className="mb-3">
+                          There are currently no active or upcoming
+                          reservations.
+                        </p>
                       </div>
                     )}
                   </div>
@@ -1518,7 +1655,12 @@ const AdminReservation = () => {
                                       <button
                                         type="button"
                                         className="btn btn-sm btn-danger cancel-btn"
-                                        onClick={() => handleCancelReservation(res.device_id, res.id)}
+                                        onClick={() =>
+                                          handleCancelReservation(
+                                            res.device_id,
+                                            res.id
+                                          )
+                                        }
                                         disabled={reservationLoading}
                                       >
                                         {reservationLoading ? (

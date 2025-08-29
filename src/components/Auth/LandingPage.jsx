@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'datatables.net-bs5/css/dataTables.bootstrap5.css';
-import 'font-awesome/css/font-awesome.min.css';
-import 'flatpickr/dist/flatpickr.min.css';
+import "bootstrap/dist/css/bootstrap.min.css";
+import "datatables.net-bs5/css/dataTables.bootstrap5.css";
+import "font-awesome/css/font-awesome.min.css";
+import "flatpickr/dist/flatpickr.min.css";
 import "./LandingPage.css";
 import ThreeDModel from "./ThreeDModel";
 import {
@@ -147,9 +147,9 @@ const LandingPage = ({ setIsAuthenticated }) => {
     };
   }, [show3DModel]);
 
-    const handleLaunchDashboard = () => {
+  const handleLaunchDashboard = () => {
     // Redirect to external login URL
-    navigate('/Login');;
+    navigate("/Login");
   };
 
   useEffect(() => {
@@ -414,9 +414,14 @@ const LandingPage = ({ setIsAuthenticated }) => {
               >
                 Explore Features
               </button>
-        <button className="secondary-Btn" onClick={handleLaunchDashboard}>
-                Launch Dashboard <SquareArrowOutUpRight size={18} marginLeft={16} className="button-icon" />
-                </button>
+              <button className="secondary-Btn" onClick={handleLaunchDashboard}>
+                Launch Dashboard{" "}
+                <SquareArrowOutUpRight
+                  size={18}
+                  marginLeft={16}
+                  className="button-icon"
+                />
+              </button>
             </div>
           </div>
           <div className="hero-image">
@@ -783,7 +788,11 @@ const LandingPage = ({ setIsAuthenticated }) => {
         <div className="container">
           <div className="footer-content">
             <div className="footer-logo"> </div>
-            <img src={tes_logo} className="footer-logo-img" alt="Tessolve Logo" />
+            <img
+              src={tes_logo}
+              className="footer-logo-img"
+              alt="Tessolve Logo"
+            />
           </div>
           <div className="footer-links">
             <h4>Product Engineering Services</h4>
