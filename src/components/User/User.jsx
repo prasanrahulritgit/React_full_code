@@ -237,7 +237,7 @@ const handleEditUser = async user => {
           )}
           {currentUser.role === 'admin' && row.role !== 'admin' && (
             <button 
-              className="Userbtn Userbtn-sm delete-user orange-btn"
+              className="Userbtn Userbtn-sm delete-user delete-user-btn"
               onClick={() => handleDeleteUser(row)}
             >
               Delete
@@ -296,7 +296,7 @@ const handleEditUser = async user => {
       <div className="filter-container">
         <div className="Userrow g-3">
           <div className="col-md-4">
-            <label htmlFor="userIdFilter" className="form-label">User ID</label>
+            <label htmlFor="userIdFilter" className="form-label-user">User ID</label>
             <input 
               type="text" 
               className="form-control" 
@@ -308,7 +308,7 @@ const handleEditUser = async user => {
             />
           </div>
           <div className="col-md-4">
-            <label htmlFor="usernameFilter" className="form-label">Username</label>
+            <label htmlFor="usernameFilter" className="form-label-user">Username</label>
             <input 
               type="text" 
               className="form-control" 
@@ -320,7 +320,7 @@ const handleEditUser = async user => {
             />
           </div>
           <div className="col-md-4">
-            <label htmlFor="roleFilter" className="form-label">Role</label>
+            <label htmlFor="roleFilter" className="form-label-user">Role</label>
             <select 
               id="roleFilter" 
               className="form-select"
@@ -369,7 +369,7 @@ const handleEditUser = async user => {
               <form onSubmit={handleAddUser}>
                 <div className="modal-body">
                   <div className="mb-3">
-                    <label htmlFor="user_name" className="form-label">Username</label>
+                    <label htmlFor="user_name" className="form-label-user">Username</label>
                     <input 
                       type="text" 
                       className="form-control" 
@@ -381,7 +381,7 @@ const handleEditUser = async user => {
                     />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="user_ip" className="form-label">User IP (optional)</label>
+                    <label htmlFor="user_ip" className="form-label-user">User IP (optional)</label>
                     <input 
                       type="text" 
                       className="form-control" 
@@ -392,7 +392,7 @@ const handleEditUser = async user => {
                     />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="password" className="form-label">Password</label>
+                    <label htmlFor="password" className="form-label-user">Password</label>
                     <input 
                       type="password" 
                       className="form-control" 
@@ -404,7 +404,7 @@ const handleEditUser = async user => {
                     />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="role" className="form-label">Role</label>
+                    <label htmlFor="role" className="form-label-user">Role</label>
                     <select 
                       className="form-select" 
                       id="role" 
@@ -450,7 +450,7 @@ const handleEditUser = async user => {
               <form onSubmit={handleUpdateUser}>
                 <div className="modal-body">
                   <div className="mb-3">
-                    <label htmlFor="edit_user_name" className="form-label">Username</label>
+                    <label htmlFor="edit_user_name" className="form-label-user">Username</label>
                     <input 
                       type="text" 
                       className="form-control" 
@@ -462,7 +462,7 @@ const handleEditUser = async user => {
                     />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="edit_user_ip" className="form-label">User IP (optional)</label>
+                    <label htmlFor="edit_user_ip" className="form-label-user">User IP (optional)</label>
                     <input 
                       type="text" 
                       className="form-control" 
@@ -473,7 +473,7 @@ const handleEditUser = async user => {
                     />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="edit_password" className="form-label">New Password (leave blank to keep current)</label>
+                    <label htmlFor="edit_password" className="form-label-user">New Password (optional)</label>
                     <input 
                       type="password" 
                       className="form-control" 
@@ -485,7 +485,7 @@ const handleEditUser = async user => {
                   </div>
                   {currentUser.role === 'admin' && (
                     <div className="mb-3">
-                      <label htmlFor="edit_role" className="form-label">Role</label>
+                      <label htmlFor="edit_role" className="form-label-user">Role</label>
                       <select 
                         className="form-select" 
                         id="edit_role" 

@@ -233,7 +233,7 @@ const Device = () => {
             Edit
           </button>
           <button 
-            className="D-btn Devicebtn delete-device Action-btn"
+            className="D-btn Devicebtn delete-device delete-device-btn"
             onClick={() => handleDeleteDevice(row)}
           >
             Delete
@@ -285,7 +285,7 @@ const Device = () => {
       <div className="filter-container">
         <div className="Device-row g-3">
           <div className="col-md-4">
-            <label htmlFor="deviceIdFilter" className="form-label">Device ID</label>
+            <label htmlFor="deviceIdFilter" className="form-label-device-device">Device ID</label>
             <input 
               type="text" 
               className="form-control" 
@@ -332,7 +332,7 @@ const Device = () => {
                 <div className="modal-body">
                   <div className="Device-row">
                     <div className="col-md-12 mb-3">
-                      <label htmlFor="device_id" className="form-label">Device ID</label>
+                      <label htmlFor="device_id" className="form-label-device">Device ID</label>
                       <input 
                         type="text" 
                         className="form-control" 
@@ -346,7 +346,7 @@ const Device = () => {
                   </div>
                   <div className="Device-row">
                     <div className="col-md-6 mb-3">
-                      <label htmlFor="pc_ip" className="form-label">PC IP Address</label>
+                      <label htmlFor="pc_ip" className="form-label-device">PC IP Address</label>
                       <input 
                         type="text" 
                         className="form-control" 
@@ -357,7 +357,7 @@ const Device = () => {
                       />
                     </div>
                     <div className="col-md-6 mb-3">
-                      <label htmlFor="rutomatrix_ip" className="form-label">Rutomatrix IP Address</label>
+                      <label htmlFor="rutomatrix_ip" className="form-label-device">Rutomatrix IP Address</label>
                       <input 
                         type="text" 
                         className="form-control" 
@@ -370,7 +370,7 @@ const Device = () => {
                   </div>
                   <div className="Device-row">
                     <div className="col-md-6 mb-3">
-                      <label htmlFor="pulse1_ip" className="form-label">Pulse1 IP Address</label>
+                      <label htmlFor="pulse1_ip" className="form-label-device">Pulse1 IP Address</label>
                       <input 
                         type="text" 
                         className="form-control" 
@@ -381,7 +381,7 @@ const Device = () => {
                       />
                     </div>
                     <div className="col-md-6 mb-3">
-                      <label htmlFor="ct1_ip" className="form-label">CT1 IP Address</label>
+                      <label htmlFor="ct1_ip" className="form-label-device">CT1 IP Address</label>
                       <input 
                         type="text" 
                         className="form-control" 
@@ -426,7 +426,7 @@ const Device = () => {
                 <div className="modal-body">
                   <div className="Device-row">
                     <div className="col-md-12 mb-3">
-                      <label htmlFor="edit_device_id" className="form-label">Device ID</label>
+                      <label htmlFor="edit_device_id" className="form-label-device">Device ID</label>
                       <input 
                         type="text" 
                         className="form-control" 
@@ -439,7 +439,7 @@ const Device = () => {
                   </div>
                   <div className="Device-row">
                     <div className="col-md-6 mb-3">
-                      <label htmlFor="edit_pc_ip" className="form-label">PC IP Address</label>
+                      <label htmlFor="edit_pc_ip" className="form-label-device">PC IP Address</label>
                       <input 
                         type="text" 
                         className="form-control" 
@@ -450,7 +450,7 @@ const Device = () => {
                       />
                     </div>
                     <div className="col-md-6 mb-3">
-                      <label htmlFor="edit_rutomatrix_ip" className="form-label">Rutomatrix IP Address</label>
+                      <label htmlFor="edit_rutomatrix_ip" className="form-label-device">Rutomatrix IP Address</label>
                       <input 
                         type="text" 
                         className="form-control" 
@@ -463,7 +463,7 @@ const Device = () => {
                   </div>
                   <div className="Device-row">
                     <div className="col-md-6 mb-3">
-                      <label htmlFor="edit_pulse1_ip" className="form-label">Pulse1 IP Address</label>
+                      <label htmlFor="edit_pulse1_ip" className="form-label-device">Pulse1 IP Address</label>
                       <input 
                         type="text" 
                         className="form-control" 
@@ -474,7 +474,7 @@ const Device = () => {
                       />
                     </div>
                     <div className="col-md-6 mb-3">
-                      <label htmlFor="edit_ct1_ip" className="form-label">CT1 IP Address</label>
+                      <label htmlFor="edit_ct1_ip" className="form-label-device">CT1 IP Address</label>
                       <input 
                         type="text" 
                         className="form-control" 
@@ -515,7 +515,7 @@ const Device = () => {
                   onClick={() => setShowIpModal(false)}
                 ></button>
               </div>
-              <div className="modal-body">
+              <div className="modal-body-device">
                 <div className="list-group">
                   <div className="list-group-item">
                     <div className="d-flex justify-content-between align-items-center">

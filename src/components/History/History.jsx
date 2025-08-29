@@ -499,8 +499,6 @@ const History = () => {
                   <div className="col-md-6">
                     <h5 className="border-bottom pb-2">User Information</h5>
                     <p><strong>User ID:</strong> {selectedRecord.user_info.user_id}</p>
-                    <p><strong>User Name:</strong> {selectedRecord.user_info.user_name}</p>
-                    <p><strong>User IP:</strong> {selectedRecord.user_info.user_ip}</p>
                   </div>
                 </div>
                 
@@ -509,12 +507,6 @@ const History = () => {
                     <h5 className="border-bottom pb-2">Timing Information</h5>
                     <p><strong>Start Time:</strong> {selectedRecord.timing.start_time ? new Date(selectedRecord.timing.start_time).toLocaleString() : 'N/A'}</p>
                     <p><strong>End Time:</strong> {selectedRecord.timing.end_time ? new Date(selectedRecord.timing.end_time).toLocaleString() : 'N/A'}</p>
-                    <p><strong>Duration:</strong> {selectedRecord.timing.duration || 'N/A'} seconds</p>
-                  </div>
-                  <div className="col-md-6">
-                    <h5 className="border-bottom pb-2">Network Information</h5>
-                    <p><strong>IP Address:</strong> {selectedRecord.network_info.ip_address || 'N/A'}</p>
-                    <p><strong>IP Type:</strong> {selectedRecord.network_info.ip_type || 'N/A'}</p>
                   </div>
                 </div>
                 
@@ -526,12 +518,10 @@ const History = () => {
                         {selectedRecord.status_info.status}
                       </span>
                     </p>
-                    <p><strong>Termination Reason:</strong> {selectedRecord.status_info.termination_reason || 'N/A'}</p>
                   </div>
                   <div className="col-md-6">
                     <h5 className="border-bottom pb-2">Reservation Information</h5>
                     <p><strong>Reservation ID:</strong> {selectedRecord.reservation_info.reservation_id || 'N/A'}</p>
-                    <p><strong>IP Type:</strong> {selectedRecord.reservation_info.ip_type || 'N/A'}</p>
                   </div>
                 </div>
               </div>

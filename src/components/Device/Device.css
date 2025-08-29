@@ -459,3 +459,22 @@
   border: 1px solid #333 !important;
 }
 
+.delete-device-btn {
+  background-color: #dc3545;
+  color: white;
+  border: 1px solid #dc3545;
+}
+
+.delete-device-btn:hover {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+.form-label-device {
+  color: #ff6a00;
+}
+
+.modal-body-device strong{
+  color: #ff6a00
+}

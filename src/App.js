@@ -24,7 +24,7 @@ const App = () => {
         {/* NESTED ADMIN DASHBOARD */}
         <Route path="/admin_dashboard/*" element={<AdminDashboard />}>
           {/* default tab */}
-          <Route index element={<Navigate to="device" replace />} />
+          <Route index element={<Navigate to="reservation" replace />} />
           <Route path="device" element={<Device />} />
           <Route path="user" element={<User />} />
           <Route path="reservation" element={<AdminReservation />} /> {/* Changed to AdminReservation */}
