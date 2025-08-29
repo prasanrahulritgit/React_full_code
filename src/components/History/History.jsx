@@ -19,32 +19,51 @@ const History = () => {
     pages: 1
   });
 
-  // Function to calculate status based on current time
-  const calculateStatus = (record) => {
-    // If status is already terminated, keep it as terminated
+  // Function to determine the current status based on timing
+  const determineCurrentStatus = (record) => {
+    const now = new Date();
+    const startTime = record.timing.start_time ? new Date(record.timing.start_time) : null;
+    const endTime = record.timing.end_time ? new Date(record.timing.end_time) : null;
+    
+    // If the record is terminated, always keep it as terminated
     if (record.status === 'terminated') {
       return 'terminated';
     }
-    
-    const now = new Date();
-    const startTime = new Date(record.timing.start_time);
-    const endTime = record.timing.end_time ? new Date(record.timing.end_time) : null;
-    
-    // If current time is equal to or after start time and before end time
-    if (now >= startTime && (!endTime || now < endTime)) {
-      return 'active';
+
+    // If there's no start time, return the original status
+    if (!startTime) {
+      return record.status;
     }
-    // If current time is before start time
-    else if (now < startTime) {
+
+    // If current time is before start time, it's upcoming (only if not terminated)
+    if (now < startTime) {
       return 'upcoming';
     }
-    // If current time is after end time
-    else if (endTime && now >= endTime) {
-      return 'completed';
+
+    // If current time is between start time and end time (or no end time), it's active
+    if (now >= startTime && (!endTime || now <= endTime)) {
+      return 'active';
     }
-    
-    // Default case
-    return record.status || 'unknown';
+
+    // For all other cases, return the original status from the database
+    // This preserves active, completed, and any other statuses as determined by the backend
+    return record.status;
+  };
+
+  // Function to get badge class based on status
+  const getBadgeClass = (status) => {
+    switch (status) {
+      case 'active':
+        return 'active-badge';
+      case 'completed':
+        return 'completed-badge';
+      case 'upcoming':
+        return 'upcoming-badge';
+      case 'terminated':
+        return 'terminated-badge';
+      default:
+        return 'terminated-badge';
+    }
   };
 
   // Fetch data on component mount
@@ -57,6 +76,45 @@ const History = () => {
   useEffect(() => {
     fetchHistoryData();
   }, [pagination.current_page, pagination.per_page]);
+
+  // Set up interval to update status and auto refresh data
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      let shouldRefresh = false;
+
+      // Check if any record's start time or end time matches current time (within 1 minute)
+      historyRecords.forEach(record => {
+        const startTime = record.timing.start_time ? new Date(record.timing.start_time) : null;
+        const endTime = record.timing.end_time ? new Date(record.timing.end_time) : null;
+
+        // Check if current time is within 1 minute of start time or end time
+        if (startTime) {
+          const timeDiffStart = Math.abs(now - startTime);
+          if (timeDiffStart <= 60000) { // Within 1 minute (60000 ms)
+            shouldRefresh = true;
+          }
+        }
+
+        if (endTime) {
+          const timeDiffEnd = Math.abs(now - endTime);
+          if (timeDiffEnd <= 60000) { // Within 1 minute (60000 ms)
+            shouldRefresh = true;
+          }
+        }
+      });
+
+      if (shouldRefresh) {
+        console.log('Auto refreshing data due to start/end time match');
+        fetchHistoryData(); // Refresh data from server
+      } else {
+        // Just force re-render for status updates
+        setHistoryRecords(prev => [...prev]);
+      }
+    }, 30000); // Check every 30 seconds for more responsive updates
+
+    return () => clearInterval(interval);
+  }, [historyRecords]); // Dependency on historyRecords to check against latest data
 
   const fetchHistoryData = async () => {
     try {
@@ -75,14 +133,8 @@ const History = () => {
       
       const data = await response.json();
       
-      // Update records with calculated status
-      const recordsWithCalculatedStatus = data.records.map(record => ({
-        ...record,
-        calculatedStatus: calculateStatus(record)
-      }));
-      
       // Update records and pagination
-      setHistoryRecords(recordsWithCalculatedStatus);
+      setHistoryRecords(data.records);
       setPagination(data.pagination);
       setLoading(false);
     } catch (error) {
@@ -110,11 +162,13 @@ const History = () => {
 
   // Client-side filtering similar to Device.jsx
   const filteredRecords = historyRecords.filter(record => {
+    const currentStatus = determineCurrentStatus(record);
+    
     const matchesDeviceFilter = !deviceFilter || 
       (record.device && record.device.id && record.device.id.toString().toLowerCase().includes(deviceFilter.toLowerCase()));
     const matchesUserFilter = !userFilter || 
       (record.user && record.user.id && record.user.id.toString().includes(userFilter));
-    const matchesStatusFilter = !statusFilter || record.calculatedStatus === statusFilter;
+    const matchesStatusFilter = !statusFilter || currentStatus === statusFilter;
     
     return matchesDeviceFilter && matchesUserFilter && matchesStatusFilter;
   });
@@ -130,26 +184,62 @@ const History = () => {
     }
   };
 
-  const handleViewDetails = async (recordId) => {
+  // Updated handleViewDetails with fallback functionality
+  const handleViewDetails = async (record) => {
     try {
-      const response = await fetch(`/history/get-usage-record/${recordId}`, {
+      console.log('Fetching details for record ID:', record.id);
+      
+      const response = await fetch(`/history/get-usage-record/${record.id}`, {
         credentials: 'include'
       });
       
+      console.log('Response status:', response.status);
+      
       if (response.ok) {
         const recordDetails = await response.json();
+        console.log('Record details received:', recordDetails);
         
-        // Calculate status for the detailed record as well
-        const recordWithCalculatedStatus = {
-          ...recordDetails,
-          calculatedStatus: calculateStatus(recordDetails)
-        };
-        
-        setSelectedRecord(recordWithCalculatedStatus);
-        setShowDetailsModal(true);
+        if (recordDetails) {
+          setSelectedRecord(recordDetails);
+          setShowDetailsModal(true);
+          return;
+        }
       }
+      
+      // Fallback: Use the data we already have from the main list
+      console.log('Using fallback data for record:', record);
+      const fallbackRecord = {
+        device_id: record.device?.id || 'N/A',
+        user_info: {
+          user_id: record.user?.id || 'N/A',
+          user_name: record.user?.name || 'N/A',
+          user_ip: record.user?.ip || 'N/A'
+        },
+        timing: {
+          start_time: record.timing?.start_time || null,
+          end_time: record.timing?.end_time || null,
+          duration: record.timing?.duration || null
+        },
+        network_info: {
+          ip_address: record.network_info?.ip_address || 'N/A',
+          ip_type: record.network_info?.ip_type || 'N/A'
+        },
+        status_info: {
+          status: determineCurrentStatus(record),
+          termination_reason: record.termination_reason || 'N/A'
+        },
+        reservation_info: {
+          reservation_id: record.reservation?.id || 'N/A',
+          ip_type: record.reservation?.ip_type || 'N/A'
+        }
+      };
+      
+      setSelectedRecord(fallbackRecord);
+      setShowDetailsModal(true);
+      
     } catch (error) {
       console.error('Error fetching record details:', error);
+      alert('Failed to fetch record details');
     }
   };
 
@@ -248,15 +338,10 @@ const History = () => {
     {
       name: 'Status',
       selector: row => {
-        // Use calculatedStatus instead of the stored status
-        const status = row.calculatedStatus;
-        let badgeClass = '';
-        if (status === 'active') badgeClass = 'active-badge';
-        else if (status === 'completed') badgeClass = 'completed-badge';
-        else if (status === 'upcoming') badgeClass = 'upcoming-badge';
-        else badgeClass = 'terminated-badge';
+        const currentStatus = determineCurrentStatus(row);
+        const badgeClass = getBadgeClass(currentStatus);
         
-        return <span className={`badge ${badgeClass} status-badge`}>{status}</span>;
+        return <span className={`badge ${badgeClass} status-badge`}>{currentStatus}</span>;
       },
       sortable: true,
     },
@@ -266,7 +351,7 @@ const History = () => {
         <div className="action-buttons">
           <button 
             className="btn btn-sm view-details Action-btn" 
-            onClick={() => handleViewDetails(row.id)}
+            onClick={() => handleViewDetails(row)}
           >
             Details
           </button>
@@ -437,8 +522,8 @@ const History = () => {
                   <div className="col-md-6">
                     <h5 className="border-bottom pb-2">Status Information</h5>
                     <p><strong>Status:</strong> 
-                      <span className={`badge ${selectedRecord.calculatedStatus === 'active' ? 'active-badge' : selectedRecord.calculatedStatus === 'completed' ? 'completed-badge' : selectedRecord.calculatedStatus === 'upcoming' ? 'upcoming-badge' : 'terminated-badge'} status-badge ms-2`}>
-                        {selectedRecord.calculatedStatus}
+                      <span className={`badge ${getBadgeClass(selectedRecord.status_info.status)} status-badge ms-2`}>
+                        {selectedRecord.status_info.status}
                       </span>
                     </p>
                     <p><strong>Termination Reason:</strong> {selectedRecord.status_info.termination_reason || 'N/A'}</p>
