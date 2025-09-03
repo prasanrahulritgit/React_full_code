@@ -19,35 +19,38 @@ const History = () => {
     pages: 1,
   });
 
-  // Function to determine the current status based on timing
   const determineCurrentStatus = (record) => {
     const now = new Date();
-    const startTime = record.timing.start_time ? new Date(record.timing.start_time) : null;
-    const endTime = record.timing.end_time ? new Date(record.timing.end_time) : null;
-    
-    // If the record is terminated, always keep it as terminated
-    if (record.status === 'terminated') {
-      return 'terminated';
+    const startTime = record.timing?.start_time ? new Date(record.timing.start_time) : null;
+    const endTime = record.timing?.end_time ? new Date(record.timing.end_time) : null;
+
+    // FIRST check if record is terminated - this should take highest priority
+    if (record.status === "terminated" || record.termination_reason) {
+      return "terminated";
     }
 
     // If there's no start time, return the original status
     if (!startTime) {
-      return record.status;
+      return record.status || "unknown";
     }
 
-    // If current time is before start time, it's upcoming (only if not terminated)
+    // If current time is before start time → upcoming
     if (now < startTime) {
-      return 'upcoming';
+      return "upcoming";
     }
 
-    // If current time is between start time and end time (or no end time), it's active
+    // If current time is between start time and end time (or no end time) → active
     if (now >= startTime && (!endTime || now <= endTime)) {
-      return 'active';
+      return "active";
     }
 
-    // For all other cases, return the original status from the database
-    // This preserves active, completed, and any other statuses as determined by the backend
-    return record.status;
+    // If current time has passed endTime → completed
+    if (endTime && now > endTime) {
+      return "completed";
+    }
+
+    // Fallback to the original status
+    return record.status || "unknown";
   };
 
   // Function to get badge class based on status
@@ -77,44 +80,75 @@ const History = () => {
     fetchHistoryData();
   }, [pagination.current_page, pagination.per_page]);
 
+  // Real-time status updates for terminated devices
+  useEffect(() => {
+    const checkForTerminatedUpdates = () => {
+      setHistoryRecords(prevRecords => 
+        prevRecords.map(record => {
+          // If a record was recently terminated, ensure it shows correctly
+          if (record.status === "terminated" || record.termination_reason) {
+            return {
+              ...record,
+              status: "terminated" // Force terminated status
+            };
+          }
+          return record;
+        })
+      );
+    };
+
+    // Run immediately and then every 5 seconds
+    checkForTerminatedUpdates();
+    const interval = setInterval(checkForTerminatedUpdates, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   // Set up interval to update status and auto refresh data
   useEffect(() => {
     const interval = setInterval(() => {
       const now = new Date();
       let shouldRefresh = false;
 
-      // Check if any record's start time or end time matches current time (within 1 minute)
+      // Check if any record's status needs updating
       historyRecords.forEach(record => {
+        const currentStatus = determineCurrentStatus(record);
+        
+        // Refresh if status doesn't match what's displayed
+        if (record.status !== currentStatus) {
+          shouldRefresh = true;
+        }
+
         const startTime = record.timing.start_time ? new Date(record.timing.start_time) : null;
         const endTime = record.timing.end_time ? new Date(record.timing.end_time) : null;
 
         // Check if current time is within 1 minute of start time or end time
         if (startTime) {
           const timeDiffStart = Math.abs(now - startTime);
-          if (timeDiffStart <= 60000) { // Within 1 minute (60000 ms)
+          if (timeDiffStart <= 60000) {
             shouldRefresh = true;
           }
         }
 
         if (endTime) {
           const timeDiffEnd = Math.abs(now - endTime);
-          if (timeDiffEnd <= 60000) { // Within 1 minute (60000 ms)
+          if (timeDiffEnd <= 60000) {
             shouldRefresh = true;
           }
         }
       });
 
       if (shouldRefresh) {
-        console.log('Auto refreshing data due to start/end time match');
+        console.log('Auto refreshing data due to status or timing changes');
         fetchHistoryData(); // Refresh data from server
       } else {
         // Just force re-render for status updates
         setHistoryRecords(prev => [...prev]);
       }
-    }, 30000); // Check every 30 seconds for more responsive updates
+    }, 10000); // Check every 10 seconds for faster updates
 
     return () => clearInterval(interval);
-  }, [historyRecords]); // Dependency on historyRecords to check against latest data
+  }, [historyRecords]);
 
   const fetchHistoryData = async () => {
     try {
@@ -145,10 +179,7 @@ const History = () => {
 
   const fetchDevices = async () => {
     try {
-      // You'll need to add a devices endpoint to your backend
-      // For now, we'll use a placeholder
       const response = await fetch("/devices", {
-        // This endpoint doesn't exist yet
         credentials: "include",
       });
 
