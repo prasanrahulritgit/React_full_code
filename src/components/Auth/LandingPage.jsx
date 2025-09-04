@@ -149,7 +149,7 @@ const LandingPage = ({ setIsAuthenticated }) => {
 
   const handleLaunchDashboard = () => {
     // Redirect to external login URL
-    navigate("/Login");
+    navigate("/login");
   };
 
   useEffect(() => {
