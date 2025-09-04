@@ -108,14 +108,14 @@ const Navbar = ({ isDarkTheme, toggleTheme, userData }) => {
       // Handle specific error cases
       if (error.message.includes("Received HTML response")) {
         console.warn("Authentication required - redirecting to login");
-        window.location.href = `/auth/login?redirect=${encodeURIComponent(
+        window.location.href = `/auth/api/login?redirect=${encodeURIComponent(
           window.location.pathname
         )}`;
         return null;
       }
 
       if (error.response?.status === 401) {
-        window.location.href = "/auth/login";
+        window.location.href = "/auth/api/login";
         return null;
       }
 

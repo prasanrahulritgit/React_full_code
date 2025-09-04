@@ -411,7 +411,7 @@ const fetchCurrentUser = async () => {
         setMessages([
           { text: "Session expired. Please login again", category: "warning" },
         ]);
-        window.location.href = "/login";
+        window.location.href = "/api/login";
         return;
       }
 

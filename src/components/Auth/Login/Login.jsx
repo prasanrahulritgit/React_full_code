@@ -22,7 +22,7 @@ const Login = () => {
     setIsLoading(true);
 
 try {
-const response = await fetch('http://51.21.52.229:5000/login', {
+const response = await fetch('/api/login', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   credentials: 'include',
