@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
@@ -22,11 +23,11 @@ const Login = () => {
     setIsLoading(true);
 
 try {
-const response = await fetch('http://51.21.52.229:5000/login', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  credentials: 'include',
-  body: JSON.stringify({ username, password }),
+const response = await fetch('/api/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+    credentials: 'include'
 });
 
   const data = await response.json();
