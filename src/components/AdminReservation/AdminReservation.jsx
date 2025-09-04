@@ -52,7 +52,7 @@ const AdminReservation = () => {
   const [currentUser, setCurrentUser] = useState(null);
 
   // API base URL
-  const API_BASE = "http://localhost:5000"; // Update with your Flask server URL
+  const API_BASE = "http://51.21.52.229:5000"; // Update with your Flask server URL
 
   useEffect(() => {
     if (startTimeRef.current && endTimeRef.current) {
@@ -92,7 +92,7 @@ const AdminReservation = () => {
 
   useEffect(() => {
     document.title = "Device Reservation";
-    fetchCurrentUser(); 
+    fetchCurrentUser();
     fetchUserReservations();
 
     // Update current time every minute
@@ -158,43 +158,43 @@ const AdminReservation = () => {
     }
   };
 
-// Fetch current user info
-const fetchCurrentUser = async () => {
-  try {
-    const response = await fetch(`${API_BASE}/api/current-user`, {
-      credentials: "include",
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      if (data.success) {
+  // Fetch current user info
+  const fetchCurrentUser = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/api/current-user`, {
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setCurrentUser({
+            is_authenticated: true,
+            id: data.user.id,
+            name: data.user.name,
+            role: data.user.role || "user",
+          });
+        }
+      } else {
+        // If we can't get user info, set a default
         setCurrentUser({
           is_authenticated: true,
-          id: data.user.id,
-          name: data.user.name,
-          role: data.user.role || 'user'
+          id: null,
+          name: "Current User",
+          role: "user",
         });
       }
-    } else {
-      // If we can't get user info, set a default
+    } catch (error) {
+      console.error("Error fetching current user:", error);
+      // Set default user info on error
       setCurrentUser({
         is_authenticated: true,
         id: null,
-        name: 'Current User',
-        role: 'user'
+        name: "Current User",
+        role: "user",
       });
     }
-  } catch (error) {
-    console.error("Error fetching current user:", error);
-    // Set default user info on error
-    setCurrentUser({
-      is_authenticated: true,
-      id: null,
-      name: 'Current User',
-      role: 'user'
-    });
-  }
-};
+  };
 
   // Fetch available devices based on selected time range
   const fetchAvailableDevices = async (start, end) => {
@@ -555,7 +555,7 @@ const fetchCurrentUser = async () => {
 
       // If we found an IP type, navigate to dashboard
       if (ipType) {
-        const baseUrl = "http://localhost:3000/dashboard";
+        const baseUrl = "http://51.21.52.229:3000/dashboard";
         const params = new URLSearchParams({
           device: deviceId,
           ip_type: ipType,
@@ -743,31 +743,35 @@ const fetchCurrentUser = async () => {
     return () => clearInterval(interval);
   }, [showDeviceSelection, activeTab, startTime, endTime]);
 
-
   // Filter reservations based on search term - show all for admin, only user's for regular users
   const filteredReservations = sortedReservations.filter((reservation) => {
     // Admin users see all reservations, regular users only see their own
     let belongsToCurrentUser = true;
-    
-    if (currentUser && currentUser.role !== 'admin') {
+
+    if (currentUser && currentUser.role !== "admin") {
       // For non-admin users, filter to only show their reservations
       belongsToCurrentUser = reservation.user_id == currentUser.id;
-      
+
       // If that doesn't work, check by user name (fallback)
       if (!belongsToCurrentUser && reservation.user_name && currentUser.name) {
         belongsToCurrentUser = reservation.user_name === currentUser.name;
       }
     }
     // For admin users, belongsToCurrentUser remains true (show all reservations)
-    
-    const matchesSearch = 
+
+    const matchesSearch =
       reservation.device_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      reservation.start_time.toLocaleString().toLowerCase().includes(searchTerm.toLowerCase()) ||
-      reservation.end_time.toLocaleString().toLowerCase().includes(searchTerm.toLowerCase());
-    
+      reservation.start_time
+        .toLocaleString()
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      reservation.end_time
+        .toLocaleString()
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+
     return belongsToCurrentUser && matchesSearch;
   });
-
 
   const currentEntries = filteredReservations.slice(
     indexOfFirstEntry,
@@ -1516,7 +1520,9 @@ const fetchCurrentUser = async () => {
             >
               <h5 className="mb-0">
                 <FaCalendarAlt className="me-2" />
-                {currentUser && currentUser.role === 'admin' ? 'All Reservations' : 'Your Reservations'}
+                {currentUser && currentUser.role === "admin"
+                  ? "All Reservations"
+                  : "Your Reservations"}
               </h5>
               <div className="d-flex align-items-center">
                 <div className="me-3">
@@ -1566,10 +1572,10 @@ const fetchCurrentUser = async () => {
                       id="reservationsTable"
                       className="table table-hover mb-0"
                     >
-                    <thead>
+                      <thead>
                         <tr>
                           {/* Show user column only for admin */}
-                          {currentUser && currentUser.role === 'admin' && (
+                          {currentUser && currentUser.role === "admin" && (
                             <th
                               className={`sortable ${
                                 sortConfig.key === "user"
@@ -1640,108 +1646,136 @@ const fetchCurrentUser = async () => {
                         </tr>
                       </thead>
                       <tbody id="reservationsBody">
-                      {currentEntries.length > 0 ? (
-                        currentEntries
-                          .map((res) => {
-                            const isExpired = res.end_time < now;
-                            const isActive = res.start_time <= now && now <= res.end_time;
-                            const statusClass = isExpired
-                              ? "table-secondary"
-                              : isActive
-                              ? "table-success"
-                              : "";
-                            const status = isExpired
-                              ? "expired"
-                              : isActive
-                              ? "active"
-                              : "upcoming";
+                        {currentEntries.length > 0 ? (
+                          currentEntries
+                            .map((res) => {
+                              const isExpired = res.end_time < now;
+                              const isActive =
+                                res.start_time <= now && now <= res.end_time;
+                              const statusClass = isExpired
+                                ? "table-secondary"
+                                : isActive
+                                ? "table-success"
+                                : "";
+                              const status = isExpired
+                                ? "expired"
+                                : isActive
+                                ? "active"
+                                : "upcoming";
 
-                            if (isExpired) return null;
+                              if (isExpired) return null;
 
-                            return (
-                              <tr
-                                key={res.id}
-                                className={statusClass}
-                                data-device={res.device_id.toLowerCase()}
-                                data-start-time={Math.floor(res.start_time.getTime() / 1000)}
-                                data-end-time={Math.floor(res.end_time.getTime() / 1000)}
-                                data-status={status}
-                              >
-                                {/* Show user info only for admin */}
-                                {currentUser && currentUser.role === 'admin' && (
-                                  <td>{res.user_name || `User ${res.user_id}`}</td>
-                                )}
-                                <td>{res.device_id}</td>
-                                <td>
-                                  {res.start_time.toLocaleString("en-US", {
-                                    month: "2-digit",
-                                    day: "2-digit",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })}
-                                </td>
-                                <td>
-                                  {res.end_time.toLocaleString("en-US", {
-                                    month: "2-digit",
-                                    day: "2-digit",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })}
-                                </td>
-                                <td>
-                                  {isExpired ? (
-                                    <span className="badge status-badge badge-expired">Expired</span>
-                                  ) : isActive ? (
-                                    <span className="badge status-badge badge-active">Active</span>
-                                  ) : (
-                                    <span className="badge status-badge badge-upcoming">Upcoming</span>
+                              return (
+                                <tr
+                                  key={res.id}
+                                  className={statusClass}
+                                  data-device={res.device_id.toLowerCase()}
+                                  data-start-time={Math.floor(
+                                    res.start_time.getTime() / 1000
                                   )}
-                                </td>
-                                <td>
-                                  <div className="d-flex align-items-center">
-                                    <button
-                                      className="btn btn-sm btn-outline-primary launch-btn me-2"
-                                      title="Launch Dashboard"
-                                      disabled={!isActive}
-                                      onClick={() => handleLaunchDevice(res.device_id, res.id)}
-                                      data-device-id={res.device_id}
-                                      data-reservation-id={res.id}
-                                    >
-                                      <FaRocket className="me-1" /> Launch
-                                    </button>
-                                    <button
-                                      type="button"
-                                      className="btn btn-sm btn-danger cancel-btn"
-                                      onClick={() => handleCancelReservation(res.device_id, res.id)}
-                                      disabled={reservationLoading}
-                                    >
-                                      {reservationLoading ? (
-                                        <FaSpinner className="fa-spin" />
-                                      ) : (
-                                        <>
-                                          <FaBan className="me-1" /> Cancel
-                                        </>
-                                      )}
-                                    </button>
-                                  </div>
-                                </td>
-                              </tr>
-                            );
-                          })
-                          .filter(Boolean)
-                      ) : (
-                        <tr>
-                          <td 
-                            colSpan={currentUser && currentUser.role === 'admin' ? "6" : "5"} 
-                            className="text-center py-4 text-muted"
-                          >
-                            <FaCalendarAlt className="fa-2x mb-2" />
-                            <br />
-                            No reservations found
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
+                                  data-end-time={Math.floor(
+                                    res.end_time.getTime() / 1000
+                                  )}
+                                  data-status={status}
+                                >
+                                  {/* Show user info only for admin */}
+                                  {currentUser &&
+                                    currentUser.role === "admin" && (
+                                      <td>
+                                        {res.user_name || `User ${res.user_id}`}
+                                      </td>
+                                    )}
+                                  <td>{res.device_id}</td>
+                                  <td>
+                                    {res.start_time.toLocaleString("en-US", {
+                                      month: "2-digit",
+                                      day: "2-digit",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </td>
+                                  <td>
+                                    {res.end_time.toLocaleString("en-US", {
+                                      month: "2-digit",
+                                      day: "2-digit",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </td>
+                                  <td>
+                                    {isExpired ? (
+                                      <span className="badge status-badge badge-expired">
+                                        Expired
+                                      </span>
+                                    ) : isActive ? (
+                                      <span className="badge status-badge badge-active">
+                                        Active
+                                      </span>
+                                    ) : (
+                                      <span className="badge status-badge badge-upcoming">
+                                        Upcoming
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td>
+                                    <div className="d-flex align-items-center">
+                                      <button
+                                        className="btn btn-sm btn-outline-primary launch-btn me-2"
+                                        title="Launch Dashboard"
+                                        disabled={!isActive}
+                                        onClick={() =>
+                                          handleLaunchDevice(
+                                            res.device_id,
+                                            res.id
+                                          )
+                                        }
+                                        data-device-id={res.device_id}
+                                        data-reservation-id={res.id}
+                                      >
+                                        <FaRocket className="me-1" /> Launch
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className="btn btn-sm btn-danger cancel-btn"
+                                        onClick={() =>
+                                          handleCancelReservation(
+                                            res.device_id,
+                                            res.id
+                                          )
+                                        }
+                                        disabled={reservationLoading}
+                                      >
+                                        {reservationLoading ? (
+                                          <FaSpinner className="fa-spin" />
+                                        ) : (
+                                          <>
+                                            <FaBan className="me-1" /> Cancel
+                                          </>
+                                        )}
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })
+                            .filter(Boolean)
+                        ) : (
+                          <tr>
+                            <td
+                              colSpan={
+                                currentUser && currentUser.role === "admin"
+                                  ? "6"
+                                  : "5"
+                              }
+                              className="text-center py-4 text-muted"
+                            >
+                              <FaCalendarAlt className="fa-2x mb-2" />
+                              <br />
+                              No reservations found
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
                     </table>
                   </div>
                   <div className="card-footer d-flex justify-content-between align-items-center">

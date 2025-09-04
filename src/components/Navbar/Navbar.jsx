@@ -22,9 +22,9 @@ const Navbar = ({ isDarkTheme, toggleTheme, userData }) => {
   const navigateToReservations = () => {
     if (role === "admin") {
       window.location.href =
-        "http://localhost:3000/admin_dashboard/reservation";
+        "http://51.21.52.229:3000/admin_dashboard/reservation";
     } else {
-      window.location.href = "http://localhost:3000/user_reservation";
+      window.location.href = "http://51.21.52.229:3000/user_reservation";
     }
   };
 
@@ -38,7 +38,7 @@ const Navbar = ({ isDarkTheme, toggleTheme, userData }) => {
       }
 
       const response = await axios.get(
-        "http://127.0.0.1:5000/api/booked-devices",
+        "http://51.21.52.229:5000/api/booked-devices",
         {
           withCredentials: true,
           headers: {

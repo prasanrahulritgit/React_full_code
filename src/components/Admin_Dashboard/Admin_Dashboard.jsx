@@ -88,7 +88,7 @@ const AdminDashboard = () => {
             {isAuthenticated && (
               <div className="d-flex">
                 <a
-                  href="http://localhost:3000/auth"
+                  href="http://51.21.52.229:3000/auth"
                   className="btn btn-outline-danger"
                 >
                   <FaSignOutAlt className="me-2" /> Logout

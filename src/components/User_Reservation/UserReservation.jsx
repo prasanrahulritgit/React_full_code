@@ -53,7 +53,7 @@ const UserReservation = () => {
   const itemsPerPage = 10;
   const [current_Page, setCurrent_Page] = useState(1);
   // API base URL
-  const API_BASE = "http://localhost:5000"; // Update with your Flask server URL
+  const API_BASE = "http://51.21.52.229:5000"; // Update with your Flask server URL
 
   useEffect(() => {
     if (startTimeRef.current && endTimeRef.current) {
@@ -516,7 +516,7 @@ const UserReservation = () => {
 
       // If we found an IP type, navigate to dashboard
       if (ipType) {
-        const baseUrl = "http://localhost:3000/dashboard";
+        const baseUrl = "http://51.21.52.229:3000/dashboard";
         const params = new URLSearchParams({
           device: deviceId,
           ip_type: ipType,
@@ -757,7 +757,7 @@ const UserReservation = () => {
         <h1 className="h3 mb-0">User Device Reservation</h1>
         {currentUser.is_authenticated && (
           <a
-            href="http://localhost:3000/auth"
+            href="http://51.21.52.229:3000/auth"
             className="btn btn-outline-danger"
           >
             <FaSignOutAlt className="me-2" /> Logout
