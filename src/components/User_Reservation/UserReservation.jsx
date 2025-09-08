@@ -53,8 +53,7 @@ const UserReservation = () => {
   const itemsPerPage = 10;
   const [current_Page, setCurrent_Page] = useState(1);
   // API base URL
-  const API_BASE = "http://localhost:5000"; // Update with your Flask server URL
-
+const API_BASE = process.env.REACT_APP_API_BASE_URL || "/api";
   useEffect(() => {
     if (startTimeRef.current && endTimeRef.current) {
       // Start Time Picker
@@ -107,7 +106,7 @@ const UserReservation = () => {
   const fetchUserReservations = async () => {
     try {
       setReservationLoading(true);
-      const response = await fetch(`${API_BASE}/api/user-reservations`, {
+      const response = await fetch(`${API_BASE}/user-reservations`, {
         credentials: "include", // Include cookies for authentication
       });
 
@@ -182,7 +181,7 @@ const UserReservation = () => {
       });
 
       const response = await fetch(
-        `${API_BASE}/api/devices/availability?start_time=${encodeURIComponent(
+        `${API_BASE}/devices/availability?start_time=${encodeURIComponent(
           startFormatted
         )}&end_time=${encodeURIComponent(endFormatted)}`,
         {
@@ -254,7 +253,7 @@ const UserReservation = () => {
       setLoading(true);
       console.log("Fetching booked devices...");
 
-      const response = await fetch(`${API_BASE}/api/booked-devices`, {
+      const response = await fetch(`${API_BASE}/booked-devices`, {
         credentials: "include",
       });
 
@@ -355,7 +354,7 @@ const UserReservation = () => {
 
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE}/api/reservations`, {
+      const response = await fetch(`${API_BASE}/reservations`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

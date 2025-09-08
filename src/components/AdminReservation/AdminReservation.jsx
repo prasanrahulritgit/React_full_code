@@ -52,8 +52,7 @@ const AdminReservation = () => {
   const [currentUser, setCurrentUser] = useState(null);
 
   // API base URL
-  const API_BASE = "http://localhost:5000"; // Update with your Flask server URL
-
+ const API_BASE = process.env.REACT_APP_API_BASE_URL || "/api";
   useEffect(() => {
     if (startTimeRef.current && endTimeRef.current) {
       // Start Time Picker
@@ -107,7 +106,7 @@ const AdminReservation = () => {
   const fetchUserReservations = async () => {
     try {
       setReservationLoading(true);
-      const response = await fetch(`${API_BASE}/api/user-reservations`, {
+      const response = await fetch(`/api/user-reservations`, {
         credentials: "include", // Include cookies for authentication
       });
 
@@ -161,7 +160,7 @@ const AdminReservation = () => {
 // Fetch current user info
 const fetchCurrentUser = async () => {
   try {
-    const response = await fetch(`${API_BASE}/api/current-user`, {
+    const response = await fetch(`${API_BASE}/current-user`, {
       credentials: "include",
     });
     
@@ -221,7 +220,7 @@ const fetchCurrentUser = async () => {
       });
 
       const response = await fetch(
-        `${API_BASE}/api/devices/availability?start_time=${encodeURIComponent(
+        `${API_BASE}/devices/availability?start_time=${encodeURIComponent(
           startFormatted
         )}&end_time=${encodeURIComponent(endFormatted)}`,
         {
@@ -293,7 +292,7 @@ const fetchCurrentUser = async () => {
       setLoading(true);
       console.log("Fetching booked devices...");
 
-      const response = await fetch(`${API_BASE}/api/booked-devices`, {
+      const response = await fetch(`${API_BASE}/booked-devices`, {
         credentials: "include",
       });
 
@@ -394,7 +393,7 @@ const fetchCurrentUser = async () => {
 
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE}/api/reservations`, {
+      const response = await fetch(`${API_BASE}/reservations`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -555,7 +554,7 @@ const fetchCurrentUser = async () => {
 
       // If we found an IP type, navigate to dashboard
       if (ipType) {
-        const baseUrl = "http://localhost:3000/dashboard";
+        const baseUrl = "http://51.21.52.229/dashboard";
         const params = new URLSearchParams({
           device: deviceId,
           ip_type: ipType,
