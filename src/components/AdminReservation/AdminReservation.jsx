@@ -289,8 +289,6 @@ useEffect(() => {
   };
 
   
-
-  // Handle device selection modal opening
   const handleBookReservation = () => {
     if (!startTime || !endTime) {
       setMessages([
@@ -322,7 +320,7 @@ useEffect(() => {
   };
 
   // Handle device selection
-  const handleDeviceSelection = (device) => {
+  const handleDeviceSelection = (device) => {      
     setSelectedDevice(device);
   };
 
@@ -400,7 +398,7 @@ useEffect(() => {
 
     try {
       if (deviceId) {
-        setCancellingDeviceId(deviceId); // Set the device ID that's being cancelled (for booked devices)
+        setCancellingDeviceId(deviceId); 
       }
       setReservationLoading(true);
       
@@ -419,10 +417,10 @@ useEffect(() => {
             { text: "Reservation cancelled successfully", category: "success" },
           ]);
           
-          // Refresh both reservations and booked devices
+          
           fetchUserReservations();
           
-          // If we have a deviceId, remove it from booked devices
+          
           if (deviceId) {
             setBookedDevices(prevDevices => 
               prevDevices.filter(device => {
@@ -621,25 +619,25 @@ const cleanupExpiredReservations = () => {
 
 useEffect(() => {
   const interval = setInterval(() => {
-    // Update statuses locally without API calls
+
     setBookedDevices((prevDevices) => updateDeviceStatuses(prevDevices));
     setUserReservations((prevReservations) =>
       updateDeviceStatuses(prevReservations)
     );
     
-    // Clean up expired reservations locally
+    
     const currentTime = new Date();
     setUserReservations((prevReservations) =>
       prevReservations.filter(
         (reservation) => new Date(reservation.end_time) >= currentTime
       )
     );
-  }, 1000); // Update every minute (UI only)
+  }, 1000); 
 
   return () => clearInterval(interval);
 }, []);
 
-  // Filter reservations based on search term
+
   const filteredReservations = sortedReservations.filter(
     (reservation) =>
       reservation.device_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -659,7 +657,6 @@ useEffect(() => {
   );
   const totalPages = Math.ceil(filteredReservations.length / entriesPerPage);
 
-  // Function to calculate device status based on current time
   const calculateDeviceStatus = (device) => {
     const now = new Date();
     const startTime = new Date(
@@ -678,7 +675,7 @@ useEffect(() => {
     }
   };
 
-  // Function to update all device statuses
+
   const updateDeviceStatuses = (devices) => {
     return devices.map((device) => ({
       ...device,

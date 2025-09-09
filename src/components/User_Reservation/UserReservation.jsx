@@ -97,7 +97,7 @@ const UserReservation = () => {
       // Update current time every minute
       const interval = setInterval(() => {
         setNow(new Date());
-      }, 60000);
+      }, 1000);
   
       return () => clearInterval(interval);
     }, []);
@@ -599,31 +599,6 @@ const UserReservation = () => {
       return 0;
     });
   
-    useEffect(() => {
-      const interval = setInterval(() => {
-        // Only refresh user reservations if we're NOT in device selection mode
-        // or if we're looking at booked devices tab (to keep reservation list updated)
-        if (!showDeviceSelection || activeTab === "booked") {
-          fetchUserReservations();
-        }
-  
-        // Refresh the appropriate tab content only when device selection is open
-        if (showDeviceSelection) {
-          if (activeTab === "booked") {
-            fetchBookedDevices();
-          } else if (activeTab === "available" && startTime && endTime) {
-            const start = new Date(startTime);
-            const end = new Date(endTime);
-            fetchAvailableDevices(start, end);
-          }
-        }
-  
-        // Always clean up expired reservations
-        cleanupExpiredReservations();
-      }, 30000);
-  
-      return () => clearInterval(interval);
-    }, [showDeviceSelection, activeTab, startTime, endTime]);
   
     // Auto-refresh devices when time range changes and modal is open
     useEffect(() => {
@@ -655,34 +630,12 @@ const UserReservation = () => {
         setUserReservations((prevReservations) =>
           updateDeviceStatuses(prevReservations)
         );
-      }, 60000); // Update every minute
+      }, 1000); // Update every minute
   
       return () => clearInterval(interval);
     }, []);
   
-    // Then call this function in your polling interval:
-    useEffect(() => {
-      const interval = setInterval(() => {
-        // Always refresh user reservations
-        fetchUserReservations();
-  
-        // Also clean up any expired reservations in the local state
-        cleanupExpiredReservations();
-  
-        // Refresh the appropriate tab content
-        if (showDeviceSelection) {
-          if (activeTab === "booked") {
-            fetchBookedDevices();
-          } else if (activeTab === "available" && startTime && endTime) {
-            const start = new Date(startTime);
-            const end = new Date(endTime);
-            fetchAvailableDevices(start, end);
-          }
-        }
-      }, 30000);
-  
-      return () => clearInterval(interval);
-    }, [showDeviceSelection, activeTab, startTime, endTime]);
+ 
   
     // Filter reservations based on search term
     const filteredReservations = sortedReservations.filter(
