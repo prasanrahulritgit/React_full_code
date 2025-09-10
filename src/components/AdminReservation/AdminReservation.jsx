@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "datatables.net-bs5/css/dataTables.bootstrap5.css";
 import "font-awesome/css/font-awesome.min.css";
@@ -54,54 +54,53 @@ const AdminReservation = () => {
   // API base URL
   const API_BASE = "http://localhost:5000"; // Update with your Flask server URL
 
-  useEffect(() => {
-    if (startTimeRef.current && endTimeRef.current) {
-      // Start Time Picker
-      const startPicker = flatpickr(startTimeRef.current, {
-        enableTime: true,
-        dateFormat: "Y-m-d H:i",
-        minDate: "today",
-        time_24hr: true,
-        minuteIncrement: 30,
-        onChange: function (selectedDates, dateStr) {
-          setStartTime(dateStr.replace(" ", "T"));
-        },
-      });
+useEffect(() => {
+  if (startTimeRef.current && endTimeRef.current) {
+    // Start Time Picker
+    const startPicker = flatpickr(startTimeRef.current, {
+      enableTime: true,
+      dateFormat: "Y-m-d H:i",
+      minDate: "today",
+      time_24hr: true,
+      minuteIncrement: 30,
+      onChange: function (selectedDates, dateStr) {
+        setStartTime(dateStr.replace(" ", "T"));
+      },
+    });
 
-      // End Time Picker
-      const endPicker = flatpickr(endTimeRef.current, {
-        enableTime: true,
-        dateFormat: "Y-m-d H:i",
-        minDate: "today",
-        time_24hr: true,
-        minuteIncrement: 30,
-        onChange: function (selectedDates, dateStr) {
-          setEndTime(dateStr.replace(" ", "T"));
-        },
-      });
+    // End Time Picker
+    const endPicker = flatpickr(endTimeRef.current, {
+      enableTime: true,
+      dateFormat: "Y-m-d H:i",
+      minDate: "today",
+      time_24hr: true,
+      minuteIncrement: 30,
+      onChange: function (selectedDates, dateStr) {
+        setEndTime(dateStr.replace(" ", "T"));
+      },
+    });
 
-      setStartTimePicker(startPicker);
-      setEndTimePicker(endPicker);
+    setStartTimePicker(startPicker);
+    setEndTimePicker(endPicker);
 
-      return () => {
-        startPicker.destroy();
-        endPicker.destroy();
-      };
-    }
-  }, []);
+    return () => {
+      startPicker.destroy();
+      endPicker.destroy();
+    };
+  }
+}, []); 
 
   useEffect(() => {
     document.title = "Device Reservation";
     fetchCurrentUser(); 
     fetchUserReservations();
 
-    // Update current time every minute
-    const interval = setInterval(() => {
-      setNow(new Date());
-    }, 60000);
+  const interval = setInterval(() => {
+    setNow(new Date());
+  }, 1000);
 
-    return () => clearInterval(interval);
-  }, []);
+  return () => clearInterval(interval);
+}, []); 
 
   // Fetch user reservations - only for the current user
   const fetchUserReservations = async () => {
@@ -349,7 +348,6 @@ const fetchCurrentUser = async () => {
     }
   };
 
-  // Handle device selection modal opening
   const handleBookReservation = () => {
     if (!startTime || !endTime) {
       setMessages([
@@ -381,7 +379,7 @@ const fetchCurrentUser = async () => {
   };
 
   // Handle device selection
-  const handleDeviceSelection = (device) => {
+  const handleDeviceSelection = (device) => {      
     setSelectedDevice(device);
   };
 
@@ -459,7 +457,7 @@ const fetchCurrentUser = async () => {
 
     try {
       if (deviceId) {
-        setCancellingDeviceId(deviceId); // Set the device ID that's being cancelled (for booked devices)
+        setCancellingDeviceId(deviceId); 
       }
       setReservationLoading(true);
 
@@ -653,31 +651,6 @@ const fetchCurrentUser = async () => {
     return 0;
   });
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Only refresh user reservations if we're NOT in device selection mode
-      // or if we're looking at booked devices tab (to keep reservation list updated)
-      if (!showDeviceSelection || activeTab === "booked") {
-        fetchUserReservations();
-      }
-
-      // Refresh the appropriate tab content only when device selection is open
-      if (showDeviceSelection) {
-        if (activeTab === "booked") {
-          fetchBookedDevices();
-        } else if (activeTab === "available" && startTime && endTime) {
-          const start = new Date(startTime);
-          const end = new Date(endTime);
-          fetchAvailableDevices(start, end);
-        }
-      }
-
-      // Always clean up expired reservations
-      cleanupExpiredReservations();
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, [showDeviceSelection, activeTab, startTime, endTime]);
 
   // Auto-refresh devices when time range changes and modal is open
   useEffect(() => {
@@ -698,26 +671,36 @@ const fetchCurrentUser = async () => {
     }
   }, [startTime, endTime, showDeviceSelection]);
 
-  const cleanupExpiredReservations = () => {
+const cleanupExpiredReservations = () => {
+  const currentTime = new Date();
+  setUserReservations((prevReservations) =>
+    prevReservations.filter(
+      (reservation) => new Date(reservation.end_time) >= currentTime
+    )
+  );
+};
+
+
+useEffect(() => {
+  const interval = setInterval(() => {
+
+    setBookedDevices((prevDevices) => updateDeviceStatuses(prevDevices));
+    setUserReservations((prevReservations) =>
+      updateDeviceStatuses(prevReservations)
+    );
+    
+    
     const currentTime = new Date();
     setUserReservations((prevReservations) =>
       prevReservations.filter(
         (reservation) => new Date(reservation.end_time) >= currentTime
       )
     );
-  };
+  }, 1000); 
 
-  // Set up interval to update statuses every minute
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setBookedDevices((prevDevices) => updateDeviceStatuses(prevDevices));
-      setUserReservations((prevReservations) =>
-        updateDeviceStatuses(prevReservations)
-      );
-    }, 60000); // Update every minute
+  return () => clearInterval(interval);
+}, []);
 
-    return () => clearInterval(interval);
-  }, []);
 
   // Then call this function in your polling interval:
   useEffect(() => {
@@ -775,7 +758,6 @@ const fetchCurrentUser = async () => {
   );
   const totalPages = Math.ceil(filteredReservations.length / entriesPerPage);
 
-  // Function to calculate device status based on current time
   const calculateDeviceStatus = (device) => {
     const now = new Date();
     const startTime = new Date(
@@ -794,7 +776,7 @@ const fetchCurrentUser = async () => {
     }
   };
 
-  // Function to update all device statuses
+
   const updateDeviceStatuses = (devices) => {
     return devices.map((device) => ({
       ...device,
