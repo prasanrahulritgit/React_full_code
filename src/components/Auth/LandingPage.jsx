@@ -30,8 +30,8 @@ import logo from "../../assets/RutoMatrix_Nonbackground.png";
 import tes_logo from "../../assets/tessolve.png";
 import view1 from "../../assets/images/Top1.png";
 import view2 from "../../assets/images/Fan1.png";
-import view3 from "../../assets/images/Ports.png";
-import view5 from "../../assets/images/Sideview.png";
+import view3 from "../../assets/images/Ports1.png";
+import view5 from "../../assets/images/Sideview1.png";
 
 const LandingPage = ({ setIsAuthenticated }) => {
   const [activeSection, setActiveSection] = useState("hero");
