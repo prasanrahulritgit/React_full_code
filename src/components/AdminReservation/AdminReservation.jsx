@@ -554,7 +554,7 @@ const AdminReservation = () => {
 
       // If we found an IP type, navigate to dashboard
       if (ipType) {
-        const baseUrl = "http://51.21.52.229/dashboard";
+        const baseUrl = `${API_BASE}/dashboard`;
         const params = new URLSearchParams({
           device: deviceId,
           ip_type: ipType,

@@ -18,13 +18,13 @@ const Navbar = ({ isDarkTheme, toggleTheme, userData }) => {
     expired: false,
   });
   const [role, setRole] = useState(null);
-  const API_BASE = process.env.REACT_APP_API_BASE_URL;
+  const API_BASE = process.env.REACT_APP_API_BASE_URL || "/api";
 
   const navigateToReservations = () => {
     if (role === "admin") {
-      window.location.href = "http://51.21.52.229/admin_dashboard/reservation"
+      window.location.href = `${API_BASE}/admin_dashboard/reservation`;
     } else {
-      window.location.href = "http://51.21.52.229/user_reservation";
+      window.location.href = `${API_BASE}/user_reservation`;
     }
   };
 
