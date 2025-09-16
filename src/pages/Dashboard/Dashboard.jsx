@@ -407,7 +407,7 @@ const Dashboard = () => {
     const ipType = ipInfo?.ip_type || "";
     const ipAddress = ipInfo?.ip_address || "";
     const deviceName = ipInfo?.device_name || "";
-    const title = `Rutomatrix &#x2022; ${deviceName}  ${ipType}`;
+    const title = `Rutomatrix • ${deviceName}  ${ipType}`;
     const isAudio = ["Audio"].some((audio_ip) =>
       device.name.includes(audio_ip)
     );

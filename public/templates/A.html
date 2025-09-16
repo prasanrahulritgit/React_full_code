@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+else if (isAudio) {
+  popupHTML = `<!DOCTYPE html>
 <html>
 <head>
-  <title>Rutomatix</title>
-<style>
+  <style>
     body {
       font-family: 'Segoe UI', Arial, sans-serif;
       background: #121212;
@@ -271,71 +271,38 @@
 </head>
 
 <body>
-  <div class="audio-container">
-    <div class="header">
-        <div class="device-info">
-        <div class="device-name-row">
-            <div class="device-name">${device.name}</div>
-            <div id="device-timer">--:--:--</div>
-        </div>
-        </div>
-        <div class="header-controls">
-        <select id="audio-source-select">
-            <option value="">Select Source</option>
-            <option value="HDMI">HDMI</option>
-            <option value="Bluetooth">Bluetooth</option>
-        </select>
-        <button id="header-connect-btn" class="connect-btn1" disabled>Connect to Stream</button>
-        </div>
+<div class="audio-container">
+  <div class="header">
+    <div class="device-info">
+      <div class="device-name-row">
+        <div class="device-name">${device.name}</div>
+        <div id="device-timer">--:--:--</div>
+      </div>
     </div>
-
-    <div class="audio-content">
-        <div class="audio-viewer-container">
-        <div class="audio-viewer-header">
-            <span>Audio Stream</span>
-        </div>
-        <div class="audio-viewer-content">
-            <div id="root"></div>
-        </div>
-        </div>
+    <div class="header-controls">
+      <select id="audio-source-select">
+        <option value="">Select Source</option>
+        <option value="HDMI">HDMI</option>
+        <option value="Bluetooth">Bluetooth</option>
+      </select>
+      <button id="header-connect-btn" class="connect-btn1" disabled>Connect to Stream</button>
     </div>
   </div>
 
-  <script type="text/babel">
+  <div class="audio-content">
+    <div class="audio-viewer-container">
+      <div class="audio-viewer-header">
+        <span>Audio Stream</span>
+      </div>
+      <div class="audio-viewer-content">
+        <div id="root"></div>
+      </div>
+    </div>
+  </div>
+</div>
 
-  window.addEventListener("message", (event) => {
-    const data = event.data;
-    if (data.type === "initPopup") {
-      // Only for initial popup data
-      const { title, device, ipAddress, postMessageScript, timerScript } = data;
-
-      if (title) document.title = title;
-    //   if (ipAddress) document.querySelector(".ip-address").textContent = ipAddress;
-      if (device){
-        document.querySelector(".device-name").textContent = device.name;
-      }
-
-      if (postMessageScript) { 
-        const script = document.createElement("script");
-        script.textContent = postMessageScript;
-        document.head.appendChild(script);
-      }
-
-      if (timerScript) {
-        const script = document.createElement("script");
-        script.textContent = timerScript;
-        document.head.appendChild(script);
-      }
-    } else if (data.type === "updateTimer") {
-      // Handle timer updates here
-      const timerElem = document.getElementById("device-timer");
-      if (timerElem && data.timeLeft) {
-        timerElem.textContent = data.timeLeft;
-      }
-    }
-  });
-
-  const { useState, useRef, useEffect } = React;
+<script type="text/babel">
+const { useState, useRef, useEffect } = React;
 
 const AudioStreamPage = () => {
   const [selectedSource, setSelectedSource] = useState("");
@@ -359,44 +326,47 @@ const AudioStreamPage = () => {
     const hours = Math.floor(time / 3600);
     const minutes = Math.floor((time % 3600) / 60);
     const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    
+    if (hours > 0) {
+      return \`\${hours}:\${minutes < 10 ? '0' : ''}\${minutes}:\${seconds < 10 ? '0' : ''}\${seconds}\`;
+    }
+    return \`\${minutes}:\${seconds < 10 ? '0' : ''}\${seconds}\`;
+  };
+
+  const startPlayback = () => {
+    // Start playback timer
+    playIntervalRef.current = setInterval(() => {
+      setCurrentTime(prevTime => {
+        if (prevTime >= duration) {
+          clearInterval(playIntervalRef.current);
+          setIsPlaying(false);
+          return duration;
+        }
+        return prevTime + 1;
+      });
+    }, 1000);
+    
+    // Start visualization animation
+    simulateAudioData();
+    
+    if (audioRef.current) {
+      audioRef.current.play().catch(e => console.error("Play error:", e));
+    }
+    
+    setIsPlaying(true);
   };
 
   const stopPlayback = () => {
-  // Stop playback timer
-  clearInterval(playIntervalRef.current);
-  cancelAnimationFrame(animationRef.current);
-  
-  if (audioRef.current) {
-    audioRef.current.pause();
-  }
-  
-  setIsPlaying(false);
-};
-
-  const startPlayback = () => {
-  // Start playback timer
-  playIntervalRef.current = setInterval(() => {
-    setCurrentTime(prevTime => {
-      if (prevTime >= duration) {
-        clearInterval(playIntervalRef.current);
-        setIsPlaying(false);
-        return duration;
-      }
-      return prevTime + 1;
-    });
-  }, 1000);
-  
-  // Start visualization animation
-  simulateAudioData();
-  
-  if (audioRef.current) {
-    audioRef.current.play().catch(e => console.error("Play error:", e));
-  }
-  
-  setIsPlaying(true);
-};
-
+    // Stop playback timer
+    clearInterval(playIntervalRef.current);
+    cancelAnimationFrame(animationRef.current);
+    
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    
+    setIsPlaying(false);
+  };
 
   const handleConnect = async () => {
     const sourceDropdown = document.getElementById('audio-source-select');
@@ -543,7 +513,7 @@ const AudioStreamPage = () => {
     
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
-
+    
     return () => {
       window.removeEventListener('resize', resizeCanvas);
       clearInterval(playIntervalRef.current);
@@ -560,59 +530,57 @@ const AudioStreamPage = () => {
           <p>{connectionStatus}</p>
         </div>
       ) : (
-        <div>
-          <div className="audio-feed">
-            <div className="connection-status">
-              <span>Connected to: {selectedSource}</span>
-              <span>Status: {connectionStatus}</span>
-            </div>
-            
-            <div className="audio-visualization">
-              <canvas ref={canvasRef} width="600" height="150" />
-            </div>
+        <div className="audio-feed">
+          <div className="connection-status">
+            <span>Connected to: {selectedSource}</span>
+            <span>Status: {connectionStatus}</span>
+          </div>
+          
+          <div className="audio-visualization">
+            <canvas ref={canvasRef} width="600" height="150" />
+          </div>
 
-            <div className="progress-container" ref={progressRef} onClick={handleProgressClick}>
-              <div className="progress-bar" style={{ width: `${(currentTime / duration) * 100}%` }}></div>
-            </div>
+          <div className="progress-container" ref={progressRef} onClick={handleProgressClick}>
+            <div className="progress-bar" style={{ width: \`\${(currentTime / duration) * 100}%\` }}></div>
+          </div>
+          
+          <div className="time-display">
+            <span>{formatTime(currentTime)}</span>
+          </div>
 
-            <div className="time-display">
-              <span>{formatTime(currentTime)}</span>
-            </div>
+          <div className="audio-controls">
+            <button className="play-button" onClick={handlePlayPause}>
+              {isPlaying ? <i className="fas fa-pause" /> : <i className="fas fa-play" />}
+            </button>
 
-            <div className="audio-controls">
-              <button className="play-button" onClick={handlePlayPause}>
-                {isPlaying ? <i className="fas fa-pause" /> : <i className="fas fa-play" />}
+            <div className="volume-container">
+              <button
+                className="volume-icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowVolumeSlider(!showVolumeSlider);
+                }}
+              >
+                {isMuted ? <i className="fas fa-volume-mute" /> : <i className="fas fa-volume-up" />}
               </button>
 
-              <div className="volume-container">
-                <button
-                  className="volume-icon"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowVolumeSlider(!showVolumeSlider);
-                  }}
-                >
-                  {isMuted ? <i className="fas fa-volume-mute" /> : <i className="fas fa-volume-up" />}
-                </button>
-
-                {showVolumeSlider && (
-                  <div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={volume}
-                      onChange={handleVolumeChange}
-                      className="volume-slider"
-                    />
-                    <div className="volume-text">{volume}%</div>
-                  </div>
-                )}
-              </div>
+              {showVolumeSlider && (
+                <div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={volume}
+                    onChange={handleVolumeChange}
+                    className="volume-slider"
+                  />
+                  <div className="volume-text">{volume}%</div>
+                </div>
+              )}
             </div>
-
-            <audio ref={audioRef} loop src={streamUrl} />
           </div>
+
+          <audio ref={audioRef} loop src={streamUrl} />
         </div>
       )}
     </div>
@@ -644,4 +612,5 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 </body>
-</html>
+</html>`;
+}
