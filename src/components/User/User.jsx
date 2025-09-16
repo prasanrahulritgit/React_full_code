@@ -96,7 +96,7 @@ const User = () => {
 
 const handleEditUser = async user => {
   try {
-    const response = await axios.get(`/users/update/${user.id}`);
+    const response = await axios.get(`/api/users/update/${user.id}`);
     setSelectedUser(user);
     setEditFormData({
       user_name: response.data.user_name,
@@ -118,7 +118,7 @@ const handleEditUser = async user => {
   const handleDeleteUser = async user => {
     if (window.confirm(`Are you sure you want to delete user ${user.user_name}?`)) {
       try {
-        const response = await axios.post(`/users/delete/${user.id}`);
+        const response = await axios.post(`/api/users/delete/${user.id}`);
         if (response.data.message) {
           setUsers(users.filter(u => u.id !== user.id));
           alert('User deleted successfully');
@@ -153,7 +153,7 @@ const handleEditUser = async user => {
   const handleAddUser = async e => {
     e.preventDefault();
     try {
-      const response = await axios.post('/users/add', formData);
+      const response = await axios.post('/api/users/add', formData);
       if (response.data.message) {
         setUsers([...users, response.data.user]);
         setShowAddModal(false);
@@ -180,7 +180,7 @@ const handleEditUser = async user => {
   const handleUpdateUser = async e => {
     e.preventDefault();
     try {
-      const response = await axios.post(`/users/update/${selectedUser.id}`, editFormData);
+      const response = await axios.post(`/api/users/update/${selectedUser.id}`, editFormData);
       if (response.data.message) {
         setUsers(users.map(user => 
           user.id === selectedUser.id ? response.data.user : user

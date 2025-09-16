@@ -92,7 +92,7 @@ const Device = () => {
       )
     ) {
       try {
-        const response = await axios.delete(`/delete/${device.device_id}`);
+        const response = await axios.delete(`/api/delete/${device.device_id}`);
         if (response.data.status === "success") {
           setDevices(devices.filter((d) => d.device_id !== device.device_id));
           alert("Device deleted successfully");
@@ -179,7 +179,7 @@ const Device = () => {
       formDataToSend.append("CT1_ip", formData.ct1_ip);
 
       const response = await axios.post(
-        `/edit/${selectedDevice.device_id}`,
+        `/api/edit/${selectedDevice.device_id}`,
         formDataToSend,
         {
           headers: {
