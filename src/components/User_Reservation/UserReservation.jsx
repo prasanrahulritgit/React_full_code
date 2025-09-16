@@ -515,7 +515,7 @@ const API_BASE = process.env.REACT_APP_API_BASE_URL || "/api";
 
       // If we found an IP type, navigate to dashboard
       if (ipType) {
-        const baseUrl = "http://51.21.52.229:3000/dashboard";
+        const baseUrl = "http://51.21.52.229/dashboard";
         const params = new URLSearchParams({
           device: deviceId,
           ip_type: ipType,
@@ -756,7 +756,7 @@ const API_BASE = process.env.REACT_APP_API_BASE_URL || "/api";
         <h1 className="h3 mb-0">User Device Reservation</h1>
         {currentUser.is_authenticated && (
           <a
-            href="http://51.21.52.229:3000/auth"
+            href="http://51.21.52.229/auth"
             className="btn btn-outline-danger"
           >
             <FaSignOutAlt className="me-2" /> Logout
