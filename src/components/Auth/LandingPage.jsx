@@ -1,4 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "datatables.net-bs5/css/dataTables.bootstrap5.css";
+import "font-awesome/css/font-awesome.min.css";
+import "flatpickr/dist/flatpickr.min.css";
 import "./LandingPage.css";
 import ThreeDModel from "./ThreeDModel";
 import {
@@ -23,7 +27,7 @@ import sl3 from "../../assets/bg3_.png";
 import sl4 from "../../assets/Sl4.png";
 import sl5 from "../../assets/Sl5.jpg";
 import logo from "../../assets/RutoMatrix_Nonbackground.png";
-import tes_logo from "../../assets/images/tessolve.png";
+import tes_logo from "../../assets/tessolve.png";
 import view1 from "../../assets/images/Top1.png";
 import view2 from "../../assets/images/Fan1.png";
 import view3 from "../../assets/images/Ports1.png";
@@ -36,9 +40,9 @@ const LandingPage = ({ setIsAuthenticated }) => {
   const [atTop, setAtTop] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
   const slideInterval = useRef();
-  const navigate = useNavigate();
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [show3DModel, setShow3DModel] = useState(false);
+  const navigate = useNavigate();
   const [dragHintVisible, setDragHintVisible] = useState(true);
   const featureSlides = [
     {
@@ -299,7 +303,7 @@ const LandingPage = ({ setIsAuthenticated }) => {
   return (
     <div className="app">
       {/* Navigation */}
-      <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
+      <nav className={`Navbar ${scrolled ? "scrolled" : ""}`}>
         <div className="container">
           <img className="logo_r" src={logo} alt="Rutomatrix Logo" />
           <ul className="nav-links">
@@ -335,10 +339,10 @@ const LandingPage = ({ setIsAuthenticated }) => {
                 Contact us
               </li>
             }
-            {/* <li className="user-login"> <button className="user-icon-btn" onClick={() => setShowLoginOverlay(true)} > <User size={24} /> </button> </li>  360°*/}
+            {/* <li className="user-login"> <button className="user-icon-Btn" onClick={() => setShowLoginOverlay(true)} > <User size={24} /> </button> </li>  360°*/}
             <li className="3D-login">
               {" "}
-              <button className="threeD-icon-btn" onClick={handle360Click}>
+              <button className="threeD-icon-Btn" onClick={handle360Click}>
                 <Rotate3d size={24} />
                 360°
               </button>{" "}
@@ -349,7 +353,7 @@ const LandingPage = ({ setIsAuthenticated }) => {
 
       {show3DModel && (
         <div className="model-modal">
-          <button className="close-btn" onClick={close3DModel}>
+          <button className="close-Btn" onClick={close3DModel}>
             <X size={24} />
           </button>
 
@@ -405,12 +409,12 @@ const LandingPage = ({ setIsAuthenticated }) => {
             </p>
             <div className="cta-buttons">
               <button
-                className="primary-btn"
+                className="primary-Btn"
                 onClick={() => scrollToSection("features")}
               >
                 Explore Features
               </button>
-              <button className="secondary-btn" onClick={handleLaunchDashboard}>
+              <button className="secondary-Btn" onClick={handleLaunchDashboard}>
                 Launch Dashboard{" "}
                 <SquareArrowOutUpRight
                   size={18}
@@ -464,9 +468,9 @@ const LandingPage = ({ setIsAuthenticated }) => {
             <h2 className="section-title">Overview</h2>
             <div className="overview-grid">
               <div className="overview-card">
-                <h3>Your ultimate solution for remote test management</h3>
+                <h3>Your ultimate solution for remote server management</h3>
                 <p>
-                  Discover how Rutomatrix revolutionizes test management with
+                  Discover how Rutomatrix revolutionizes server management with
                   advanced remote control and monitoring. Our platform combines
                   state-of-the-art hardware and software to deliver unparalleled
                   efficiency and flexibility in operations.
@@ -508,10 +512,9 @@ const LandingPage = ({ setIsAuthenticated }) => {
               <div className="feature-icon">📈</div>
               <h3>Rutoscope</h3>
               <p>
-                Rutoscope is a powerful logic analyzer for modern digital
-                systems. Supports all major protocols with deep visibility and
-                precision. Monitor, decode, and analyze communication
-                seamlessly.
+                Rutoscope is a powerful logic analyzer for modern digital systems.
+                Supports all major protocols with deep visibility and precision.
+                Monitor, decode, and analyze communication seamlessly.
               </p>
             </div>
 
@@ -519,9 +522,8 @@ const LandingPage = ({ setIsAuthenticated }) => {
               <div className="feature-icon">📷</div>
               <h3>Rutocam</h3>
               <p>
-                Real-time thermal imaging with precision sensors—detect heat
-                signatures for diagnostics, safety, and monitoring, seamlessly
-                integrated with Rutomatrix.
+                Real-time thermal imaging with precision sensors—detect heat signatures for diagnostics,
+                 safety, and monitoring, seamlessly integrated with Rutomatrix.
               </p>
             </div>
 
@@ -602,7 +604,7 @@ const LandingPage = ({ setIsAuthenticated }) => {
       <section id="distinctive-edge" className="distinctive-edge-section">
         <div className="container">
           <h2 className="section-title">
-            Advantages of remote test management
+            Advantages of remote server management
           </h2>
           <p className="section-subtitle">
             Discover why Rutomatrix stands out from the competition with these
@@ -765,7 +767,7 @@ const LandingPage = ({ setIsAuthenticated }) => {
 
       {/* Contact Section */}
       <section id="contact" className="contact-section">
-        <div className="container" style={{ marginRight: "215px" }}>
+        <div className="container">
           <div className="contact-content">
             <h2>Ready to Transform Your Workflow?</h2>
             <p>
@@ -773,7 +775,7 @@ const LandingPage = ({ setIsAuthenticated }) => {
               requirements.
             </p>
             <button
-              className="contact-btn"
+              className="contact-Btn"
               onClick={() => scrollToSection("hero")}
             >
               Contact us <ArrowRight color="#ffffff" />
@@ -787,7 +789,11 @@ const LandingPage = ({ setIsAuthenticated }) => {
         <div className="container">
           <div className="footer-content">
             <div className="footer-logo"> </div>
-            <img src={tes_logo} className="footer-logo-img" />
+            <img
+              src={tes_logo}
+              className="footer-logo-img"
+              alt="Tessolve Logo"
+            />
           </div>
           <div className="footer-links">
             <h4>Product Engineering Services</h4>
