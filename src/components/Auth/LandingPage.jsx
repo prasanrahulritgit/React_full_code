@@ -1,8 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "datatables.net-bs5/css/dataTables.bootstrap5.css";
-import "font-awesome/css/font-awesome.min.css";
-import "flatpickr/dist/flatpickr.min.css";
 import "./LandingPage.css";
 import ThreeDModel from "./ThreeDModel";
 import {
@@ -25,9 +21,9 @@ import sl1 from "../../assets/Sl1.png";
 import sl2 from "../../assets/Sl2.png";
 import sl3 from "../../assets/bg3_.png";
 import sl4 from "../../assets/Sl4.png";
-import sl5 from "../../assets/Sl5.png";
+import sl5 from "../../assets/Sl5.jpg";
 import logo from "../../assets/RutoMatrix_Nonbackground.png";
-import tes_logo from "../../assets/tessolve.png";
+import tes_logo from "../../assets/images/tessolve.png";
 import view1 from "../../assets/images/Top1.png";
 import view2 from "../../assets/images/Fan1.png";
 import view3 from "../../assets/images/Ports1.png";
@@ -40,13 +36,13 @@ const LandingPage = ({ setIsAuthenticated }) => {
   const [atTop, setAtTop] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
   const slideInterval = useRef();
+  const navigate = useNavigate();
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [show3DModel, setShow3DModel] = useState(false);
-  const navigate = useNavigate();
   const [dragHintVisible, setDragHintVisible] = useState(true);
   const featureSlides = [
     {
-      title: "4K Video Streaming",
+      title: "Virtual Desk",
       description:
         "Experience crystal-clear video with our advanced streaming technology.",
       image: sl1,
@@ -58,7 +54,7 @@ const LandingPage = ({ setIsAuthenticated }) => {
       image: sl2,
     },
     {
-      title: "Integrated Oscilloscope",
+      title: "Rutoscope",
       description:
         "Built-in digital oscilloscope for signal monitoring and measurement",
       image: sl3,
@@ -70,9 +66,9 @@ const LandingPage = ({ setIsAuthenticated }) => {
       image: sl4,
     },
     {
-      title: "USB Over Network",
+      title: "Rutocam",
       description:
-        "Seamless USB device sharing across networked systems with full functionality.",
+        "Real-time thermal imaging with precision sensors for diagnostics, safety, monitoring, and seamless Rutomatrix integration.",
       image: sl5,
     },
   ];
@@ -147,10 +143,10 @@ const LandingPage = ({ setIsAuthenticated }) => {
     };
   }, [show3DModel]);
 
-  const handleLaunchDashboard = () => {
+    const handleLaunchDashboard = () => {
     // Redirect to external login URL
     navigate("/Login");
-  };
+    };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -303,7 +299,7 @@ const LandingPage = ({ setIsAuthenticated }) => {
   return (
     <div className="app">
       {/* Navigation */}
-      <nav className={`Navbar ${scrolled ? "scrolled" : ""}`}>
+      <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
         <div className="container">
           <img className="logo_r" src={logo} alt="Rutomatrix Logo" />
           <ul className="nav-links">
@@ -339,10 +335,10 @@ const LandingPage = ({ setIsAuthenticated }) => {
                 Contact us
               </li>
             }
-            {/* <li className="user-login"> <button className="user-icon-Btn" onClick={() => setShowLoginOverlay(true)} > <User size={24} /> </button> </li>  360°*/}
+            {/* <li className="user-login"> <button className="user-icon-btn" onClick={() => setShowLoginOverlay(true)} > <User size={24} /> </button> </li>  360°*/}
             <li className="3D-login">
               {" "}
-              <button className="threeD-icon-Btn" onClick={handle360Click}>
+              <button className="threeD-icon-btn" onClick={handle360Click}>
                 <Rotate3d size={24} />
                 360°
               </button>{" "}
@@ -353,7 +349,7 @@ const LandingPage = ({ setIsAuthenticated }) => {
 
       {show3DModel && (
         <div className="model-modal">
-          <button className="close-Btn" onClick={close3DModel}>
+          <button className="close-btn" onClick={close3DModel}>
             <X size={24} />
           </button>
 
@@ -409,12 +405,12 @@ const LandingPage = ({ setIsAuthenticated }) => {
             </p>
             <div className="cta-buttons">
               <button
-                className="primary-Btn"
+                className="primary-btn"
                 onClick={() => scrollToSection("features")}
               >
                 Explore Features
               </button>
-              <button className="secondary-Btn" onClick={handleLaunchDashboard}>
+              <button className="secondary-btn" onClick={handleLaunchDashboard}>
                 Launch Dashboard{" "}
                 <SquareArrowOutUpRight
                   size={18}
@@ -468,9 +464,9 @@ const LandingPage = ({ setIsAuthenticated }) => {
             <h2 className="section-title">Overview</h2>
             <div className="overview-grid">
               <div className="overview-card">
-                <h3>Your ultimate solution for remote server management</h3>
+                <h3>Your ultimate solution for remote test management</h3>
                 <p>
-                  Discover how Rutomatrix revolutionizes server management with
+                  Discover how Rutomatrix revolutionizes test management with
                   advanced remote control and monitoring. Our platform combines
                   state-of-the-art hardware and software to deliver unparalleled
                   efficiency and flexibility in operations.
@@ -492,7 +488,7 @@ const LandingPage = ({ setIsAuthenticated }) => {
           <div className="features-grid">
             <div className="feature-card">
               <div className="feature-icon">🎥</div>
-              <h3>4K Video Streaming</h3>
+              <h3>Virtual Desk</h3>
               <p>
                 Ultra-high-definition streaming with low latency and adaptive
                 bitrate technology.
@@ -510,19 +506,20 @@ const LandingPage = ({ setIsAuthenticated }) => {
 
             <div className="feature-card">
               <div className="feature-icon">📈</div>
-              <h3>Integrated Oscilloscope</h3>
+              <h3>Rutoscope</h3>
               <p>
-                Built-in oscilloscope with logic analyzer and waveform generator
-                replacing traditional lab tools.
+                Rutoscope is a powerful logic analyzer for modern digital systems.
+Supports all major protocols with deep visibility and precision.
+Monitor, decode, and analyze communication seamlessly.
               </p>
             </div>
 
             <div className="feature-card">
-              <div className="feature-icon">🔗</div>
-              <h3>USB Over Network</h3>
+              <div className="feature-icon">📷</div>
+              <h3>Rutocam</h3>
               <p>
-                Seamless USB device sharing across networked systems with full
-                functionality.
+                Real-time thermal imaging with precision sensors—detect heat signatures for diagnostics,
+                 safety, and monitoring, seamlessly integrated with Rutomatrix.
               </p>
             </div>
 
@@ -603,10 +600,10 @@ const LandingPage = ({ setIsAuthenticated }) => {
       <section id="distinctive-edge" className="distinctive-edge-section">
         <div className="container">
           <h2 className="section-title">
-            Advantages of remote server management
+            Advantages of remote test management
           </h2>
           <p className="section-subtitle">
-            Discover why RutoMatrix stands out from the competition with these
+            Discover why Rutomatrix stands out from the competition with these
             core benefits
           </p>
 
@@ -668,18 +665,18 @@ const LandingPage = ({ setIsAuthenticated }) => {
         <div className="container">
           <h2 className="section-title">In Action</h2>
           <p className="section-description">
-            See how RutoMatrix performs in real-world scenarios
+            See how Rutomatrix performs in real-world scenarios
           </p>
 
           {/* First Showcase Item - Image Left */}
           <div className="showcase-item left-layout">
             <div className="showcase-image">
-              <img src={view1} alt="RutoMatrix Hardware Front View" />
+              <img src={view1} alt="Rutomatrix Hardware Front View" />
             </div>
             <div className="showcase-content">
               <h3>Precision Engineering</h3>
               <p>
-                Every RutoMatrix unit undergoes quality testing to ensure
+                Every Rutomatrix unit undergoes quality testing to ensure
                 reliability in demanding environments. Our precision
                 manufacturing guarantees consistent performance.
               </p>
@@ -696,7 +693,7 @@ const LandingPage = ({ setIsAuthenticated }) => {
             <div className="showcase-content">
               <h3>Robust Software & Hardware Integration</h3>
               <p>
-                RutoMatrix offers seamless integration between hardware and
+                Rutomatrix offers seamless integration between hardware and
                 software, ensuring efficient development, deployment, and
                 diagnostics across critical interfaces.
               </p>
@@ -715,19 +712,19 @@ const LandingPage = ({ setIsAuthenticated }) => {
               </ul>
             </div>
             <div className="showcase-image">
-              <img src={view2} alt="RutoMatrix Internal Components" />
+              <img src={view2} alt="Rutomatrix Internal Components" />
             </div>
           </div>
 
           {/* Third Showcase Item - Image Left */}
           <div className="showcase-item left-layout">
             <div className="showcase-image">
-              <img src={view3} alt="RutoMatrix Connectivity Options" />
+              <img src={view3} alt="Rutomatrix Connectivity Options" />
             </div>
             <div className="showcase-content">
               <h3>Comprehensive Connectivity</h3>
               <p>
-                With multiple interface options, RutoMatrix seamlessly
+                With multiple interface options, Rutomatrix seamlessly
                 integrates with your existing infrastructure. The rear panel
                 provides easy access to all connections.
               </p>
@@ -744,7 +741,7 @@ const LandingPage = ({ setIsAuthenticated }) => {
             <div className="showcase-content">
               <h3>Precision I/O & Thermal Design</h3>
               <p>
-                RutoMatrix is engineered with versatile I/O options and
+                Rutomatrix is engineered with versatile I/O options and
                 efficient thermal solutions, ensuring reliable performance
                 across diverse applications and environments.
               </p>
@@ -758,7 +755,7 @@ const LandingPage = ({ setIsAuthenticated }) => {
             </div>
 
             <div className="showcase-image">
-              <img src={view5} alt="RutoMatrix Internal Components" />
+              <img src={view5} alt="Rutomatrix Internal Components" />
             </div>
           </div>
         </div>
@@ -766,15 +763,15 @@ const LandingPage = ({ setIsAuthenticated }) => {
 
       {/* Contact Section */}
       <section id="contact" className="contact-section">
-        <div className="container">
+        <div className="container" style={{ marginRight: '215px' }}>
           <div className="contact-content">
             <h2>Ready to Transform Your Workflow?</h2>
             <p>
-              Contact our team to discuss how RutoMatrix can meet your specific
+              Contact our team to discuss how Rutomatrix can meet your specific
               requirements.
             </p>
             <button
-              className="contact-Btn"
+              className="contact-btn"
               onClick={() => scrollToSection("hero")}
             >
               Contact us <ArrowRight color="#ffffff" />
@@ -788,11 +785,7 @@ const LandingPage = ({ setIsAuthenticated }) => {
         <div className="container">
           <div className="footer-content">
             <div className="footer-logo"> </div>
-            <img
-              src={tes_logo}
-              className="footer-logo-img"
-              alt="Tessolve Logo"
-            />
+            <img src={tes_logo} className="footer-logo-img" />
           </div>
           <div className="footer-links">
             <h4>Product Engineering Services</h4>
@@ -916,3 +909,4 @@ const LandingPage = ({ setIsAuthenticated }) => {
 };
 
 export default LandingPage;
+
