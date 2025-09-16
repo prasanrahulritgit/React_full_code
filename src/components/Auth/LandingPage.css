@@ -738,6 +738,10 @@ section#distinctive-edge {
   background: black;
 }
 
+contact-content {
+  margin-left: -40px;
+}
+
 /* Advantages Section */
 .advantages-section {
   padding: 80px 0;
