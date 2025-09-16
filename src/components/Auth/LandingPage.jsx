@@ -143,10 +143,10 @@ const LandingPage = ({ setIsAuthenticated }) => {
     };
   }, [show3DModel]);
 
-    const handleLaunchDashboard = () => {
+  const handleLaunchDashboard = () => {
     // Redirect to external login URL
     navigate("/Login");
-    };
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -508,9 +508,10 @@ const LandingPage = ({ setIsAuthenticated }) => {
               <div className="feature-icon">📈</div>
               <h3>Rutoscope</h3>
               <p>
-                Rutoscope is a powerful logic analyzer for modern digital systems.
-Supports all major protocols with deep visibility and precision.
-Monitor, decode, and analyze communication seamlessly.
+                Rutoscope is a powerful logic analyzer for modern digital
+                systems. Supports all major protocols with deep visibility and
+                precision. Monitor, decode, and analyze communication
+                seamlessly.
               </p>
             </div>
 
@@ -518,8 +519,9 @@ Monitor, decode, and analyze communication seamlessly.
               <div className="feature-icon">📷</div>
               <h3>Rutocam</h3>
               <p>
-                Real-time thermal imaging with precision sensors—detect heat signatures for diagnostics,
-                 safety, and monitoring, seamlessly integrated with Rutomatrix.
+                Real-time thermal imaging with precision sensors—detect heat
+                signatures for diagnostics, safety, and monitoring, seamlessly
+                integrated with Rutomatrix.
               </p>
             </div>
 
@@ -763,7 +765,7 @@ Monitor, decode, and analyze communication seamlessly.
 
       {/* Contact Section */}
       <section id="contact" className="contact-section">
-        <div className="container" style={{ marginRight: '215px' }}>
+        <div className="container" style={{ marginRight: "215px" }}>
           <div className="contact-content">
             <h2>Ready to Transform Your Workflow?</h2>
             <p>
@@ -909,4 +911,3 @@ Monitor, decode, and analyze communication seamlessly.
 };
 
 export default LandingPage;
-
