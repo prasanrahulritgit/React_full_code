@@ -36,6 +36,7 @@ const LandingPage = ({ setIsAuthenticated }) => {
   const [atTop, setAtTop] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
   const slideInterval = useRef();
+  const navigate = useNavigate();
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [show3DModel, setShow3DModel] = useState(false);
   const [dragHintVisible, setDragHintVisible] = useState(true);
@@ -142,10 +143,10 @@ const LandingPage = ({ setIsAuthenticated }) => {
     };
   }, [show3DModel]);
 
-  const handleLaunchDashboard = () => {
+    const handleLaunchDashboard = () => {
     // Redirect to external login URL
-    window.location.href = "http://127.0.0.1:5000/login";
-  };
+    navigate("/Login");
+    };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -908,3 +909,4 @@ Monitor, decode, and analyze communication seamlessly.
 };
 
 export default LandingPage;
+
