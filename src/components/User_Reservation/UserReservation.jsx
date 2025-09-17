@@ -53,7 +53,7 @@ const UserReservation = () => {
   const itemsPerPage = 10;
   const [current_Page, setCurrent_Page] = useState(1);
   // API base URL
-const API_BASE = process.env.REACT_APP_API_BASE1_URL;
+const API_BASE = process.env.REACT_APP_API_BASE_URL;
   useEffect(() => {
     if (startTimeRef.current && endTimeRef.current) {
       // Start Time Picker

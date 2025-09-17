@@ -52,7 +52,7 @@ const AdminReservation = () => {
   const [currentUser, setCurrentUser] = useState(null);
 
   // API base URL
-  const API_BASE = process.env.REACT_APP_API_BASE1_URL;
+  const API_BASE = process.env.REACT_APP_API_BASE_URL;
   useEffect(() => {
     if (startTimeRef.current && endTimeRef.current) {
       // Start Time Picker
